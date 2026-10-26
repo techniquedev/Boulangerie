@@ -1,0 +1,53 @@
+import type { Site, User } from './types'
+
+export const COMPANY = 'Boulangerie-Pâtisserie DÉLICE PLUS Sarl'
+export const COMPANY_ACTIVITIES = 'boulangerie, pâtisserie, yaourts, crèmes glacées'
+
+export const sites: Site[] = [
+  { code: 'SIT-01', name: 'Site central — Unité de production + Magasin central + Bureau direction', status: 'Actif',
+    locations: ['MAG-MP', 'CF-01', 'ATL-B', 'ATL-P', 'ATL-YG', 'STK-PF'] },
+  { code: 'SIT-02', name: 'Boutique A', status: 'Actif', locations: ['STK-VA', 'CF-A', 'CAISSE-A'] },
+  { code: 'SIT-03', name: 'Boutique B', status: 'Actif', locations: ['STK-VB', 'CF-B', 'CAISSE-B'] },
+  { code: 'SIT-04', name: 'Boutique C', status: 'Désactivé', locations: [], note: 'Historique conservé (US-14)' },
+]
+
+export const locationLabels: Record<string, string> = {
+  'MAG-MP': 'Magasin matières premières', 'CF-01': 'Chambre froide', 'ATL-B': 'Atelier boulangerie',
+  'ATL-P': 'Atelier pâtisserie', 'ATL-YG': 'Atelier yaourts/glaces', 'STK-PF': 'Stock produits finis',
+  'STK-VA': 'Stock vendant A', 'CF-A': 'Chambre froide boutique A', 'CAISSE-A': 'Caisse A',
+  'STK-VB': 'Stock vendant B', 'CF-B': 'Chambre froide boutique B', 'CAISSE-B': 'Caisse B',
+}
+
+export const siteShort = (code: string) =>
+  ({ 'SIT-01': 'Site central', 'SIT-02': 'Boutique A', 'SIT-03': 'Boutique B', 'SIT-04': 'Boutique C' } as Record<string, string>)[code] || code
+
+export const roleLabels: Record<string, string> = {
+  direction: 'Direction / Administrateur principal', boulanger: 'Boulanger', enfourneur: 'Enfourneur',
+  patissier: 'Pâtissier / Opératrice yaourts-glaces', magasinier: 'Magasinière', caissier: 'Boutiquier / Caissier',
+  livreur: 'Livreur', gerant: 'Gérant multi-sites', controleur: 'Contrôleur / Responsable Qualité', achats: 'Service Achats',
+}
+
+export const users: User[] = [
+  { n: 1, email: 'direction@deliceplus.bj', name: 'Awa ADJOVI', title: 'Directrice Générale', role: 'direction', siteLabel: 'Tous', sites: ['SIT-01', 'SIT-02', 'SIT-03'], pin: '1001',
+    note: 'Validation finale des dépenses, prix, seuils ; accès intégral' },
+  { n: 2, email: 'boulanger@deliceplus.bj', name: 'Koffi AGBO', title: 'Boulanger (chef d’équipe nuit)', role: 'boulanger', siteLabel: 'SIT-01', sites: ['SIT-01'], pin: '2002',
+    note: 'Saisie production US-03 ; confirme les bons de sortie matières US-20' },
+  { n: 3, email: 'enfourneur@deliceplus.bj', name: 'Ibrahim MOUSSA', title: 'Enfourneur', role: 'enfourneur', siteLabel: 'SIT-01', sites: ['SIT-01'], pin: '2003',
+    note: 'Saisie cuisson et rebuts US-04' },
+  { n: 4, email: 'patissier@deliceplus.bj', name: 'Grâce DOSSOU', title: 'Pâtissier / Opératrice yaourts-glaces', role: 'patissier', siteLabel: 'SIT-01', sites: ['SIT-01'], pin: '2004',
+    note: 'Saisie US-05 (3 lignes de production)' },
+  { n: 5, email: 'magasinier@deliceplus.bj', name: 'Fatima BIO', title: 'Magasinière', role: 'magasinier', siteLabel: 'SIT-01', sites: ['SIT-01'], pin: '3001',
+    note: 'Réceptions US-06, BDL US-07, sorties matières US-20, réappro US-24' },
+  { n: 6, email: 'caissier-a@deliceplus.bj', name: 'Junior AHOUANVOEDO', title: 'Boutiquier / Caissier', role: 'caissier', siteLabel: 'SIT-02', sites: ['SIT-02'], pin: '4001',
+    note: 'Réception à l’aveugle US-08, vente/caisse US-10/US-28/US-29 ; AUCUN bouton de dépense' },
+  { n: 7, email: 'caissier-b@deliceplus.bj', name: 'Mariam TOURÉ', title: 'Boutiquier / Caissier', role: 'caissier', siteLabel: 'SIT-03', sites: ['SIT-03'], pin: '4002',
+    note: 'Idem, boutique B' },
+  { n: 8, email: 'livreur@deliceplus.bj', name: 'Sani DAOUDA', title: 'Livreur', role: 'livreur', siteLabel: 'Mobile (rattachement SIT-01)', sites: ['SIT-01'], pin: '5001',
+    note: 'Tournée US-26 (V2) ; peut seulement soumettre une demande de carburant avec photo' },
+  { n: 9, email: 'gerant@deliceplus.bj', name: 'Paul HOUNSA', title: 'Gérant multi-sites', role: 'gerant', siteLabel: 'SIT-02 + SIT-03', sites: ['SIT-02', 'SIT-03'], pin: '6001',
+    note: 'Valide réceptions, annulations de vente (RG-08), versements US-30, dashboard limité à ses sites' },
+  { n: 10, email: 'controleur@deliceplus.bj', name: 'Dr Carine SODJI', title: 'Contrôleur / Responsable Qualité', role: 'controleur', siteLabel: 'Tous', sites: ['SIT-01', 'SIT-02', 'SIT-03'], pin: '7001',
+    note: 'Traitement des alertes US-34, inventaires US-21, contrôles qualité US-41' },
+  { n: 11, email: 'achats@deliceplus.bj', name: 'Rachel EZIN', title: 'Bureau central / Service Achats', role: 'achats', siteLabel: 'SIT-01', sites: ['SIT-01'], pin: '8001',
+    note: 'Dépenses US-11, cycle achats US-32' },
+]

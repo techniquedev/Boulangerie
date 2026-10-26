@@ -1,0 +1,11 @@
+{
+  "title": "Boulangerie",
+  "description": "Manage multi-site bakery operations with real-time data on sales, inventory, and production, tailored for staff at all levels in a user-friendly interface.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

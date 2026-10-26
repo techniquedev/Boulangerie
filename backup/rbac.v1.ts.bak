@@ -1,0 +1,83 @@
+import type { Role } from './types'
+
+export type ScreenId =
+  | 'dashboard' | 'alerts' | 'production' | 'cuisson' | 'magasin' | 'bdl' | 'pos' | 'caisse' | 'invendus'
+  | 'expenses' | 'versements' | 'orders' | 'credit' | 'plan' | 'inventory' | 'quality' | 'purchases' | 'tour'
+  | 'catalog' | 'org' | 'reports' | 'treasury' | 'audit' | 'devices' | 'v3' | 'notifications' | 'rbac'
+
+export type MenuItem = { id: ScreenId; label: string; group: string }
+
+const M = (id: ScreenId, label: string, group: string): MenuItem => ({ id, label, group })
+
+const all = {
+  dashboard: M('dashboard', 'Tableau de bord', 'Pilotage'),
+  alerts: M('alerts', 'Alertes', 'Pilotage'),
+  reports: M('reports', 'Rapports', 'Pilotage'),
+  treasury: M('treasury', 'Trésorerie', 'Pilotage'),
+  production: M('production', 'Production', 'Production'),
+  cuisson: M('cuisson', 'Cuisson & rebuts', 'Production'),
+  plan: M('plan', 'Plan & besoins', 'Production'),
+  magasin: M('magasin', 'Magasin & stocks', 'Stocks'),
+  bdl: M('bdl', 'Bordereaux (BDL)', 'Stocks'),
+  inventory: M('inventory', 'Inventaires', 'Stocks'),
+  invendus: M('invendus', 'Invendus & pertes', 'Stocks'),
+  quality: M('quality', 'Qualité & froid', 'Stocks'),
+  pos: M('pos', 'Vente', 'Boutique'),
+  caisse: M('caisse', 'Caisse', 'Boutique'),
+  versements: M('versements', 'Remise des recettes', 'Boutique'),
+  orders: M('orders', 'Commandes clients', 'Commercial'),
+  credit: M('credit', 'Crédit grossistes', 'Commercial'),
+  tour: M('tour', 'Tournée livreur', 'Commercial'),
+  expenses: M('expenses', 'Dépenses', 'Achats & dépenses'),
+  purchases: M('purchases', 'Achats fournisseurs', 'Achats & dépenses'),
+  catalog: M('catalog', 'Produits & tarifs', 'Administration'),
+  org: M('org', 'Sites, tiers, seuils', 'Administration'),
+  rbac: M('rbac', 'Rôles & droits', 'Administration'),
+  devices: M('devices', 'Appareils', 'Administration'),
+  audit: M('audit', 'Journal d’audit', 'Administration'),
+  v3: M('v3', 'IA (V3)', 'Administration'),
+  notifications: M('notifications', 'Notifications', 'Pilotage'),
+}
+
+const pick = (...ids: ScreenId[]) => ids.map(i => all[i])
+
+// Matrice RBAC : menus visibles par rôle (ENF-05 : à doubler côté serveur en production).
+export const menuByRole: Record<Role, MenuItem[]> = {
+  direction: Object.values(all).filter(m => m.id !== 'pos'),
+  boulanger: pick('production', 'cuisson', 'plan', 'magasin', 'notifications'),
+  enfourneur: pick('cuisson', 'notifications'),
+  patissier: pick('production', 'orders', 'notifications'),
+  magasinier: pick('magasin', 'bdl', 'purchases', 'inventory', 'notifications'),
+  caissier: pick('pos', 'bdl', 'caisse', 'invendus', 'notifications'),
+  livreur: pick('tour', 'expenses', 'notifications'),
+  gerant: pick('dashboard', 'bdl', 'caisse', 'versements', 'invendus', 'orders', 'credit', 'reports', 'notifications'),
+  controleur: pick('dashboard', 'alerts', 'inventory', 'quality', 'production', 'bdl', 'reports', 'audit', 'notifications'),
+  achats: pick('expenses', 'purchases', 'magasin', 'notifications'),
+}
+
+export const homeByRole: Record<Role, ScreenId> = {
+  direction: 'dashboard', boulanger: 'production', enfourneur: 'cuisson', patissier: 'production', magasinier: 'magasin',
+  caissier: 'pos', livreur: 'tour', gerant: 'dashboard', controleur: 'dashboard', achats: 'expenses',
+}
+
+// Droits fonctionnels fins.
+export const can = {
+  seeAlerts: (r: Role) => r === 'direction' || r === 'controleur',               // RG-10
+  validateExpense: (r: Role) => r === 'direction',
+  submitExpense: (r: Role) => r === 'direction' || r === 'achats' || r === 'livreur',
+  cancelSale: (r: Role) => r === 'gerant' || r === 'direction',                  // RG-08
+  confirmVersement: (r: Role) => r === 'gerant' || r === 'direction',
+  editPrices: (r: Role) => r === 'direction',                                    // US-15
+  saisieProduction: (r: Role) => r === 'boulanger' || r === 'patissier' || r === 'direction',
+  saisieCuisson: (r: Role) => r === 'enfourneur' || r === 'boulanger',
+  receiveBlind: (r: Role) => r === 'caissier',                                   // RG-06
+  emitBdl: (r: Role) => r === 'magasinier',
+  seeSentQty: (r: Role) => r !== 'caissier',                                     // RG-06
+  validateInventory: (r: Role) => r === 'direction',
+  runInventory: (r: Role) => r === 'controleur' || r === 'direction',
+  derogation: (r: Role) => r === 'direction',                                    // RG-04, US-27
+}
+
+export const rbacMatrix: { role: Role; screens: string }[] = (Object.keys(menuByRole) as Role[]).map(role => ({
+  role, screens: menuByRole[role].map(m => m.label).join(' · '),
+}))
