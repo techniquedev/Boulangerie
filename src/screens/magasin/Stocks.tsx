@@ -33,14 +33,14 @@ export function MStocks() {
             `${money(m.cmp)} / ${m.unit}`, money(q * m.cmp)])} />
       </Card>)}
 
-      <Card title="Proposition de bon de commande fournisseur" sub="Pré-remplie pour les matières sous le minimum, à transmettre au service achats" actions={<Badge tone="neutral">V2</Badge>}>
+      <Card title="Proposition de bon de commande fournisseur" sub="Pré-remplie pour les matières sous le minimum, à transmettre au service achats">
         {low.length ? <>
           <Table head={['Matière', 'Stock', 'Quantité proposée', 'Fournisseur habituel']} rows={low.map(({ m, q }) => {
             const buy = m.units[m.units.length > 1 ? 1 : 0]
             const n = Math.ceil(m.reorder / buy.f)
             return [m.name, fmtQty(m.mp, q), <b>{unitQty(buy.u, n)} ({fmtQty(m.mp, n * buy.f)})</b>, supplierName(usualSupplier[m.mp])]
           })} />
-          <div className="greyed-inline"><Big disabled onClick={() => {}}><Send size={18} /> Transmettre au service achats</Big><span className="muted">Fonctionnalité V2 — non disponible dans cette version.</span></div>
+          <div className="greyed-inline"><Big disabled onClick={() => {}}><Send size={18} /> Transmettre au service achats</Big><span className="muted">Fonctionnalité non disponible dans cette version.</span></div>
         </> : <Notice tone="ok">Aucune matière sous le minimum.</Notice>}
       </Card>
     </Screen>

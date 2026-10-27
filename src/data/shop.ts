@@ -75,7 +75,7 @@ export const BDL_ST = {
 } as const
 export const shopName = (site: string) => `Boutique ${({ 'SIT-01': 'SITE 1', 'SIT-02': 'SITE 2', 'SIT-03': 'SITE 3' } as Record<string, string>)[site] || site}`
 
-// ——— Invendus, pertes et retours (US-22) ———
+// ——— Invendus, pertes et retours ———
 
 export const LOSS_MOTIFS = ['Invendu', 'Périmé', 'Casse', 'Rupture de la chaîne du froid', 'Retour client'] as const
 export const LOSS_DESTS = ['Retour atelier', 'Recyclage', 'Don', 'Destruction'] as const

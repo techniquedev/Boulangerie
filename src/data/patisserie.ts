@@ -24,24 +24,21 @@ export const CONSUMPTION_TOLERANCE = 10
 
 export const REJECT_MOTIFS = ['Cuisson ratée', 'Chute / casse', 'Défaut d’aspect', 'Défaut de remplissage', 'Hygiène / contamination', 'Autre'] as const
 
-// ——— Recettes et nomenclatures (versionnées, lecture seule pour l'opérateur) ———
+// ——— Recettes et nomenclatures (lecture seule pour l'opérateur) ———
 // Quantités standard par unité produite, en unités de stock du magasin (farine en sacs de 50 kg, le reste en kg, unités ou litres).
 
-export type Recipe = { code: string; version: string; since: string; shelf: number; ingredients: [string, number][]; note?: string; previous?: { version: string; since: string; note: string }[] }
+export type Recipe = { code: string; shelf: number; ingredients: [string, number][]; note?: string }
 export const RECIPES: Recipe[] = [
-  { code: 'PF-07', version: 'v2', since: '01/09/2026', shelf: 2, ingredients: [['MP-01', 0.0006], ['MP-06', 0.5], ['MP-07', 0.02], ['MP-04', 0.03], ['MP-05', 0.01], ['MP-09', 0.002]],
-    previous: [{ version: 'v1', since: 'avant le 01/09/2026', note: 'Crème pâtissière au lait frais (remplacé par le lait en poudre).' }] },
-  { code: 'PF-08', version: 'v1', since: '01/01/2026', shelf: 1, ingredients: [['MP-01', 0.0012], ['MP-04', 0.01], ['MP-02', 0.001], ['MP-07', 0.005]] },
-  { code: 'PF-09', version: 'v2', since: '01/10/2026', shelf: 3, ingredients: [['MP-01', 0.006], ['MP-04', 0.25], ['MP-06', 4], ['MP-07', 0.15], ['MP-09', 0.005]],
-    previous: [{ version: 'v1', since: 'avant le 01/10/2026', note: '0,30 kg de sucre par gâteau.' }] },
-  { code: 'PF-10', version: 'v1', since: '01/01/2026', shelf: 3, ingredients: [['MP-01', 0.016], ['MP-04', 0.6], ['MP-06', 10], ['MP-07', 0.4], ['MP-09', 0.012]] },
-  { code: 'PF-11', version: 'v2', since: '15/09/2026', shelf: 14, ingredients: [['MP-05', 0.02], ['MP-04', 0.012], ['MP-09', 0.0005], ['MP-10', 1]],
-    previous: [{ version: 'v1', since: 'avant le 15/09/2026', note: '15 g de sucre par pot.' }] },
-  { code: 'PF-12', version: 'v1', since: '01/01/2026', shelf: 14, ingredients: [['MP-05', 0.02], ['MP-10', 1]] },
-  { code: 'PF-13', version: 'v1', since: '01/01/2026', shelf: 14, ingredients: [['MP-05', 0.08], ['MP-04', 0.04], ['MP-10', 1]], note: 'Pot de 500 ml compté avec les pots + opercules (MP-10).' },
-  { code: 'PF-14', version: 'v1', since: '01/01/2026', shelf: 182, ingredients: [['MP-05', 0.03], ['MP-04', 0.015], ['MP-09', 0.001], ['MP-11', 1]] },
-  { code: 'PF-15', version: 'v1', since: '01/01/2026', shelf: 182, ingredients: [['MP-05', 0.035], ['MP-04', 0.018], ['MP-09', 0.001], ['MP-11', 1]] },
-  { code: 'PF-16', version: 'v1', since: '01/01/2026', shelf: 182, ingredients: [['MP-05', 0.25], ['MP-04', 0.12], ['MP-09', 0.008], ['MP-11', 1]], note: 'Bac familial compté avec les cônes et pots glace (MP-11).' },
+  { code: 'PF-07', shelf: 2, ingredients: [['MP-01', 0.0006], ['MP-06', 0.5], ['MP-07', 0.02], ['MP-04', 0.03], ['MP-05', 0.01], ['MP-09', 0.002]] },
+  { code: 'PF-08', shelf: 1, ingredients: [['MP-01', 0.0012], ['MP-04', 0.01], ['MP-02', 0.001], ['MP-07', 0.005]] },
+  { code: 'PF-09', shelf: 3, ingredients: [['MP-01', 0.006], ['MP-04', 0.25], ['MP-06', 4], ['MP-07', 0.15], ['MP-09', 0.005]] },
+  { code: 'PF-10', shelf: 3, ingredients: [['MP-01', 0.016], ['MP-04', 0.6], ['MP-06', 10], ['MP-07', 0.4], ['MP-09', 0.012]] },
+  { code: 'PF-11', shelf: 14, ingredients: [['MP-05', 0.02], ['MP-04', 0.012], ['MP-09', 0.0005], ['MP-10', 1]] },
+  { code: 'PF-12', shelf: 14, ingredients: [['MP-05', 0.02], ['MP-10', 1]] },
+  { code: 'PF-13', shelf: 14, ingredients: [['MP-05', 0.08], ['MP-04', 0.04], ['MP-10', 1]], note: 'Pot de 500 ml compté avec les pots + opercules (MP-10).' },
+  { code: 'PF-14', shelf: 182, ingredients: [['MP-05', 0.03], ['MP-04', 0.015], ['MP-09', 0.001], ['MP-11', 1]] },
+  { code: 'PF-15', shelf: 182, ingredients: [['MP-05', 0.035], ['MP-04', 0.018], ['MP-09', 0.001], ['MP-11', 1]] },
+  { code: 'PF-16', shelf: 182, ingredients: [['MP-05', 0.25], ['MP-04', 0.12], ['MP-09', 0.008], ['MP-11', 1]], note: 'Bac familial compté avec les cônes et pots glace (MP-11).' },
 ]
 export const recipe = (code: string) => RECIPES.find(r => r.code === code)!
 

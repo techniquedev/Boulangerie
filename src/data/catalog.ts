@@ -17,7 +17,7 @@ export const rawMaterials: RawMaterial[] = [
 ]
 
 export const products: FinishedProduct[] = [
-  { code: 'PF-01', name: 'Pain standard', category: 'Boulangerie', format: '150 g', retail: 150, wholesale: 130, recipe: 'R-BOUL-01 (v2)', cost: 92, emoji: '🥖' },
+  { code: 'PF-01', name: 'Pain standard', category: 'Boulangerie', format: '150 g', retail: 150, wholesale: 130, recipe: 'R-BOUL-01', cost: 92, emoji: '🥖' },
   { code: 'PF-02', name: 'Pain standard', category: 'Boulangerie', format: '100 g', retail: 100, wholesale: 85, recipe: 'R-BOUL-01 (EPS)', cost: 63, emoji: '🥖' },
   { code: 'PF-03', name: 'Pain standard', category: 'Boulangerie', format: '50 g', retail: 50, wholesale: 45, recipe: 'R-BOUL-01 (EPS)', cost: 32, emoji: '🥖' },
   { code: 'PF-04', name: 'Pain découpé', category: 'Boulangerie', format: '115 g', retail: 115, wholesale: 100, recipe: 'R-BOUL-01 (EPS)', cost: 72, emoji: '🍞' },
@@ -25,7 +25,7 @@ export const products: FinishedProduct[] = [
   { code: 'PF-06', name: 'Pain au chocolat', category: 'Viennoiserie', format: '80 g', retail: 400, wholesale: 350, recipe: 'Idem + cacao', cost: 195, emoji: '🍫' },
   { code: 'PF-07', name: 'Éclair vanille', category: 'Pâtisserie', format: 'pièce', retail: 500, wholesale: 420, recipe: 'Pâte à choux, crème vanille', cost: 240, emoji: '🧁' },
   { code: 'PF-08', name: 'Beignet sucré', category: 'Pâtisserie', format: 'pièce', retail: 150, wholesale: 120, recipe: 'Farine, sucre, huile, levure', cost: 65, emoji: '🍩' },
-  { code: 'PF-09', name: 'Gâteau moyen 20 cm', category: 'Pâtisserie', format: 'pièce', retail: 15000, wholesale: null, recipe: 'Sur commande (US-17)', cost: 7800, emoji: '🎂' },
+  { code: 'PF-09', name: 'Gâteau moyen 20 cm', category: 'Pâtisserie', format: 'pièce', retail: 15000, wholesale: null, recipe: 'Sur commande', cost: 7800, emoji: '🎂' },
   { code: 'PF-10', name: 'Gâteau 2 étages', category: 'Pâtisserie', format: 'pièce', retail: 25000, wholesale: null, recipe: 'Sur commande, décoration personnalisable', cost: 13500, emoji: '🎂' },
   { code: 'PF-11', name: 'Yaourt vanille', category: 'Yaourt', format: 'pot 125 ml', retail: 200, wholesale: 170, recipe: 'Lait, sucre, arôme, pot', cost: 98, emoji: '🥛' },
   { code: 'PF-12', name: 'Yaourt nature', category: 'Yaourt', format: 'pot 125 ml', retail: 175, wholesale: 150, recipe: 'Lait, pot', cost: 82, emoji: '🥛' },

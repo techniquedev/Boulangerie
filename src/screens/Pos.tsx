@@ -29,7 +29,7 @@ export function Pos() {
 
   const add = (code: string, d: number) => {
     const next = Math.max(0, (cart[code] || 0) + d)
-    if (next > (stock[code] || 0)) return say('Stock insuffisant : vente bloquée (RG-04).')
+    if (next > (stock[code] || 0)) return say('Stock insuffisant : vente bloquée.')
     setCart({ ...cart, [code]: next })
   }
   const fill = (m: Mode) => setPay({ ...pay, [m]: String(total - (paidSum - (Number(pay[m]) || 0))) })
@@ -59,10 +59,10 @@ export function Pos() {
   }
 
   if (!session) return <Screen title="Vente"><Notice tone="warn">Aucune session de caisse dans le jeu de démonstration pour votre site ({user!.siteLabel}).</Notice></Screen>
-  if (!open) return <Screen title="Vente"><Notice tone="warn">La session {session.id} est clôturée. Une nouvelle session ne peut être ouverte qu’après clôture complète (RG-07).</Notice></Screen>
+  if (!open) return <Screen title="Vente"><Notice tone="warn">La session {session.id} est clôturée. Une nouvelle session ne peut être ouverte qu’après clôture complète.</Notice></Screen>
 
   return (
-    <Screen title="Vente" sub={`${session.id} · prix en lecture seule — seule la Direction modifie les prix (US-15)`}>
+    <Screen title="Vente" sub={`${session.id} · prix en lecture seule — seule la Direction modifie les prix`}>
       <div className="pos2">
         <div>
           <div className="filter-row">{cats.map(c => <button key={c} className={cat === c ? 'chip on' : 'chip'} onClick={() => setCat(c)}>{c}</button>)}</div>

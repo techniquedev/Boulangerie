@@ -104,7 +104,7 @@ export function BPetrissee() {
   )
 
   return (
-    <Screen title="Nouvelle pétrissée" sub={`Atelier boulangerie ${siteName} — US-03 · 1 EPS = ${EPS_GRAMS} g de pâte façonnée`}>
+    <Screen title="Nouvelle pétrissée" sub={`Atelier boulangerie ${siteName} — 1 EPS = ${EPS_GRAMS} g de pâte façonnée`}>
       <Steps steps={['Matières consommées', 'Pâtons façonnés', 'Contrôle et validation']} current={step} />
 
       {step === 0 && <Card title="A — Matières premières consommées" sub="Stock atelier en lecture seule : seules les matières réceptionnées sont disponibles">

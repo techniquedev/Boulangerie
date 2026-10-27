@@ -109,11 +109,10 @@ export function PProduction() {
       <Steps steps={['Produits et recette', 'Ingrédients consommés', 'Production et contrôle']} current={step} />
 
       {step === 0 && <Card title={`Produits ${line.label.toLowerCase()} prévus`} sub="La recette de référence et la consommation théorique s’affichent automatiquement">
-        <Table head={['Produit', ...(line.flavors ? ['Parfum'] : []), `Quantité prévue (${line.unitLabel})`, 'Recette', '']} rows={rows.map((r, i) => [
+        <Table head={['Produit', ...(line.flavors ? ['Parfum'] : []), `Quantité prévue (${line.unitLabel})`, '']} rows={rows.map((r, i) => [
           <select className="ref-input" value={r.code} onChange={e => setRow(i, { code: e.target.value, dlc: '' })}>{line.products.map(c => <option key={c} value={c}>{productName(c)}</option>)}</select>,
           ...(line.flavors ? [<select className="ref-input" value={r.flavor} onChange={e => setRow(i, { flavor: e.target.value })}>{line.flavors.map(f => <option key={f}>{f}</option>)}</select>] : []),
           <input className="num-input sm" inputMode="numeric" placeholder="0" value={r.planned} onChange={e => setRow(i, { planned: cleanNum(e.target.value, false), produced: r.produced || cleanNum(e.target.value, false) })} />,
-          <small>{recipe(r.code).version} depuis le {recipe(r.code).since}</small>,
           rows.length > 1 ? <button className="icon-btn" title="Retirer" onClick={() => setRows(rows.filter((_, k) => k !== i))}><Trash2 size={18} /></button> : '',
         ])} />
         <div className="btn-row"><Big tone="ghost" onClick={() => setRows([...rows, blank(line.products.find(c => !rows.some(r => r.code === c)) || line.products[0])])}><Plus size={20} /> Ajouter un produit</Big></div>

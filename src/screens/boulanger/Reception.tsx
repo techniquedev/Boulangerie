@@ -59,7 +59,7 @@ export function BReception() {
   }
 
   return (
-    <Screen title="Réception des matières" sub={`Bons de sortie du magasin du site vers votre atelier — ${siteName} · US-20, double validation`}>
+    <Screen title="Réception des matières" sub={`Bons de sortie du magasin du site vers votre atelier — ${siteName} · double validation`}>
       <div className="split">
         <div className="list-col scroll-list">
           {bons.map(x => <button key={x.id} className={`list-item ${x.id === b.id ? 'on' : ''}`} onClick={() => pick(x.id)}>

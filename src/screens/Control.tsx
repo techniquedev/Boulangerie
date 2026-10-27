@@ -14,14 +14,14 @@ export function InventoryScreen() {
   const [counts, setCounts] = useState<Record<string, string>>({})
   const validate = () => {
     update(s => ({ ...s, inventory: { ...s.inventory, status: 'Validé', adjustedBy: user!.name }, matStock: { ...s.matStock, 'MP-01': (s.matStock['MP-01'] ?? 27) + diff(s.inventory.lines[0]) } }))
-    audit('Ajustement d’inventaire', `${inv.id} validé : contre-écriture ${money(gap)} (MP-01)`); say('Ajustement tracé par contre-écriture (RG-03)')
+    audit('Ajustement d’inventaire', `${inv.id} validé : contre-écriture ${money(gap)} (MP-01)`); say('Ajustement tracé par contre-écriture')
   }
   const saveCount = () => {
     update(s => ({ ...s, inventory: { ...s.inventory, lines: s.inventory.lines.map(l => counts[l.code] !== undefined && counts[l.code] !== '' ? { ...l, counted: Number(counts[l.code]) } : l) } }))
     say('Comptage enregistré')
   }
   return (
-    <Screen title="Inventaire physique à l’aveugle" sub={`${inv.id} · ${inv.location} (US-21)`}>
+    <Screen title="Inventaire physique à l’aveugle" sub={`${inv.id} · ${inv.location}`}>
       <Card title={inv.id} actions={<Badge tone={inv.status === 'Validé' ? 'ok' : 'warn'}>{inv.status}</Badge>}>
         {!blind && <div className="kpi-row"><Kpi label="Écart valorisé" value={money(Math.abs(gap))} tone={gap ? 'danger' : 'ok'} note="2 sacs de farine × 28 500 FCFA = 57 000 FCFA" /></div>}
         <Table head={blind ? ['Article', 'Quantité comptée'] : ['Article', 'Théorique', 'Compté', 'Écart', 'Valeur']} rows={inv.lines.map(l => blind
@@ -44,7 +44,7 @@ export function QualityScreen() {
     audit('Qualité', `${id} clôturée — action : ${action}`); say('Non-conformité clôturée'); setAction('')
   }
   return (
-    <Screen title="Contrôles qualité et chaîne du froid" sub="Relevés de température et non-conformités (US-41)">
+    <Screen title="Contrôles qualité et chaîne du froid" sub="Relevés de température et non-conformités">
       <Card title="Relevés de 8 h"><Table head={['Relevé', 'Lieu', 'Heure', 'Température', 'Plage', 'Résultat']} rows={state.readings.map(r => {
         const ok = r.value >= r.min && r.value <= r.max
         return [r.id, r.place, r.at, <b>{String(r.value).replace('.', ',')} °C</b>, `${r.min}–${r.max} °C`, <Badge tone={ok ? 'ok' : 'danger'}>{ok ? 'Conforme' : 'Hors plage'}</Badge>] })} /></Card>
@@ -61,7 +61,7 @@ export function PurchasesScreen() {
   const { state } = useApp()
   const tone = (s: string) => (s === 'Conforme' ? 'ok' : s.startsWith('Écart') ? 'danger' : 'warn') as 'ok' | 'danger' | 'warn'
   return (
-    <Screen title="Achats fournisseurs" sub="Rapprochement bon de commande / réception / facture (US-32)">
+    <Screen title="Achats fournisseurs" sub="Rapprochement bon de commande / réception / facture">
       <Card><Table head={['Bon de commande', 'Fournisseur', 'Commandé', 'Réception', 'Facture', 'Statut', 'Paiement']} rows={state.purchases.map(p => [
         <b>{p.po}</b>, p.supplier, p.ordered, p.received, p.invoice, <Badge tone={tone(p.status)}>{p.status}</Badge>,
         p.status === 'Conforme' ? <Badge tone="ok">Autorisé</Badge> : <Badge tone="danger">Bloqué</Badge>])} /></Card>

@@ -22,7 +22,7 @@ export const drivers = [
 export const params: Param[] = [
   { label: 'Rendement minimum boulangerie', value: '400 EPS/sac', override: '—' },
   { label: 'Taux de rebut acceptable', value: '2 %', override: '—' },
-  { label: 'Tolérance écart BDL (RG-05)', value: '0 unité', override: 'Yaourts : 2 unités par BDL' },
+  { label: 'Tolérance écart BDL', value: '0 unité', override: 'Yaourts : 2 unités par BDL' },
   { label: 'Seuil d’alerte écart de caisse', value: '1 000 FCFA', override: '—' },
-  { label: 'Alerte péremption (RG-11, FEFO)', value: 'J-2 puis J-1', override: '—' },
+  { label: 'Alerte péremption (FEFO)', value: 'J-2 puis J-1', override: '—' },
 ]

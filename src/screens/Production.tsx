@@ -4,9 +4,8 @@ import { useSiteFilter } from '../components/SiteFilter'
 import { siteShort } from '../data/org'
 import { bakeryDay } from '../data/direction'
 import { figures, yieldTone } from '../data/boulanger'
-import { patFigures, patStatus, pfLots, prodLine, RECIPES } from '../data/patisserie'
+import { patFigures, patStatus, pfLots, prodLine } from '../data/patisserie'
 import { productName } from '../data/shop'
-import { recipeVersions } from '../data/production'
 import { dec, num } from '../lib/format'
 
 // Production des 3 sites : pétrissées (lots boulangerie) et lots pâtisserie / yaourts / glaces.
@@ -20,7 +19,7 @@ export function Production() {
   const bags = f.reduce((a, x) => a + x.bags, 0), eps = f.reduce((a, x) => a + x.eps, 0)
 
   return (
-    <Screen title="Production" sub={`Lots du ${day} — RG-01 : EPS = poids total de pâte ÷ 146 g`}>
+    <Screen title="Production" sub={`Lots du ${day} — EPS = poids total de pâte ÷ 146 g`}>
       {bar}
       <div className="kpi-row">
         <Kpi label="Pétrissées" value={num(lots.length)} note={`${num(bags)} sacs de farine`} />
@@ -39,12 +38,6 @@ export function Production() {
           return [siteShort(l.site), <b>{l.id}</b>, prodLine(l.line).label, l.trace.author, p.items.map(i => `${num(i.produced)} ${productName(i.code)}`).join(' · '),
             <Badge tone={Math.abs(p.yieldGap) > 5 ? 'danger' : 'ok'}>{dec(p.yieldReal)} % / {l.yieldTheo} %</Badge>, [...new Set(l.items.map(i => i.dlc))].join(', '), patStatus(l, pf[l.site])]
         })} />
-      </Card>
-      <Card title="Recettes — versions applicables (US-13)">
-        <Table head={['Recette', 'Version', 'Depuis', 'Détail']} rows={[
-          ...recipeVersions.map(v => ['R-BOUL-01 (pain)', <b>{v.v}</b>, v.since, v.note]),
-          ...RECIPES.map(r => [productName(r.code), <b>{r.version}</b>, r.since, r.previous?.map(p => `${p.version} : ${p.note}`).join(' ; ') || '—']),
-        ]} />
       </Card>
     </Screen>
   )

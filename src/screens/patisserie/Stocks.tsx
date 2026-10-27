@@ -51,10 +51,10 @@ export function PStocks() {
       <Card title="Recettes et nomenclatures" sub="Lecture seule : les modifications de recettes et de prix sont réservées à la direction" actions={<Badge tone="neutral"><Lock size={12} /> Lecture seule</Badge>}>
         {PROD_LINES.map(line => <div key={line.code} className="recipe-block">
           <h4><LineIcon line={line} size={16} /> {line.label} — rendement théorique {line.yieldTheo} %</h4>
-          <Table head={['Produit', 'Version applicable', 'Ingrédients par unité produite', 'Conservation', 'Versions précédentes']} rows={line.products.map(c => {
+          <Table head={['Produit', 'Ingrédients par unité produite', 'Conservation']} rows={line.products.map(c => {
             const r = recipe(c)
-            return [<b>{productName(c)}</b>, `${r.version} depuis le ${r.since}`, <small>{r.ingredients.map(([mp, q]) => `${matName(mp)} ${fmtQty(mp, q)}`).join(' · ')}{r.note ? ` — ${r.note}` : ''}</small>,
-              `${r.shelf} jour${r.shelf > 1 ? 's' : ''}`, <small>{r.previous?.map(p => `${p.version} (${p.since}) : ${p.note}`).join(' ; ') || '—'}</small>]
+            return [<b>{productName(c)}</b>, <small>{r.ingredients.map(([mp, q]) => `${matName(mp)} ${fmtQty(mp, q)}`).join(' · ')}{r.note ? ` — ${r.note}` : ''}</small>,
+              `${r.shelf} jour${r.shelf > 1 ? 's' : ''}`]
           })} />
         </div>)}
       </Card>

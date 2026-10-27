@@ -65,7 +65,7 @@ export type ProdLot = {
   cuisson?: CuissonReport; corrections: Correction[]
 }
 
-// ——— Calculs (RG-01) ———
+// ——— Calculs ———
 
 export const kgOf = (lines: Line[]) => lines.reduce((s, l) => s + l.qty * l.grams, 0) / 1000
 export const epsOfKg = (kg: number) => (kg * 1000) / EPS_GRAMS

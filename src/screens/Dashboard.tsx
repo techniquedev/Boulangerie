@@ -55,7 +55,7 @@ export function Dashboard() {
           t.status.startsWith('Soldée') ? (f.qtyOk && f.cashOk ? 'Équilibrée' : 'Écart') : '—']))} /> : <Notice>Aucune tournée ce jour.</Notice>}
       </Card>
 
-      {full ? <Card title="Alertes ouvertes" sub="Jamais visibles par les opérateurs concernés (RG-10)" actions={<button className="link-btn" onClick={() => go('alerts')}>Traiter</button>}>
+      {full ? <Card title="Alertes ouvertes" sub="Jamais visibles par les opérateurs concernés" actions={<button className="link-btn" onClick={() => go('alerts')}>Traiter</button>}>
         <Table head={['N°', 'Type', 'Gravité', 'Détail', 'Statut']} rows={openAlerts.slice(0, 12).map(a => [
           a.id, a.type, <Badge tone={a.severity === 'Haute' ? 'danger' : 'warn'}>{a.severity}</Badge>, <small>{a.detail}</small>, a.status])} />
       </Card> : <Notice>Les alertes d’écart et de fraude sont réservées aux rôles Contrôleur et Direction.</Notice>}

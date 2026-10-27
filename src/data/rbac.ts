@@ -85,7 +85,7 @@ export const driverTabs: ScreenId[] = ['lHome', 'lLoad', 'lDeliver', 'lCash', 'l
 
 const pick = (...ids: ScreenId[]) => ids.map(i => all[i])
 
-// Matrice RBAC : menus visibles par rôle (ENF-05 : à doubler côté serveur en production).
+// Matrice RBAC : menus visibles par rôle (à doubler côté serveur en production).
 export const menuByRole: Record<Role, MenuItem[]> = {
   direction: Object.values(all).filter(m => m.id !== 'pos' && !bakerTabs.includes(m.id) && !storeTabs.includes(m.id) && !shopTabs.includes(m.id) && !patTabs.includes(m.id) && !driverTabs.includes(m.id)),
   magasinierCentral: pick('magasin', 'bdl', 'purchases', 'inventory', 'notifications'),
@@ -118,14 +118,14 @@ export const isCentral = (u: User) => u.group === 'DIRECTION GÉNÉRALE'
 
 // Droits fonctionnels fins.
 export const can = {
-  seeAlerts: (r: Role) => r === 'direction' || r === 'controleur',               // RG-10
+  seeAlerts: (r: Role) => r === 'direction' || r === 'controleur',
   validateExpense: (r: Role) => r === 'direction',
   submitExpense: (r: Role) => r === 'direction' || r === 'achats' || r === 'livreur',
-  cancelSale: (r: Role) => r === 'direction',                                    // RG-08
+  cancelSale: (r: Role) => r === 'direction',
   confirmVersement: (r: Role) => r === 'direction',
-  editPrices: (r: Role) => r === 'direction',                                    // US-15
+  editPrices: (r: Role) => r === 'direction',
   saisieProduction: (r: Role) => r === 'boulanger' || r === 'patissier' || r === 'direction',
-  saisieCuisson: (r: Role) => r === 'enfourneur',                              // boulanger : lecture seule (US-04)
+  saisieCuisson: (r: Role) => r === 'enfourneur',                              // boulanger : lecture seule
   exportTour: (r: Role) => r === 'livreur' || r === 'direction' || r === 'controleur',
   exportPat: (r: Role) => r === 'patissier' || r === 'direction' || r === 'controleur',
   exportShop: (r: Role) => r === 'boutiquier' || r === 'direction' || r === 'controleur',
@@ -133,13 +133,13 @@ export const can = {
   exportStore: (r: Role) => r === 'magasinier' || r === 'direction' || r === 'controleur',
   exportProduction: (r: Role) => r === 'boulanger' || r === 'direction' || r === 'controleur',
   setEpsThreshold: (r: Role) => r === 'direction',
-  receiveBlind: (r: Role) => r === 'boutiquier',                                 // RG-06
-  closeBlind: (r: Role) => r === 'caissiere',                                    // US-28
+  receiveBlind: (r: Role) => r === 'boutiquier',
+  closeBlind: (r: Role) => r === 'caissiere',
   emitBdl: (r: Role) => r === 'magasinierCentral',
-  seeSentQty: (r: Role) => r !== 'boutiquier' && r !== 'caissiere',              // RG-06
+  seeSentQty: (r: Role) => r !== 'boutiquier' && r !== 'caissiere',
   validateInventory: (r: Role) => r === 'direction',
   runInventory: (r: Role) => r === 'controleur' || r === 'direction',
-  derogation: (r: Role) => r === 'direction',                                    // RG-04, US-27
+  derogation: (r: Role) => r === 'direction',
 }
 
 export const rbacMatrix: { role: Role; screens: string }[] = (Object.keys(menuByRole) as Role[]).map(role => ({

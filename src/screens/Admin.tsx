@@ -11,7 +11,7 @@ import { productName, SHOP_PRODUCTS } from '../data/shop'
 export function Catalog() {
   const { user } = useApp()
   return (
-    <Screen title="Produits, recettes et tarifs" sub="Grilles détail / gros — historique daté, prix gérés par la Direction uniquement (US-13, US-15)">
+    <Screen title="Produits, recettes et tarifs" sub="Grilles détail / gros — historique daté, prix gérés par la Direction uniquement">
       {!can.editPrices(user!.role) && <Notice>Prix en lecture seule.</Notice>}
       <Card><Table head={['Code', 'Produit', 'Catégorie', 'Format', 'Prix détail', 'Prix gros', 'Recette', 'Coût de revient']} rows={products.map(p => [
         p.code, <b>{p.emoji} {p.name}</b>, p.category, p.format, money(p.retail), p.wholesale ? money(p.wholesale) : '—', p.recipe, money(p.cost)])} /></Card>
@@ -42,7 +42,7 @@ export function Org() {
   const rows = params.map(p => p.label === 'Rendement minimum boulangerie' ? { ...p, value: `${state.epsThreshold} EPS/sac` }
     : p.label.startsWith('Tolérance écart BDL') ? { ...p, override: Object.entries(state.bdlTolerance).map(([c, v]) => `${productName(c)} : ${v}`).join(' · ') || '—' } : p)
   return (
-    <Screen title="Sites, tiers et seuils" sub="Boulangerie-Pâtisserie DÉLICE PLUS Sarl (US-14, US-16)">
+    <Screen title="Sites, tiers et seuils" sub="Boulangerie-Pâtisserie DÉLICE PLUS Sarl">
       <Card title="Sites et emplacements"><Table head={['Code', 'Site', 'Statut', 'Emplacements de stock']} rows={sites.map(s => [
         s.code, s.name, <Badge tone={s.status === 'Actif' ? 'ok' : 'neutral'}>{s.status}</Badge>,
         s.locations.length ? s.locations.map(l => `${l} (${locationLabels[l]})`).join(' · ') : s.note || '—'])} /></Card>
@@ -67,7 +67,7 @@ export function Org() {
 
 export function Rbac() {
   return (
-    <Screen title="Rôles et autorisations" sub="Menus visibles par rôle (US-02, ENF-05) — appliqué à chaque compte démo">
+    <Screen title="Rôles et autorisations" sub="Menus visibles par rôle — appliqué à chaque compte démo">
       <Card><Table head={['Rôle', 'Écrans accessibles']} rows={rbacMatrix.map(r => [<b>{roleLabels[r.role]}</b>, r.screens])} /></Card>
     </Screen>
   )
@@ -80,7 +80,7 @@ export function Devices() {
     audit('Appareil', `${id} révoqué`); say('Appareil révoqué')
   }
   return (
-    <Screen title="Gestion des appareils" sub="4 appareils enregistrés + 1 révoqué (US-45)">
+    <Screen title="Gestion des appareils" sub="4 appareils enregistrés + 1 révoqué">
       <Card><Table head={['Appareil', 'Site', 'Statut', 'Note', '']} rows={state.devices.map(d => [<b>{d.label}</b>, d.site, <Badge tone={d.status === 'Actif' ? 'ok' : 'danger'}>{d.status}</Badge>, d.note || '—',
         d.status === 'Actif' ? <button className="link-btn" onClick={() => revoke(d.id)}>Révoquer</button> : ''])} /></Card>
     </Screen>
@@ -90,9 +90,9 @@ export function Devices() {
 export function Audit() {
   const { state } = useApp()
   return (
-    <Screen title="Journal d’audit" sub="Écritures non modifiables — auteur, appareil, site, horodatage serveur et local (US-43, ENF-09)">
+    <Screen title="Journal d’audit" sub="Écritures non modifiables — auteur, appareil, site, horodatage serveur et local">
       <Card><Table head={['Horodatage serveur', 'Heure locale', 'Auteur', 'Appareil', 'Site', 'Action', 'Détail']} rows={state.audit.map(a => [a.at, a.localAt, a.author, a.device, a.site, <b>{a.action}</b>, a.detail])} /></Card>
-      <Notice>Aucune donnée validée n’est supprimable : toute correction passe par une contre-écriture tracée (RG-03).</Notice>
+      <Notice>Aucune donnée validée n’est supprimable : toute correction passe par une contre-écriture tracée.</Notice>
     </Screen>
   )
 }

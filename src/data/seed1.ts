@@ -7,7 +7,7 @@ export const bdlBase: Bdl[] = [
 // AL-2026-0086 à 0088 (écarts BDL des boutiques) : voir seedShop.ts.
 export const alertBase: AlertItem[] = [
   { id: 'AL-2026-0089', type: 'Péremption (J-2)', severity: 'Moyenne', value: null,
-    detail: 'Lot de yaourts Y-20261012 — DLC 28/10/2026 (RG-11, FEFO)',
+    detail: 'Lot de yaourts Y-20261012 — DLC 28/10/2026 (FEFO)',
     people: 'Stock yaourts', status: 'Nouvelle',
     history: [{ at: '26/10/2026 06:00', by: 'Système', text: 'Alerte de péremption J-2 générée.' }] },
   { id: 'AL-2026-0090', type: 'Écart de caisse', severity: 'Moyenne', value: 1200,

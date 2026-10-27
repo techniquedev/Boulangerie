@@ -21,7 +21,7 @@ export function BdlScreen() {
   const [sel, setSel] = useState<string | null>(null)
   const b = list.find(x => `${x.id}-${x.toSite}` === sel) || list[0]
   const statuses = [...new Set(all.map(x => x.status))]
-  if (!can.seeSentQty(user!.role)) return <Notice tone="danger">Accès réservé : les quantités expédiées ne sont jamais visibles en boutique (RG-06).</Notice>
+  if (!can.seeSentQty(user!.role)) return <Notice tone="danger">Accès réservé : les quantités expédiées ne sont jamais visibles en boutique.</Notice>
 
   return (
     <Screen title="Bordereaux de livraison (BDL)" sub="Boutiques (réception à l’aveugle) et chargements de tournée — 3 sites">

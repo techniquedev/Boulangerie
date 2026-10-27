@@ -38,7 +38,7 @@ export function Reports() {
   ]
 
   return (
-    <Screen title="Rapports" sub="Rapport quotidien des 3 sites (US-39) et bibliothèque de rapports (US-38)">
+    <Screen title="Rapports" sub="Rapport quotidien des 3 sites et bibliothèque de rapports">
       {bar}
       <Card title={`Rapport quotidien — ${day}`} sub="Envoyé le soir par email / WhatsApp à la Direction">
         <div className="kpi-row">
@@ -74,7 +74,7 @@ export function Treasury() {
   const ca = rows.reduce((a, r) => a + r.ca + r.tourCash + r.tourMomo, 0)
   const dep = state.expenses.filter(e => e.status !== 'Demandée' && e.status !== 'Refusée').reduce((x, e) => x + e.amount, 0)
   return (
-    <Screen title="Trésorerie et résultat simplifiés" sub={`Vue consolidée ventes / encaissements / dépenses — ${day} (US-40)`}>
+    <Screen title="Trésorerie et résultat simplifiés" sub={`Vue consolidée ventes / encaissements / dépenses — ${day}`}>
       {bar}
       <div className="kpi-row">
         <Kpi label="Ventes du jour (boutiques + tournées)" value={money(ca)} /><Kpi label="Dépenses validées" value={money(dep)} />
@@ -96,7 +96,7 @@ export function Tour() {
   const [sel, setSel] = useState<string | null>(null)
   const cur = list.find(x => `${x.t.id}` === sel) || list[0]
   return (
-    <Screen title="Tournées des livreurs" sub="Chargé = livré + retourné + pertes · encaissé attendu = versé (US-26)">
+    <Screen title="Tournées des livreurs" sub="Chargé = livré + retourné + pertes · encaissé attendu = versé">
       {bar}
       {!cur ? <Notice>Aucune tournée.</Notice> : <div className="split">
         <div className="list-col scroll-list">{list.map(({ t }) => <button key={t.id} className={`list-item ${t === cur.t ? 'on' : ''}`} onClick={() => setSel(t.id)}>
@@ -124,7 +124,7 @@ export function Notifications() {
   const { user, state } = useApp()
   const mine = state.notifications.filter(n => n.roles.includes(user!.role))
   return (
-    <Screen title="Centre de notifications" sub="In-app (SMS / WhatsApp en V2) — US-42">
+    <Screen title="Centre de notifications" sub="In-app (SMS / WhatsApp en V2)">
       {mine.length === 0 ? <Notice>Aucune notification.</Notice> : <Card>{mine.map(n => <div key={n.id} className="note-line"><b>{n.text}</b><small>{n.at}</small></div>)}</Card>}
     </Screen>
   )

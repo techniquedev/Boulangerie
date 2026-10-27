@@ -87,7 +87,7 @@ export function SPertes() {
   }
 
   return (
-    <Screen title="Invendus, pertes et retours" sub={`${shop} — déclaration de fin de journée (US-22) · déduction tracée du stock vendant`}>
+    <Screen title="Invendus, pertes et retours" sub={`${shop} — déclaration de fin de journée · déduction tracée du stock vendant`}>
       <Card title="Nouvelle déclaration" sub={`Datée du ${dayOf(Date.now())} · photo obligatoire pour les pertes au-delà du seuil fixé par la direction`}>
         <Table head={['Produit', 'Lot', 'Quantité', 'Motif', 'Destination', 'Photo', '']} rows={rows.map((r, i) => {
           const need = !!r.code && !!r.motif && photoRequired({ code: r.code, qty: Number(r.qty) || 0, motif: r.motif }, state.lossPhotoThreshold)

@@ -24,19 +24,19 @@ export function Magasin() {
 
   const adjust = (code: string, delta: number, motif: string) => {
     const cur = state.matStock[code] ?? 0
-    if (cur + delta < 0) return say('Stock jamais négatif : sortie bloquée au-delà du disponible (RG-04).')
+    if (cur + delta < 0) return say('Stock jamais négatif : sortie bloquée au-delà du disponible.')
     update(s => ({ ...s, matStock: { ...s.matStock, [code]: cur + delta } }))
     audit('Contre-écriture de stock', `${code} : ${delta > 0 ? '+' : ''}${delta} — motif : ${motif} (écriture d’origine conservée)`)
-    say('Contre-écriture tracée (RG-03)')
+    say('Contre-écriture tracée')
   }
 
   return (
-    <Screen title="Magasin et stocks" sub="Magasin central (MAG-MP) et magasins des 3 sites — stocks valorisés au prix moyen pondéré (CMP, US-25)">
+    <Screen title="Magasin et stocks" sub="Magasin central (MAG-MP) et magasins des 3 sites — stocks valorisés au prix moyen pondéré (CMP)">
       <div className="kpi-row">
         <Kpi label="Valeur du stock matières" value={money(total)} />
         <Kpi label="Références sous le minimum" value={String(low.length)} tone={low.length ? 'warn' : 'ok'} note={low.map(r => r.m.name).join(', ')} />
       </div>
-      {low.length > 0 && <Notice tone="warn">Réappro (US-24) : {low.map(r => `${r.m.name} (${r.q} / min ${r.m.min})`).join(' ; ')}.{' '}
+      {low.length > 0 && <Notice tone="warn">Réappro : {low.map(r => `${r.m.name} (${r.q} / min ${r.m.min})`).join(' ; ')}.{' '}
         {!po ? <button className="link-btn" onClick={() => { setPo(true); say('Bon de commande proposé généré') }}>Proposer un bon de commande</button> : <b>Bon de commande proposé : {low.map(r => `${r.m.reorderLabel} de ${r.m.name}`).join(', ')}.</b>}</Notice>}
       <Card title="Magasin central (MAG-MP) — matières premières">
         <Table head={['Code', 'Matière', 'Unité d’achat', 'Stock', 'Minimum', 'CMP', 'Valeur', 'État']} rows={rows.map(r => [
@@ -52,12 +52,12 @@ export function Magasin() {
           ...sites.map(x => { const q = siteStocks[x][m.mp] || 0; return <span className={q < m.min ? 'neg' : ''}>{fmtQty(m.mp, q)}</span> }), fmtQty(m.mp, m.min)])} />
         <div className="kpi-row">{sites.map(x => <Kpi key={x} label={`Valeur du stock ${siteShort(x)} (CMP)`} value={money(SITE_MATS.reduce((a, m) => a + (siteStocks[x][m.mp] || 0) * m.cmp, 0))} />)}</div>
       </Card>
-      <Card title="Réceptions fournisseurs des magasins de site (US-06)" sub="Les plus récentes">
+      <Card title="Réceptions fournisseurs des magasins de site" sub="Les plus récentes">
         <Table head={['Site', 'N°', 'Date', 'Fournisseur', 'Facture', 'Lignes', 'Statut']} rows={recs.map(r => [siteShort(r.site),
           <b>{r.id}</b>, r.deliveryDate, supplierName(r.supplier), r.invoiceNo, r.lines.map(l => `${matName(l.mp)} ${unitQty(l.unit, l.received)}`).join(' · '),
           receptionGroups(state.receptions, r.site).find(g => g.recs.includes(r))?.partial ? <Badge tone="warn">Réception partielle</Badge> : <Badge tone="ok">Complète</Badge>])} />
       </Card>
-      <Card title="Bons de sortie vers les ateliers (US-20) — double validation" sub="Les plus récents, tous sites">
+      <Card title="Bons de sortie vers les ateliers — double validation" sub="Les plus récents, tous sites">
         <Table head={['Site', 'N°', 'Atelier', 'Émis par', 'Confirmé par', 'Contenu', 'Statut']} rows={bons.map(b => [siteShort(b.site),
           <b>{b.id}</b>, atelierLabel(b.atelier), b.by, b.confirm?.author || '—', b.lines.map(l => `${matName(l.mp)} ${fmtQty(l.mp, l.qty)}`).join(' · '),
           <Badge tone={b.status === BS.emis ? 'warn' : b.status === BS.refus || b.ecart || b.reconcile?.result === 'Écart à traiter' ? 'danger' : 'ok'}>{b.status}{b.reconcile ? ` — ${b.reconcile.result}` : ''}</Badge>])} />

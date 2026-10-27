@@ -38,14 +38,14 @@ export function Caisse() {
   }
 
   const cancel = (sid: string, tid: string) => {
-    if (!reason.trim()) return say('Motif obligatoire pour annuler une vente (RG-08).')
+    if (!reason.trim()) return say('Motif obligatoire pour annuler une vente.')
     update(s => ({ ...s, sessions: s.sessions.map(x => x.id === sid ? { ...x, tickets: x.tickets.map(t => t.id === tid ? { ...t, cancelled: { by: user!.name, reason, at: nowStamp() } } : t) } : x) }))
     audit('Annulation de vente', `Ticket ${tid} annulé — motif : ${reason}`); say('Annulation tracée (compteur anti-fraude)'); setReason('')
   }
 
   return (
-    <Screen title="Caisse" sub="Une seule session ouverte par caisse (RG-07) — clôture à l’aveugle (US-28)">
-      {blind && <Notice>Aucun bouton de dépense ni de sortie de caisse n’existe sur cet écran (US-10). Les annulations sont réservées à la Direction Générale.</Notice>}
+    <Screen title="Caisse" sub="Une seule session ouverte par caisse — clôture à l’aveugle">
+      {blind && <Notice>Aucun bouton de dépense ni de sortie de caisse n’existe sur cet écran. Les annulations sont réservées à la Direction Générale.</Notice>}
       {sessions.length === 0 && <Notice>Aucune session de caisse dans le jeu de démonstration pour votre site.</Notice>}
       {sessions.map(s => {
         const ca = s.summary ? s.summary.ca : s.tickets.reduce((a, t) => a + sale(t), 0)

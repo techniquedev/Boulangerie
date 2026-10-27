@@ -18,7 +18,7 @@ export function BCuisson() {
   const equal = r ? r.good + rejects === r.received : false
 
   return (
-    <Screen title="Rapports de cuisson" sub="Établis par l’enfourneur — consultation uniquement (US-04) · règle : pâtons reçus = pains conformes + rebuts">
+    <Screen title="Rapports de cuisson" sub="Établis par l’enfourneur — consultation uniquement · règle : pâtons reçus = pains conformes + rebuts">
       <Notice><Lock size={14} /> Lecture seule : ces données sont saisies par l’enfourneur et ne peuvent pas être modifiées depuis votre poste.</Notice>
       <div className="filter-row">
         <select className="ref-input" value={day} onChange={e => setDay(e.target.value)}>

@@ -11,7 +11,7 @@ export const sites: Site[] = [
     locations: ['MAG-MP', 'MAG-S1', 'CF-01', 'ATL-B', 'ATL-P', 'ATL-YG', 'STK-PF', 'STK-V1', 'CAISSE-1'] },
   { code: 'SIT-02', name: 'SITE 2 (Boutique A)', status: 'Actif', locations: ['MAG-S2', 'CF-02', 'ATL-B', 'ATL-P', 'ATL-YG', 'STK-PF', 'STK-VA', 'CF-A', 'CAISSE-A'] },
   { code: 'SIT-03', name: 'SITE 3 (Boutique B)', status: 'Actif', locations: ['MAG-S3', 'CF-03', 'ATL-B', 'ATL-P', 'ATL-YG', 'STK-PF', 'STK-VB', 'CF-B', 'CAISSE-B'] },
-  { code: 'SIT-04', name: 'Boutique C', status: 'Désactivé', locations: [], note: 'Historique conservé (US-14)' },
+  { code: 'SIT-04', name: 'Boutique C', status: 'Désactivé', locations: [], note: 'Historique conservé' },
 ]
 
 export const locationLabels: Record<string, string> = {

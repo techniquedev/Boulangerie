@@ -31,7 +31,7 @@ export function Cuisson() {
 
   const pick = (id: string) => { setSel(id); setGood(''); setRows(blank()) }
   const tryClose = () => {
-    if (!equal) return say(`Clôture bloquée : ${num(g)} + ${num(rejects)} ≠ ${num(received)} (RG-02).`)
+    if (!equal) return say(`Clôture bloquée : ${num(g)} + ${num(rejects)} ≠ ${num(received)}.`)
     const at = nowStamp()
     const report = { by: u.name, at, received, good: g, rejects: rows.map(x => ({ reason: x.reason, qty: Number(x.qty) || 0, photo: x.photo })) }
     update(s => ({ ...s, lots: s.lots.map(l => l.id === lot.id ? { ...l, cuisson: report, status: 'Mis en stock',
@@ -41,7 +41,7 @@ export function Cuisson() {
   }
 
   return (
-    <Screen title="Cuisson et rebuts" sub="RG-02 : pâtons reçus = conformes + rebuts — les pâtons reçus proviennent du lot du boulanger et ne sont pas modifiables">
+    <Screen title="Cuisson et rebuts" sub="Pâtons reçus = conformes + rebuts — les pâtons reçus proviennent du lot du boulanger et ne sont pas modifiables">
       <div className="split">
         <div className="list-col scroll-list">
           {lots.map(l => <button key={l.id} className={`list-item ${l.id === lot.id ? 'on' : ''}`} onClick={() => pick(l.id)}>

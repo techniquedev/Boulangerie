@@ -23,7 +23,7 @@ export function Orders() {
   }
   const cancel = (id: string) => { update(s => ({ ...s, orders: s.orders.map(o => o.id === id ? { ...o, status: 'Annulée' } : o) })); audit('Commande', `${id} annulée`) }
   return (
-    <Screen title="Commandes clients" sub="Cycle : Brouillon → Confirmée → En production → Prête → Livrée → Soldée / Annulée (US-17)">
+    <Screen title="Commandes clients" sub="Cycle : Brouillon → Confirmée → En production → Prête → Livrée → Soldée / Annulée">
       {state.orders.map(o => <Card key={o.id} title={`${o.id} — ${o.item}`} sub={`Client ${o.client} · livraison le ${o.due}`} actions={<Badge tone={o.status === 'Annulée' ? 'danger' : 'warn'}>{o.status}</Badge>}>
         <Steps steps={orderFlow} current={orderFlow.indexOf(o.status)} />
         <div className="kpi-row"><Kpi label="Total" value={money(o.total)} /><Kpi label="Acompte encaissé" value={money(o.deposit)} /><Kpi label="Reste à payer" value={money(o.total - o.deposit)} /></div>
@@ -43,7 +43,7 @@ export function Credit() {
   const share = (c: typeof alice) => `Relevé ${c.name} : encours ${money(out(c.code))} / plafond ${money(c.ceiling)} — ${c.statement}`
   const credits = state.deliveries.filter(d => d.mode === 'Crédit').sort((a, b) => b.id.localeCompare(a.id))
   return (
-    <Screen title="Crédit clients grossistes" sub="Plafond de crédit et blocage de commande (US-27) — encours incluant les ventes à crédit des tournées des 3 sites">
+    <Screen title="Crédit clients grossistes" sub="Plafond de crédit et blocage de commande — encours incluant les ventes à crédit des tournées des 3 sites">
       <Card title="Clients">
         <Table head={['Code', 'Client', 'Plafond', 'Encours', 'Disponible', 'Relevé', '']} rows={clients.map(c => [c.code, c.name, money(c.ceiling), money(out(c.code)),
           <span className={c.ceiling - out(c.code) < 5000 ? 'neg' : ''}>{money(c.ceiling - out(c.code))}</span>, c.statement,
@@ -65,7 +65,7 @@ export function Credit() {
 }
 
 // Plan de production du lendemain par site : moyenne des derniers jours de production réelle + commandes,
-// puis explosion des recettes et comparaison au stock du magasin de site et des ateliers (US-18, US-19).
+// puis explosion des recettes et comparaison au stock du magasin de site et des ateliers.
 export function Plan() {
   const { state } = useApp()
   const { scope, day, bar } = useSiteFilter()
@@ -83,13 +83,13 @@ export function Plan() {
     return { bread: [...bread].map(([label, v]) => ({ label, grams: v.grams, qty: Math.round(v.qty / n) })), pat: [...pat].map(([code, q]) => ({ code, qty: Math.round(q / n) })), perBag: bags ? eps / bags : state.epsThreshold }
   }
   return (
-    <Screen title={`Plan de production du ${next} et besoins matières`} sub="Moyenne des derniers jours de production réelle + commandes clients, ajustable (US-18, US-19)">
+    <Screen title={`Plan de production du ${next} et besoins matières`} sub="Moyenne des derniers jours de production réelle + commandes clients, ajustable">
       {bar}
       {scope.map(site => {
         const r = recent(site)
         const planEps = r.bread.reduce((a, b) => a + (b.qty * b.grams) / 146, 0)
         const bags = planEps / r.perBag
-        // Recette R-BOUL-01 v2 : par sac de farine, 0,5 kg de levure, 0,5 kg de sel, 20 kg de glace.
+        // Recette R-BOUL-01 : par sac de farine, 0,5 kg de levure, 0,5 kg de sel, 20 kg de glace.
         const need: Record<string, number> = { 'MP-01': bags, 'MP-02': bags * 0.5, 'MP-03': bags * 0.5, 'MP-08': bags * 20 }
         Object.entries(theoretical(r.pat)).forEach(([mp, q]) => { need[mp] = (need[mp] || 0) + q })
         const st = siteStock(state.movements, site)
@@ -100,7 +100,7 @@ export function Plan() {
             ...orders.map(o => [`${o.item} (${o.id}, ${o.client})`, '1'])]} />
           <Table head={['Matière', 'Besoin', 'Stock magasin + ateliers', 'État']} rows={Object.entries(need).filter(([, q]) => q > 0).map(([mp, q]) => {
             const have = (st[mp] || 0) + ws(mp)
-            return [matName(mp), fmtQty(mp, +q.toFixed(2)), fmtQty(mp, +have.toFixed(2)), have < q ? <Badge tone="warn">Insuffisant — réappro à prévoir (US-24)</Badge> : <Badge tone="ok">Suffisant</Badge>]
+            return [matName(mp), fmtQty(mp, +q.toFixed(2)), fmtQty(mp, +have.toFixed(2)), have < q ? <Badge tone="warn">Insuffisant — réappro à prévoir</Badge> : <Badge tone="ok">Suffisant</Badge>]
           })} />
         </Card>
       })}

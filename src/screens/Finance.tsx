@@ -36,7 +36,7 @@ export function Expenses() {
   }
 
   return (
-    <Screen title="Dépenses centralisées" sub="Aucune dépense ne peut être saisie depuis une boutique (US-11)">
+    <Screen title="Dépenses centralisées" sub="Aucune dépense ne peut être saisie depuis une boutique">
       {role === 'livreur' && <Notice>Vous pouvez uniquement soumettre une demande de carburant avec photo du reçu.</Notice>}
       {can.submitExpense(role) && <Card title="Nouvelle demande">
         <div className="count-grid">
@@ -66,7 +66,7 @@ export function Versements() {
     audit('Versement', `${id} : étape suivante`); say('Versement mis à jour')
   }
   return (
-    <Screen title="Remise des recettes" sub="Versement au bureau central et dépôt en banque (US-30)">
+    <Screen title="Remise des recettes" sub="Versement au bureau central et dépôt en banque">
       {state.versements.map(v => <Card key={`${v.id}-${v.site}`} title={`${v.id} — ${v.tourId ? `tournée ${v.tourId}` : v.site === 'SIT-02' ? 'Boutique A' : 'Boutique B'}`} sub={`${money(v.amount)} versés par ${v.by}${v.tourId ? ` (espèces ${money(v.cash || 0)} · Mobile Money ${money(v.momo || 0)})` : ''}${v.bank ? ` · dépôt ${v.bank} réf. ${v.ref}` : ''}`}
         actions={<Badge tone="ok">{v.status}</Badge>}>
         <Steps steps={v.flow} current={v.flow.indexOf(v.status)} />
@@ -76,7 +76,7 @@ export function Versements() {
   )
 }
 
-// Direction : taux de perte par produit et par boutique, et validation des contre-écritures au-delà du seuil (US-22).
+// Direction : taux de perte par produit et par boutique, et validation des contre-écritures au-delà du seuil.
 export function Invendus() {
   const { state, user, update, audit, say } = useApp()
   const sites = BAKERY_SITES.filter(x => user!.sites.includes(x))
@@ -96,7 +96,7 @@ export function Invendus() {
   }
 
   return (
-    <Screen title="Invendus, pertes et retours" sub="Taux de perte par produit et par boutique — pertes déclarées / quantités reçues (US-22)">
+    <Screen title="Invendus, pertes et retours" sub="Taux de perte par produit et par boutique — pertes déclarées / quantités reçues">
       <Card title="Taux de perte par produit et par boutique">
         <Table head={['Produit', ...sites.map(siteShort), 'Toutes boutiques']} rows={SHOP_PRODUCTS.map(p => {
           const r = sites.map(x => received(x, p.code)), l = sites.map(x => lost(x, p.code))
