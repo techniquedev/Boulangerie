@@ -4,6 +4,7 @@ export type ScreenId =
   | 'dashboard' | 'alerts' | 'production' | 'cuisson' | 'magasin' | 'bdl' | 'pos' | 'caisse' | 'invendus'
   | 'expenses' | 'versements' | 'orders' | 'credit' | 'plan' | 'inventory' | 'quality' | 'purchases' | 'tour'
   | 'catalog' | 'org' | 'reports' | 'treasury' | 'audit' | 'devices' | 'v3' | 'notifications' | 'rbac'
+  | 'bHome' | 'bReception' | 'bPetrissee' | 'bLots' | 'bCuisson' | 'bHistory'
 
 export type MenuItem = { id: ScreenId; label: string; group: string }
 
@@ -37,17 +38,26 @@ const all = {
   audit: M('audit', 'Journal d’audit', 'Administration'),
   v3: M('v3', 'IA (V3)', 'Administration'),
   notifications: M('notifications', 'Notifications', 'Pilotage'),
+  // Tableau de bord Boulanger (modèle unique, identique sur les 3 sites)
+  bHome: M('bHome', 'Accueil', 'Mon atelier'),
+  bReception: M('bReception', 'Réception des matières', 'Mon atelier'),
+  bPetrissee: M('bPetrissee', 'Nouvelle pétrissée', 'Mon atelier'),
+  bLots: M('bLots', 'Mes lots de production', 'Mon atelier'),
+  bCuisson: M('bCuisson', 'Rapports de cuisson', 'Mon atelier'),
+  bHistory: M('bHistory', 'Historique et rendement', 'Mon atelier'),
 }
+
+const bakerTabs: ScreenId[] = ['bHome', 'bReception', 'bPetrissee', 'bLots', 'bCuisson', 'bHistory']
 
 const pick = (...ids: ScreenId[]) => ids.map(i => all[i])
 
 // Matrice RBAC : menus visibles par rôle (ENF-05 : à doubler côté serveur en production).
 export const menuByRole: Record<Role, MenuItem[]> = {
-  direction: Object.values(all).filter(m => m.id !== 'pos'),
+  direction: Object.values(all).filter(m => m.id !== 'pos' && !bakerTabs.includes(m.id)),
   magasinierCentral: pick('magasin', 'bdl', 'purchases', 'inventory', 'notifications'),
   controleur: pick('dashboard', 'alerts', 'inventory', 'quality', 'production', 'bdl', 'reports', 'audit', 'notifications'),
   achats: pick('expenses', 'purchases', 'magasin', 'notifications'),
-  boulanger: pick('production', 'cuisson', 'plan', 'magasin', 'notifications'),
+  boulanger: pick(...bakerTabs),   // saisie production, lecture des rapports de cuisson ; ni alertes ni écrans financiers
   enfourneur: pick('cuisson', 'notifications'),
   magasinier: pick('magasin', 'bdl', 'invendus', 'notifications'),
   boutiquier: pick('bdl', 'invendus', 'notifications'),
@@ -58,14 +68,14 @@ export const menuByRole: Record<Role, MenuItem[]> = {
 
 export const homeByRole: Record<Role, ScreenId> = {
   direction: 'dashboard', magasinierCentral: 'magasin', controleur: 'dashboard', achats: 'expenses',
-  boulanger: 'production', enfourneur: 'cuisson', magasinier: 'magasin', boutiquier: 'bdl',
+  boulanger: 'bHome', enfourneur: 'cuisson', magasinier: 'magasin', boutiquier: 'bdl',
   caissiere: 'pos', patissier: 'production', livreur: 'tour',
 }
 
 // Écrans dont les données appartiennent au SITE 1 (unité de production et magasin central) :
 // un compte d'un autre site n'y accède pas (règle : chaque compte reste limité à son site).
 export const siteBound: Partial<Record<ScreenId, SiteCode>> = {
-  production: 'SIT-01', cuisson: 'SIT-01', plan: 'SIT-01', magasin: 'SIT-01',
+  production: 'SIT-01', plan: 'SIT-01', magasin: 'SIT-01',
   inventory: 'SIT-01', purchases: 'SIT-01', orders: 'SIT-01', tour: 'SIT-01',
 }
 
@@ -81,7 +91,9 @@ export const can = {
   confirmVersement: (r: Role) => r === 'direction',
   editPrices: (r: Role) => r === 'direction',                                    // US-15
   saisieProduction: (r: Role) => r === 'boulanger' || r === 'patissier' || r === 'direction',
-  saisieCuisson: (r: Role) => r === 'enfourneur' || r === 'boulanger',
+  saisieCuisson: (r: Role) => r === 'enfourneur',                              // boulanger : lecture seule (US-04)
+  exportProduction: (r: Role) => r === 'boulanger' || r === 'direction' || r === 'controleur',
+  setEpsThreshold: (r: Role) => r === 'direction',
   receiveBlind: (r: Role) => r === 'boutiquier',                                 // RG-06
   closeBlind: (r: Role) => r === 'caissiere',                                    // US-28
   emitBdl: (r: Role) => r === 'magasinierCentral',

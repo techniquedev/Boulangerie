@@ -1,0 +1,155 @@
+﻿
+
+Reprendre entièrement le tableau de bord du rôle « Boulanger ». Le résultat doit être un
+espace de travail clair, adapté à une saisie rapide sur tablette en atelier.
+Périmètre
+Ce tableau de bord est le modèle unique du rôle Boulanger, déployé à l'identique sur
+les trois sites : SITE 1, SITE 2 et SITE 3.
+Un boulanger ne voit que les données de son propre site et que ses propres pétrissées
+(filtrage automatique par site et par utilisateur connecté).
+Le boulanger dispose d'un droit de SAISIE sur la production et d'un droit de LECTURE
+sur les rapports de cuisson ; il n'a aucun accès aux alertes de contrôle de la
+direction, ni aux écrans financiers.
+RAPPEL DES RÈGLES MÉTIER À INTÉGRER
+1. Ratio de référence : 1 sac de farine (50 kg) doit produire au minimum l'équivalent
+de 400 pains standards de 142 g à 150 g.
+2. Équivalent Pain Standard (EPS) : 1 EPS = 146 g de pâte façonnée.
+EPS d'une pétrissée = poids total de pâte façonnée ÷ 146 g
+Rendement de la pétrissée = EPS ÷ nombre de sacs de farine utilisés
+3. Une alerte est générée dès que le rendement passe sous le seuil paramétré
+(400 EPS/sac par défaut, configurable par la direction).
+4. Formats de pain gérés : 50 g, 100 g, 150 g, 200 g et pain découpé à 115 FCFA
+(115 g). Les prévisions de pâtons s'adaptent automatiquement au grammage choisi.
+5. Traçabilité magasin → atelier : la farine et les autres matières sortent d'abord
+du magasin central via un bon de sortie émis par le magasinier. Le boulanger doit
+confirmer la réception de ces matières avant de pouvoir les déclarer consommées.
+Sans ce mouvement, aucune consommation ne peut être enregistrée : c'est ce qui
+permet de vérifier que la farine déclarée utilisée correspond bien au stock sorti.
+6. Cycle de vie d'un lot de production :
+Créé → Remis au four → Cuit (pains conformes + rebuts) → Mis en stock → Clôturé.
+7. La validation d'une pétrissée crée un lot de production qui indique le nombre exact
+de pâtons confiés à l'enfourneur.
+8. Règle de clôture de cuisson (contrôlée côté enfourneur, consultable côté boulanger) :
+pâtons reçus = pains conformes + rebuts déclarés.
+
+STRUCTURE DU TABLEAU DE BORD — 6 ONGLETS
+ONGLET 1 — ACCUEIL (vue d'ensemble de la journée)
+Fonctionnalités indispensables :
+Indicateurs du jour du boulanger connecté : nombre de pétrissées saisies, nombre de
+sacs de farine consommés, quantité de pâte façonnée (kg), EPS total et rendement
+moyen du jour en EPS/sac, avec comparaison visuelle au seuil de 400 EPS/sac.
+Compteur des pâtons façonnés du jour par format (50 g, 100 g, 150 g, 200 g, découpe).
+Compteur des lots remis à l'enfourneur et leur statut.
+Rappel des matières reçues de la journée (bon de sortie confirmé) et du stock
+disponible à l'atelier.
+Actions rapides mises en avant en grands boutons : « Nouvelle pétrissée »,
+« Confirmer une réception de matières ».
+ONGLET 2 — RÉCEPTION DES MATIÈRES (traçabilité US-20)
+Fonctionnalités indispensables :
+Liste des bons de sortie émis par le magasinier central à destination de l'atelier
+boulangerie, avec le statut : « À confirmer » / « Confirmé ».
+Pour chaque bon : date, émetteur, liste des matières et quantités attendues
+(farine en sacs, levure, sel, glace, etc.).
+Le boulanger confirme la réception (double validation) : il peut confirmer
+l'intégralité, signaler une quantité manquante avec motif, ou refuser le bon.
+À la confirmation : le stock du magasin central est décrémenté et le stock
+« atelier boulangerie » est incrémenté.
+Seules les matières confirmées comme reçues peuvent être sélectionnées dans le
+formulaire de pétrissée.
+En fin de journée, le système compare automatiquement les matières sorties du
+magasin aux matières déclarées consommées dans les pétrissées ; tout écart génère
+une alerte réservée à la direction (invisible pour le boulanger).
+ONGLET 3 — NOUVELLE PÉTRISSÉE (formulaire principal de l'US-03)
+Le formulaire doit être saisi en 3 écrans maximum, avec de grands boutons et une
+saisie principalement numérique.
+Partie A — Matières premières consommées :
+Sélection des ingrédients utilisés : farine, levure, sel, glace.
+Saisie des quantités réellement consommées pour la pétrissée : nombre de sacs de
+farine, puis quantités de levure, sel et glace dans leurs unités respectives.
+Affichage en lecture seule du stock disponible à l'atelier, avec blocage si la
+quantité saisie dépasse le stock (le stock ne peut jamais devenir négatif).
+Partie B — Pâtons façonnés par type de pain :
+Tableau de saisie par format : 50 g, 100 g, 150 g, 200 g, pain découpé 115 FCFA
+(115 g), et 200 g.
+Pour chaque format : nombre de pâtons façonnés et poids total de pâte correspondant.
+Bouton d'ajout de ligne si un format supplémentaire est nécessaire.
+Partie C — Contrôles automatiques avant validation :
+Calcul automatique en temps réel : poids total de pâte façonnée, EPS de la
+pétrissée (poids total ÷ 146 g) et rendement en EPS/sac.
+Affichage du ratio de référence (400 EPS/sac) et d'un indicateur de couleur :
+vert si le rendement est au moins égal au seuil, orange/rouge en dessous.
+Si le rendement est inférieur au seuil, afficher un message d'avertissement
+pédagogique sur la pétrissée en cours, avec obligation de saisir un motif avant
+validation. L'alerte de contrôle formelle reste réservée à la direction.
+Prévision automatique du nombre de pâtons attendu selon le grammage choisi,
+à titre de comparaison.
+Partie D — Validation :
+La validation génère automatiquement un numéro unique de lot de production.
+Le lot indique le nombre exact de pâtons prêts pour la cuisson, par format, ainsi
+que les matières consommées, l'EPS et le rendement.
+Le lot passe au statut « Créé → Remis au four » et devient visible dans le
+tableau de bord de l'enfourneur, qui ne peut pas modifier les quantités.
+Les matières consommées sont déduites du stock atelier et la pétrissée est
+historisée de façon non modifiable (toute correction passe par une contre-écriture
+tracée avec auteur et motif).
+ONGLET 4 — MES LOTS DE PRODUCTION
+Fonctionnalités indispensables :
+Liste de tous les lots du boulanger connecté, filtrable par date et par statut
+(Créé, Remis au four, Cuit, Mis en stock, Clôturé).
+Fiche détaillée de chaque lot : matières consommées, pâtons par format, EPS,
+rendement, motif en cas de rendement sous seuil, auteur, date et heure.
+Indication visuelle de l'état d'avancement (frise de statut du lot).
+ONGLET 5 — RAPPORTS DE CUISSON (lecture seule, US-04)
+Fonctionnalités indispensables :
+Pour chaque lot remis au four, consultation du rapport de cuisson établi par
+l'enfourneur : nombre de pâtons reçus, pains conformes sortis du four, rebuts
+déclarés avec leurs motifs (brûlé, déformé, tombé, autre).
+Mise en évidence du contrôle d'égalité : pâtons reçus = conformes + rebuts.
+Le boulanger ne peut pas modifier ces données ; il consulte uniquement.
+ONGLET 6 — HISTORIQUE ET RENDEMENT
+Fonctionnalités indispensables :
+Historique des pétrissées par jour, semaine et mois avec, pour chacune : sacs
+utilisés, EPS, rendement EPS/sac et écart par rapport au seuil.
+Classement et évolution du rendement dans le temps, pour aider le boulanger à
+améliorer ses fournées.
+Export des données (PDF/Excel) selon les droits accordés au rôle.
+CONTRÔLES, ALERTES ET TRAÇABILITÉ
+1. Une pétrissée ne peut pas être validée si les matières n'ont pas été réceptionnées
+au préalable depuis un bon de sortie confirmé.
+2. Le stock atelier ne peut pas devenir négatif : toute saisie supérieure au stock
+disponible est bloquée.
+3. Rendement sous le seuil de 400 EPS/sac : avertissement à la saisie + motif
+obligatoire, et génération d'une alerte de contrôle visible uniquement par la
+direction et le contrôleur central (jamais par les opérateurs concernés).
+4. Écart de fin de journée entre matières sorties du magasin et matières consommées :
+alerte direction automatique.
+5. Chaque enregistrement porte l'auteur, le site, l'appareil utilisé, l'horodatage
+serveur (fuseau Africa/Porto-Novo) et, en cas de saisie hors-ligne, l'heure locale
+de saisie.
+6. Aucune donnée validée n'est supprimable : corrections par contre-écriture tracée.
+EXEMPLE CHIFFRÉ À RESPECTER POUR LA DÉMONSTRATION
+Pétrissée de démonstration (identique de principe sur les 3 sites) :
+Matières : 3 sacs de farine, 1,5 kg de levure, 1,5 kg de sel, 60 kg de glace.
+Pâtons : 800 pains de 150 g (120 kg), 600 pains de 100 g (60 kg),
+500 pains de 50 g (25 kg), 300 pains découpés 115 g (34,5 kg).
+Poids total de pâte = 239,5 kg → EPS = 239 500 ÷ 146 ≈ 1 640 EPS.
+Rendement = 1 640 ÷ 3 ≈ 547 EPS/sac, supérieur au seuil de 400 : indicateur vert.
+Validation → lot avec 2 200 pâtons exacts, statut « Remis au four ».
+EXIGENCES D'ERGONOMIE ET TECHNIQUES
+1. Interface 100 % en français, montants en FCFA sans décimales, dates au format
+JJ/MM/AAAA, fuseau Africa/Porto-Novo.
+2. Ergonomie terrain sur tablette : grands boutons, pictogrammes, clavier numérique
+par défaut sur les champs quantité, 3 actions maximum pour une opération courante.
+3. Fonctionnement hors-ligne obligatoire : saisie des réceptions et des pétrissées
+sans réseau, stockage local puis synchronisation automatique au retour du réseau,
+avec indicateur visible de l'état de synchronisation.
+4. Temps de réponse : enregistrement d'une pétrissée en moins de 2 secondes.
+5. Le même modèle de tableau de bord est dupliqué pour les boulangers de SITE 1,
+SITE 2 et SITE 3, avec des données strictement isolées par site.
+Résultat attendu
+Un tableau de bord Boulanger composé des 6 onglets ci-dessus, dans lequel le parcours
+complet est possible : réceptionner les matières du magasin central → saisir la
+pétrissée (matières + pâtons par format) → voir le calcul EPS et le rendement en
+temps réel → valider et générer le lot de production remis à l'enfourneur → suivre
+ses lots → consulter le rapport de cuisson, avec alertes et traçabilité conformes
+aux règles de gestion.

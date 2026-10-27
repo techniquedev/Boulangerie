@@ -1,4 +1,5 @@
 import type { AlertItem, AuditEntry, Bdl, Device, Expense, Notification, Payment, SiteCode } from './types'
+import type { BonSortie, ProdLot, Stock } from './boulanger'
 
 export type SaleLine = { code: string; label: string; qty: number; unit: number }
 export type SaleTicket = {
@@ -47,4 +48,10 @@ export type DemoState = {
   ticketSeq: number
   offline: boolean
   queue: { id: string; text: string; at: string }[]
+  // Atelier boulangerie (par site)
+  epsThreshold: number                 // seuil EPS/sac paramétré par la direction
+  atelier: Record<string, Stock>       // stock atelier par site
+  bonsSortie: BonSortie[]
+  lots: ProdLot[]
+  endOfDay: string[]                   // rapprochements de fin de journée déjà faits (site|jour)
 }

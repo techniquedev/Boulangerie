@@ -3,6 +3,7 @@ import type { User } from '../data/types'
 import type { DemoState } from '../data/state'
 import { loadState, initialState, STORAGE_KEY } from './initial'
 import { nowStamp } from '../lib/format'
+import { deviceFor } from '../data/boulanger'
 
 type Ctx = {
   user: User | null
@@ -34,7 +35,7 @@ export function Provider({ children }: { children: ReactNode }) {
     const at = nowStamp()
     setState(s => ({
       ...s,
-      audit: [{ at, localAt: at, author: user?.name || 'Système', device: 'TAB-DEMO', site: user?.sites[0] || 'SIT-01', action, detail }, ...s.audit],
+      audit: [{ at, localAt: at, author: user?.name || 'Système', device: user?.group === 'DIRECTION GÉNÉRALE' ? 'PC-DIR' : deviceFor(user?.sites[0] || 'SIT-01'), site: user?.sites[0] || 'SIT-01', action, detail }, ...s.audit],
     }))
   }
   const reset = () => { setState(initialState()); say('Données de démonstration restaurées') }

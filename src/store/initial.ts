@@ -4,6 +4,7 @@ import { sessionA, sessionB } from '../data/seed2'
 import { expensesBase, inventoryBase, lossesBase, ncsBase, ordersBase, purchasesBase, readingsBase, versementsBase } from '../data/seed3'
 import { auditBase, devicesBase, notificationsBase } from '../data/seed4'
 import { rawMaterials } from '../data/catalog'
+import { seedBakery } from '../data/boulanger'
 
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v))
 
@@ -35,6 +36,7 @@ export function initialState(): DemoState {
     ticketSeq: 107,
     offline: false,
     queue: [],
+    ...seedBakery(),
   }
 }
 

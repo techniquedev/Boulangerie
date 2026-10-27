@@ -158,6 +158,85 @@
 .pay-row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;font-size:12px}
 .pay-row label{display:flex;flex-direction:column;gap:3px;font-weight:600}
 
+/* Atelier boulangerie (tablette) */
+.chip.sync{color:var(--success)}
+.chip.sync.pending{color:#a96c10;background:#fff0d8;border-color:#f0d4a0}
+.quick-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.quick-btn{position:relative;display:flex;align-items:center;gap:16px;border:0;border-radius:16px;padding:22px 24px;min-height:96px;background:var(--primary);color:#fff;font-size:19px;font-weight:700;text-align:left}
+.quick-btn.alt{background:var(--surface);color:var(--primary);border:2px solid var(--primary)}
+.quick-btn:active{transform:scale(.99)}
+.count-pill{position:absolute;top:10px;right:12px;font-style:normal;font-size:12px;background:var(--warning);color:#fff;padding:4px 10px;border-radius:12px}
+.gauge-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:8px}
+.gauge-box>p{font-size:12px;color:var(--muted)}
+.gauge{display:flex;flex-direction:column;gap:10px;--tone:var(--success)}
+.gauge.warn{--tone:var(--warning)}
+.gauge.danger{--tone:var(--danger)}
+.gauge-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.gauge-head b{font-size:20px;color:var(--tone)}
+.gauge.big .gauge-head b{font-size:30px}
+.gauge-head small{font-size:13px;color:var(--muted);font-weight:600}
+.gauge-state{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:13px;color:var(--tone)}
+.gauge-track{position:relative;height:14px;background:#e9dfd1;border-radius:7px;margin-bottom:18px}
+.gauge.big .gauge-track{height:20px;border-radius:10px}
+.gauge-fill{height:100%;background:var(--tone);border-radius:inherit;transition:width .25s}
+.gauge-mark{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--dark)}
+.gauge-mark span{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:3px;font-size:11px;font-weight:700;white-space:nowrap;color:var(--dark)}
+.format-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.format-tile{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.format-tile span{font-size:12px;color:var(--muted)}
+.format-tile b{font-size:22px}
+.trace{font-size:12px;color:var(--muted)}
+.trace .pending{font-style:normal;color:#a96c10;font-weight:700;display:inline-flex;align-items:center;gap:4px}
+.unit-input{display:inline-flex;align-items:center;gap:8px}
+.unit-input span{font-weight:700;color:var(--muted)}
+.unit-input.big .num-input{max-width:170px;font-size:24px;padding:14px}
+.confirm-box{display:flex;flex-direction:column;gap:10px;background:#fff6e6;border:2px solid var(--warning);border-radius:var(--radius);padding:16px}
+.mat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.mat-tile{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:2px solid var(--border);border-radius:14px;padding:16px}
+.mat-tile.on{border-color:var(--accent)}
+.mat-tile.off{opacity:.6}
+.mat-pick{display:flex;align-items:center;gap:10px;font-size:17px}
+.mat-pick input{width:24px;height:24px;accent-color:var(--primary)}
+.mat-tile small{font-size:12px;color:var(--muted)}
+.mat-tile small.neg{color:var(--danger);font-weight:700}
+.form-split{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start}
+.form-split>:last-child{position:sticky;top:90px}
+.live-calc{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.live-calc .gauge-box{grid-column:1/-1}
+.icon-btn{border:1px solid var(--border);background:#fff;border-radius:10px;width:44px;height:44px;display:grid;place-items:center;color:var(--danger)}
+.pedago{display:flex;gap:12px;background:#fff0d8;color:#8a5a0c;border-radius:var(--radius);padding:16px}
+.pedago svg{flex:none}
+.pedago>div{display:flex;flex-direction:column;gap:8px;flex:1}
+.forecast{display:flex;flex-direction:column;gap:10px}
+.forecast>p{font-size:13px;color:var(--muted)}
+.recap{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;align-items:start}
+.lot-done{display:flex;align-items:center;gap:14px;color:var(--success);font-size:20px}
+.scroll-list{max-height:70vh;overflow:auto}
+.equality{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--surface);border:2px solid var(--success);border-radius:var(--radius);padding:14px 16px}
+.equality.danger{border-color:var(--danger)}
+.equality span{font-size:26px;font-weight:700}
+.equality i{font-style:normal;font-size:22px;color:var(--muted)}
+.equality b{margin-left:auto;color:var(--success)}
+.equality.danger b{color:var(--danger)}
+.equality small{width:100%;color:var(--muted);font-size:12px}
+.chart{position:relative}
+.chart svg{width:100%;height:auto;display:block}
+.chart .grid{stroke:var(--border);stroke-width:1}
+.chart .tick{font-size:11px;fill:var(--muted)}
+.chart .tick.strong{fill:var(--dark);font-weight:700}
+.chart .bar{fill:var(--success)}
+.chart .bar.warn{fill:var(--warning)}
+.chart .bar.danger{fill:var(--danger)}
+.chart .bar.hl{opacity:.75}
+.chart .threshold{stroke:var(--dark);stroke-width:2;stroke-dasharray:6 4}
+.chart-tip{position:absolute;top:0;transform:translateX(-50%);background:var(--dark);color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;display:flex;flex-direction:column;gap:2px;pointer-events:none;white-space:nowrap}
+.chart-key{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}
+.chart-key span{display:inline-flex;align-items:center;gap:6px}
+.chart-key i{width:12px;height:12px;border-radius:3px;background:var(--success)}
+.chart-key i.warn{background:var(--warning)}
+.chart-key i.danger{background:var(--danger)}
+.chart-key i.line{height:0;border-top:2px dashed var(--dark);border-radius:0;background:none}
+
 /* Divers */
 
 
@@ -168,7 +247,8 @@
   .side2{position:static;width:auto;flex-direction:column}
   .main2{grid-column:1}
   .login2{grid-template-columns:1fr}
-  .user-tiles,.pos2,.split{grid-template-columns:1fr}
+  .user-tiles,.pos2,.split,.form-split{grid-template-columns:1fr}
+  .form-split>:last-child{position:static}
   .content2{padding:16px}
   .cart{position:static}
 }

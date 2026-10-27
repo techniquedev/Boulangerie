@@ -1,0 +1,98 @@
+import { useState } from 'react'
+import { useApp } from '../../store/context'
+import { Big, Card, Kpi, Notice, Screen, Table } from '../../components/ui'
+import { figures, LOT_FLOW, lotDay, matLabel, matQty, yieldTone, type Correction, type LotStatus } from '../../data/boulanger'
+import { dec, nowStamp, num } from '../../lib/format'
+import { LotFrise, StatusBadge, TraceInfo, useBaker } from './shared'
+
+export function BLots() {
+  const { update, audit, say } = useApp()
+  const { user, site, mine, stock } = useBaker()
+  const [day, setDay] = useState('')
+  const [status, setStatus] = useState<LotStatus | ''>('')
+  const [sel, setSel] = useState(mine[0]?.id)
+  const [fix, setFix] = useState({ target: '', delta: '', motif: '' })
+
+  const days = Array.from(new Set(mine.map(lotDay)))
+  const list = mine.filter(l => (!day || lotDay(l) === day) && (!status || l.status === status))
+  const lot = list.find(l => l.id === sel) || list[0]
+  const f = lot && figures(lot)
+
+  // Contre-écriture : la pétrissée d'origine reste intacte ; les pâtons ne se corrigent plus une fois le lot cuit.
+  const canFixLines = lot && (lot.status === 'Créé' || lot.status === 'Remis au four')
+  const targets = lot ? [...lot.mats.map(m => ({ id: `mat:${m.mat}`, label: `Matière — ${matLabel(m.mat)}` })),
+    ...(canFixLines ? lot.lines.map(l => ({ id: `line:${l.label}`, label: `Pâtons — ${l.label}` })) : [])] : []
+  const applyFix = () => {
+    if (!lot || !f) return
+    const [kind, key] = fix.target.split(':') as ['mat' | 'line', string]
+    const delta = Number(fix.delta.replace(',', '.'))
+    if (!fix.target || !delta) return say('Choisissez la ligne et la quantité à corriger (ex. -1 ou 0,5).')
+    if (!fix.motif.trim()) return say('Le motif de la contre-écriture est obligatoire.')
+    const cur = kind === 'mat' ? f.mats.find(m => m.mat === key)!.qty : f.lines.find(l => l.label === key)!.qty
+    if (cur + delta < 0) return say('Correction impossible : la quantité corrigée deviendrait négative.')
+    if (kind === 'mat' && delta > stock[key as keyof typeof stock]) return say('Stock atelier insuffisant pour cette contre-écriture : le stock ne peut jamais devenir négatif.')
+    const c: Correction = { at: nowStamp(), by: user.name, motif: fix.motif.trim(), kind, key, delta }
+    update(s => ({
+      ...s,
+      lots: s.lots.map(l => l.id === lot.id ? { ...l, corrections: [...l.corrections, c] } : l),
+      atelier: kind === 'mat' ? { ...s.atelier, [site]: { ...s.atelier[site], [key]: +(s.atelier[site][key as keyof typeof stock] - delta).toFixed(3) } } : s.atelier,
+    }))
+    audit('Contre-écriture de pétrissée', `${lot.id} : ${kind === 'mat' ? matLabel(key as never) : key} ${delta > 0 ? '+' : ''}${dec(delta, 2)} — motif : ${c.motif} (écriture d’origine conservée)`)
+    say('Contre-écriture tracée'); setFix({ target: '', delta: '', motif: '' })
+  }
+
+  return (
+    <Screen title="Mes lots de production" sub="Lots issus de mes pétrissées — données non modifiables, corrections par contre-écriture tracée">
+      <div className="filter-row">
+        <select className="ref-input" value={day} onChange={e => setDay(e.target.value)}>
+          <option value="">Toutes les dates</option>{days.map(d => <option key={d} value={d}>{d}</option>)}
+        </select>
+        {(['', ...LOT_FLOW] as (LotStatus | '')[]).map(s => <button key={s || 'all'} className={status === s ? 'chip on' : 'chip'} onClick={() => setStatus(s)}>{s || 'Tous les statuts'}</button>)}
+      </div>
+      {!lot ? <Notice>Aucun lot pour ces filtres.</Notice> : <div className="split">
+        <div className="list-col scroll-list">
+          {list.map(l => <button key={l.id} className={`list-item ${l.id === lot.id ? 'on' : ''}`} onClick={() => { setSel(l.id); setFix({ target: '', delta: '', motif: '' }) }}>
+            <b>{l.id}</b><small>{l.trace.localAt} · {num(figures(l).patons)} pâtons</small><StatusBadge s={l.status} />
+          </button>)}
+        </div>
+        <Card title={`Lot ${lot.id}`} sub={`Pétrissée du ${lot.trace.localAt} par ${lot.trace.author}`} actions={<StatusBadge s={lot.status} />}>
+          <LotFrise lot={lot} />
+          <div className="kpi-row">
+            <Kpi label="Pâtons remis au four" value={num(f!.patons)} />
+            <Kpi label="Pâte façonnée" value={`${dec(f!.kg)} kg`} />
+            <Kpi label="EPS" value={`${num(f!.eps)} EPS`} />
+            <Kpi label="Rendement" value={`${num(f!.perBag)} EPS/sac`} tone={yieldTone(f!.perBag, lot.threshold)} note={`Seuil au moment de la saisie : ${num(lot.threshold)}`} />
+          </div>
+          {lot.motif && <Notice tone="warn"><b>Motif (rendement sous seuil) :</b> {lot.motif}</Notice>}
+          <div className="recap">
+            <Table head={['Matière consommée', 'Quantité']} rows={f!.mats.map(m => [matLabel(m.mat), <b>{matQty(m.mat, m.qty)}</b>])} />
+            <Table head={['Format', 'Pâtons']} rows={f!.lines.map(l => [l.label, <b>{num(l.qty)}</b>])} />
+          </div>
+          <TraceInfo t={lot.trace} />
+          <h4>Historique du lot</h4>
+          <ul className="timeline">{lot.history.map((h, i) => <li key={i}><small>{h.at} · {h.by}</small><span>{h.status}</span></li>)}</ul>
+
+          {lot.corrections.length > 0 && <>
+            <h4>Contre-écritures</h4>
+            <Table head={['Date', 'Auteur', 'Ligne', 'Correction', 'Motif']} rows={lot.corrections.map(c => [c.at, c.by,
+              c.kind === 'mat' ? matLabel(c.key as never) : c.key, <b>{c.delta > 0 ? '+' : ''}{dec(c.delta, 2)}</b>, c.motif])} />
+          </>}
+
+          {lot.status !== 'Clôturé' && <div className="close-box">
+            <b>Corriger par contre-écriture</b>
+            <div className="btn-row">
+              <select className="ref-input" value={fix.target} onChange={e => setFix({ ...fix, target: e.target.value })}>
+                <option value="">Ligne à corriger…</option>{targets.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+              </select>
+              <input className="num-input sm" inputMode="decimal" placeholder="± qté" value={fix.delta} onChange={e => setFix({ ...fix, delta: e.target.value.replace(/[^\d,.-]/g, '') })} />
+            </div>
+            <input className="ref-input wide" placeholder="Motif (obligatoire)" value={fix.motif} onChange={e => setFix({ ...fix, motif: e.target.value })} />
+            <Big tone="ghost" onClick={applyFix}>Enregistrer la contre-écriture</Big>
+            {!canFixLines && <small className="muted">Lot déjà cuit : seules les matières peuvent être corrigées.</small>}
+          </div>}
+        </Card>
+      </div>}
+      <Notice>Les lots sont visibles par l’enfourneur de votre site, qui ne peut pas modifier les quantités.</Notice>
+    </Screen>
+  )
+}

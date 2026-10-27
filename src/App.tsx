@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { LogOut, RotateCcw, Wheat, WifiOff, Wifi } from 'lucide-react'
+import { CheckCircle2, LogOut, RefreshCw, RotateCcw, Wheat, WifiOff, Wifi } from 'lucide-react'
 import { Provider, useApp } from './store/context'
 import { Login } from './screens/Login'
 import { Dashboard } from './screens/Dashboard'
@@ -17,13 +17,22 @@ import { Catalog, Org, Rbac, Devices, Audit, V3 } from './screens/Admin'
 import { Reports, Treasury, Tour, Notifications } from './screens/Reports'
 import { homeByRole, menuByRole, siteBound, type ScreenId } from './data/rbac'
 import { roleLabels } from './data/org'
-import { nowStamp } from './lib/format'
+import { hourNow, nowStamp, today } from './lib/format'
+import { NavContext } from './store/nav'
+import { END_OF_DAY_HOUR, reconcileDay, syncPending } from './data/boulanger'
+import { BHome } from './screens/boulanger/Accueil'
+import { BReception } from './screens/boulanger/Reception'
+import { BPetrissee } from './screens/boulanger/Petrissee'
+import { BLots } from './screens/boulanger/Lots'
+import { BCuisson } from './screens/boulanger/RapportsCuisson'
+import { BHistory } from './screens/boulanger/Historique'
 
 const screens: Record<ScreenId, () => React.ReactElement> = {
   dashboard: Dashboard, alerts: Alerts, production: Production, cuisson: Cuisson, magasin: Magasin, bdl: BdlScreen, pos: Pos,
   caisse: Caisse, invendus: Invendus, expenses: Expenses, versements: Versements, orders: Orders, credit: Credit, plan: Plan,
   inventory: InventoryScreen, quality: QualityScreen, purchases: PurchasesScreen, tour: Tour, catalog: Catalog, org: Org,
   reports: Reports, treasury: Treasury, audit: Audit, devices: Devices, v3: V3, notifications: Notifications, rbac: Rbac,
+  bHome: BHome, bReception: BReception, bPetrissee: BPetrissee, bLots: BLots, bCuisson: BCuisson, bHistory: BHistory,
 }
 
 function Shell() {
@@ -31,6 +40,24 @@ function Shell() {
   const [view, setView] = useState<ScreenId>('dashboard')
 
   useEffect(() => { if (user) setView(homeByRole[user.role]) }, [user])
+
+  // Réseau réel : passage automatique hors-ligne, puis synchronisation automatique au retour du réseau.
+  useEffect(() => {
+    const off = () => update(s => ({ ...s, offline: true }))
+    const on = () => update(s => (s.offline ? syncPending(s) : s))
+    window.addEventListener('offline', off)
+    window.addEventListener('online', on)
+    if (!navigator.onLine) off()
+    return () => { window.removeEventListener('offline', off); window.removeEventListener('online', on) }
+  }, [])
+
+  // Rapprochement automatique de fin de journée (sorties magasin / consommations atelier) : alertes direction.
+  useEffect(() => {
+    const run = () => { if (hourNow() >= END_OF_DAY_HOUR) update(s => reconcileDay(s, today())) }
+    run()
+    const t = setInterval(run, 60000)
+    return () => clearInterval(t)
+  }, [])
 
   if (!user) return <><Login />{toast && <div className="toast">{toast}</div>}</>
 
@@ -42,8 +69,8 @@ function Shell() {
   const groups = Array.from(new Set(menu.map(m => m.group)))
   const logout = () => { audit('Déconnexion', `Déconnexion de ${user.name}`); setUser(null) }
   const toggleOffline = () => {
-    if (state.offline) { update(s => ({ ...s, offline: false, queue: [] })); say(`Synchronisation de ${state.queue.length} opération(s) terminée`) }
-    else { update(s => ({ ...s, offline: true })); say('Mode hors-ligne simulé : les ventes sont mises en file d’attente') }
+    if (state.offline) { update(syncPending); say(`Synchronisation de ${state.queue.length} opération(s) terminée`) }
+    else { update(s => ({ ...s, offline: true })); say('Mode hors-ligne simulé : les saisies sont mises en file d’attente') }
   }
 
   return (
@@ -59,6 +86,9 @@ function Shell() {
           <div><small>{roleLabels[user.role]} · {user.siteLabel}</small><h1>{user.name}</h1></div>
           <div className="top-actions">
             <span className="stamp">{nowStamp()} · Africa/Porto-Novo</span>
+            <span className={`chip sync ${state.queue.length ? 'pending' : ''}`}>{state.queue.length
+              ? <><RefreshCw size={16} /> {state.queue.length} en attente de synchronisation</>
+              : <><CheckCircle2 size={16} /> Synchronisé</>}</span>
             <button className={`chip ${state.offline ? 'on' : ''}`} onClick={toggleOffline}>{state.offline ? <WifiOff size={16} /> : <Wifi size={16} />} {state.offline ? 'Hors-ligne' : 'En ligne'}</button>
             <button className="chip" onClick={logout}><LogOut size={16} /> Changer d’utilisateur</button>
           </div>
@@ -66,7 +96,7 @@ function Shell() {
         {state.offline && <div className="offline-bar"><WifiOff size={16} /> Mode hors-ligne — {state.queue.length} opération(s) en attente de synchronisation</div>}
         <section className="content2">{outOfSite
           ? <div className="notice warn">Aucune donnée de démonstration pour votre site ({user.siteLabel}) sur cet écran : les données de ce module appartiennent à SITE 1. Chaque compte reste limité à son propre site.</div>
-          : <View />}</section>
+          : <NavContext.Provider value={setView}><View /></NavContext.Provider>}</section>
       </main>
       {toast && <div className="toast">{toast}</div>}
     </div>

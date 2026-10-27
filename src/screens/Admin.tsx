@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { useApp } from '../store/context'
-import { Badge, Card, Notice, Screen, Table } from '../components/ui'
+import { Badge, Big, Card, Notice, Screen, Table } from '../components/ui'
 import { money } from '../lib/format'
 import { can, rbacMatrix } from '../data/rbac'
 import { products } from '../data/catalog'
@@ -18,6 +19,17 @@ export function Catalog() {
 }
 
 export function Org() {
+  const { user, state, update, audit, say } = useApp()
+  const [eps, setEps] = useState(String(state.epsThreshold))
+  // Seuil de rendement boulangerie : paramétrable par la direction, appliqué aux 3 sites.
+  const saveEps = () => {
+    const v = Number(eps)
+    if (!v || v <= 0) return say('Saisissez un seuil valide en EPS/sac.')
+    update(s => ({ ...s, epsThreshold: v }))
+    audit('Paramètre modifié', `Rendement minimum boulangerie : ${state.epsThreshold} → ${v} EPS/sac`)
+    say('Seuil de rendement mis à jour')
+  }
+  const rows = params.map(p => p.label === 'Rendement minimum boulangerie' ? { ...p, value: `${state.epsThreshold} EPS/sac` } : p)
   return (
     <Screen title="Sites, tiers et seuils" sub="Boulangerie-Pâtisserie DÉLICE PLUS Sarl (US-14, US-16)">
       <Card title="Sites et emplacements"><Table head={['Code', 'Site', 'Statut', 'Emplacements de stock']} rows={sites.map(s => [
@@ -26,7 +38,11 @@ export function Org() {
       <Card title="Fournisseurs"><Table head={['Code', 'Fournisseur', 'Spécialité', 'Conditions']} rows={suppliers.map(s => [s.code, s.name, s.specialty, s.terms])} /></Card>
       <Card title="Clients grossistes"><Table head={['Code', 'Client', 'Plafond de crédit', 'Encours', 'Relevé']} rows={clients.map(c => [c.code, c.name, money(c.ceiling), money(c.outstanding), c.statement])} /></Card>
       <Card title="Livreurs"><Table head={['Code', 'Livreur', 'Note']} rows={drivers.map(d => [d.code, d.name, d.note])} /></Card>
-      <Card title="Seuils et paramètres de contrôle" sub="Toute modification est tracée en audit"><Table head={['Paramètre', 'Valeur globale', 'Surcharge']} rows={params.map(p => [p.label, <b>{p.value}</b>, p.override])} /></Card>
+      <Card title="Seuils et paramètres de contrôle" sub="Toute modification est tracée en audit"><Table head={['Paramètre', 'Valeur globale', 'Surcharge']} rows={rows.map(p => [p.label, <b>{p.value}</b>, p.override])} />
+        {can.setEpsThreshold(user!.role) && <div className="btn-row">
+          <label className="unit-input"><input className="num-input sm" inputMode="numeric" value={eps} onChange={e => setEps(e.target.value.replace(/\D/g, ''))} /><span>EPS/sac</span></label>
+          <Big tone="ghost" onClick={saveEps}>Modifier le rendement minimum</Big>
+        </div>}</Card>
     </Screen>
   )
 }
