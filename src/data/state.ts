@@ -1,5 +1,6 @@
 import type { AlertItem, AuditEntry, Bdl, Device, Expense, Notification, Payment, SiteCode } from './types'
-import type { BonSortie, ProdLot, Stock } from './boulanger'
+import type { ProdLot } from './boulanger'
+import type { BonSortie, Movement, Reception } from './stock'
 
 export type SaleLine = { code: string; label: string; qty: number; unit: number }
 export type SaleTicket = {
@@ -48,10 +49,12 @@ export type DemoState = {
   ticketSeq: number
   offline: boolean
   queue: { id: string; text: string; at: string }[]
-  // Atelier boulangerie (par site)
-  epsThreshold: number                 // seuil EPS/sac paramétré par la direction
-  atelier: Record<string, Stock>       // stock atelier par site
-  bonsSortie: BonSortie[]
+  // Magasins de site et ateliers (données isolées par site)
+  epsThreshold: number                              // seuil EPS/sac paramétré par la direction
+  movements: Movement[]                             // mouvements de stock des magasins de site (seule source du stock)
+  receptions: Reception[]                           // réceptions fournisseurs des magasins de site
+  bonsSortie: BonSortie[]                           // bons de sortie magasin de site → ateliers
+  workshop: Record<string, Record<string, number>>  // stock des ateliers (site|atelier → matière)
   lots: ProdLot[]
-  endOfDay: string[]                   // rapprochements de fin de journée déjà faits (site|jour)
+  endOfDay: string[]                                // rapprochements de fin de journée déjà faits (site|jour)
 }

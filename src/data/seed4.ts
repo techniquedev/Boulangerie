@@ -27,5 +27,5 @@ export const notificationsBase: Notification[] = [
   { id: 'N3', text: 'Levure MP-02 sous le stock minimum : bon de commande proposé', roles: ['magasinierCentral', 'achats', 'direction'], at: '26/10/2026 07:00' },
   { id: 'N4', text: 'Inventaire INV-2026-006 en attente de validation direction', roles: ['direction', 'controleur'], at: '26/10/2026 14:20' },
   { id: 'N5', text: 'Non-conformité NC-2026-007 : lot Y-20261018 bloqué', roles: ['controleur', 'direction', 'magasinierCentral'], at: '26/10/2026 08:05' },
-  { id: 'N6', text: 'Bon de sortie BS-2026-042 confirmé par l’atelier', roles: ['boulanger', 'magasinierCentral', 'patissier'], at: '26/10/2026 02:50' },
+  { id: 'N6', text: 'Bon de sortie BS-2026-042 émis vers l’atelier yaourts / glaces : réception à confirmer', roles: ['patissier'], at: '26/10/2026 05:00' },
 ]

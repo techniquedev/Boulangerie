@@ -32,6 +32,9 @@ export const pnTs = (daysAgo: number, hh: number, mm: number) => {
   return Date.UTC(y, m - 1, d - daysAgo, hh - 1, mm)
 }
 
+// Instant à HH:MM (heure de Porto-Novo) `daysBefore` jours avant la journée de démonstration du 26/10/2026.
+export const demoTs = (daysBefore: number, hh: number, mm: number) => Date.UTC(2026, 9, 26 - daysBefore, hh - 1, mm)
+
 // Lundi de la semaine (JJ/MM/AAAA) et mois (MM/AAAA) d'un instant, pour les regroupements.
 export const weekOf = (ts: number) => {
   const wd = new Date(ts + 3600000).getUTCDay()

@@ -252,3 +252,34 @@
   .content2{padding:16px}
   .cart{position:static}
 }
+
+/* Magasin de site (tablette) */
+.badges{display:inline-flex;gap:4px;flex-wrap:wrap}
+.sync-banner{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:var(--radius);background:#e7f2e5;color:#2f6a2c;font-weight:700}
+.sync-banner.pending{background:#fff0d8;color:#8a5a0c}
+.stock-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.stock-tile{display:flex;flex-direction:column;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px}
+.stock-tile.low{border:2px solid var(--danger)}
+.stock-tile span,.stock-tile small{font-size:12px;color:var(--muted)}
+.stock-tile b{font-size:20px}
+.stock-tile.low b{color:var(--danger)}
+.level{position:relative;height:8px;background:#e9dfd1;border-radius:4px}
+.level i{display:block;height:100%;background:var(--success);border-radius:4px}
+.stock-tile.low .level i{background:var(--danger)}
+.level em{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--dark)}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:700}
+.field .ref-input{min-height:44px;font-size:15px}
+.file-btn{position:relative;overflow:hidden}
+.file-btn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.photo-row{display:flex;gap:10px;flex-wrap:wrap}
+.photo-row figure{margin:0;display:flex;flex-direction:column;gap:4px;align-items:flex-start;font-size:12px}
+.photo-row img{width:120px;height:90px;object-fit:cover;border-radius:8px;border:1px solid var(--border)}
+.atelier-pick{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.atelier-btn{display:flex;align-items:center;gap:12px;min-height:72px;padding:14px 16px;border:2px solid var(--border);background:var(--surface);border-radius:14px;font-size:16px;font-weight:700;color:var(--dark);text-align:left}
+.atelier-btn.on{border-color:var(--primary);background:#eadcca;color:var(--primary)}
+.plain{margin:0;padding-left:16px}
+.warn-text{color:#a96c10}
+.detail{display:flex;flex-direction:column;gap:12px;min-width:0}
+.detail h3{font-size:16px}
+.greyed-inline{display:flex;align-items:center;gap:12px;flex-wrap:wrap;opacity:.7}

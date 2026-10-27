@@ -19,13 +19,20 @@ import { homeByRole, menuByRole, siteBound, type ScreenId } from './data/rbac'
 import { roleLabels } from './data/org'
 import { hourNow, nowStamp, today } from './lib/format'
 import { NavContext } from './store/nav'
-import { END_OF_DAY_HOUR, reconcileDay, syncPending } from './data/boulanger'
+import { END_OF_DAY_HOUR } from './data/boulanger'
+import { reconcileDay, stockConflicts, syncPending } from './data/daily'
 import { BHome } from './screens/boulanger/Accueil'
 import { BReception } from './screens/boulanger/Reception'
 import { BPetrissee } from './screens/boulanger/Petrissee'
 import { BLots } from './screens/boulanger/Lots'
 import { BCuisson } from './screens/boulanger/RapportsCuisson'
 import { BHistory } from './screens/boulanger/Historique'
+import { MHome } from './screens/magasin/Accueil'
+import { MReceptions } from './screens/magasin/Receptions'
+import { MSorties } from './screens/magasin/Sorties'
+import { MStocks } from './screens/magasin/Stocks'
+import { MSuivi } from './screens/magasin/Suivi'
+import { MHistory } from './screens/magasin/Historique'
 
 const screens: Record<ScreenId, () => React.ReactElement> = {
   dashboard: Dashboard, alerts: Alerts, production: Production, cuisson: Cuisson, magasin: Magasin, bdl: BdlScreen, pos: Pos,
@@ -33,6 +40,7 @@ const screens: Record<ScreenId, () => React.ReactElement> = {
   inventory: InventoryScreen, quality: QualityScreen, purchases: PurchasesScreen, tour: Tour, catalog: Catalog, org: Org,
   reports: Reports, treasury: Treasury, audit: Audit, devices: Devices, v3: V3, notifications: Notifications, rbac: Rbac,
   bHome: BHome, bReception: BReception, bPetrissee: BPetrissee, bLots: BLots, bCuisson: BCuisson, bHistory: BHistory,
+  mHome: MHome, mReceptions: MReceptions, mSorties: MSorties, mStocks: MStocks, mSuivi: MSuivi, mHistory: MHistory,
 }
 
 function Shell() {
@@ -69,7 +77,11 @@ function Shell() {
   const groups = Array.from(new Set(menu.map(m => m.group)))
   const logout = () => { audit('Déconnexion', `Déconnexion de ${user.name}`); setUser(null) }
   const toggleOffline = () => {
-    if (state.offline) { update(syncPending); say(`Synchronisation de ${state.queue.length} opération(s) terminée`) }
+    if (state.offline) {
+      update(syncPending)
+      const c = stockConflicts(state)
+      say(c.length ? `Synchronisation terminée — conflit à traiter : stock négatif ${c.join(', ')}` : `Synchronisation de ${state.queue.length} opération(s) terminée`)
+    }
     else { update(s => ({ ...s, offline: true })); say('Mode hors-ligne simulé : les saisies sont mises en file d’attente') }
   }
 

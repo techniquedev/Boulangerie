@@ -4,10 +4,11 @@ import { useApp } from '../../store/context'
 import { useNav } from '../../store/nav'
 import { Badge, Big, Card, Kpi, Notice, Screen, Steps, Table } from '../../components/ui'
 import {
-  epsOfKg, forecast, FORMATS, kgOf, MATS, matLabel, matQty, nextAlertId, nextLotId, patonsOf, perBagOf, traceFor,
+  epsOfKg, forecast, FORMATS, kgOf, MATS, matLabel, matQty, mpOf, nextAlertId, nextLotId, patonsOf, perBagOf, traceFor,
   type Line, type MatKey, type ProdLot,
 } from '../../data/boulanger'
 import { EPS_GRAMS } from '../../data/production'
+import { workshopKey } from '../../data/stock'
 import { dec, nowStamp, num } from '../../lib/format'
 import { cleanNum, toNum, useBaker, YieldGauge } from './shared'
 
@@ -60,8 +61,9 @@ export function BPetrissee() {
       corrections: [],
     }
     update(s => {
-      const atelier = { ...s.atelier[site] }
-      used.forEach(m => { atelier[m.mat] = Math.max(0, +(atelier[m.mat] - m.qty).toFixed(3)) })
+      const k = workshopKey(site, 'ATL-B')
+      const w = { ...(s.workshop[k] || {}) }
+      used.forEach(m => { w[mpOf(m.mat)] = Math.max(0, +((w[mpOf(m.mat)] || 0) - m.qty).toFixed(4)) })
       // Alerte de contrôle formelle : visible uniquement par la direction et le contrôleur central.
       const alerts = below ? [{
         id: nextAlertId(s.alerts), type: 'Rendement sous seuil', severity: 'Moyenne' as const, value: null,
@@ -70,7 +72,7 @@ export function BPetrissee() {
         history: [{ at: nowStamp(), by: 'Système', text: 'Alerte générée à la validation de la pétrissée.' }],
       }, ...s.alerts] : s.alerts
       return {
-        ...s, alerts, atelier: { ...s.atelier, [site]: atelier }, lots: [lot, ...s.lots],
+        ...s, alerts, workshop: { ...s.workshop, [k]: w }, lots: [lot, ...s.lots],
         queue: s.offline ? [{ id: lot.id, text: `Pétrissée ${lot.id}`, at: nowStamp() }, ...s.queue] : s.queue,
       }
     })

@@ -4,11 +4,11 @@ import { sessionA, sessionB } from '../data/seed2'
 import { expensesBase, inventoryBase, lossesBase, ncsBase, ordersBase, purchasesBase, readingsBase, versementsBase } from '../data/seed3'
 import { auditBase, devicesBase, notificationsBase } from '../data/seed4'
 import { rawMaterials } from '../data/catalog'
-import { seedBakery } from '../data/boulanger'
+import { seedSites } from '../data/seedSites'
 
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v))
 
-export const STORAGE_KEY = 'delice-plus-demo-v2'
+export const STORAGE_KEY = 'delice-plus-demo-v3'
 
 // Stock vendant STK-VA (boutique A) en fin de journée, après réception de BDL-0261 et ventes.
 export const initialStockA: Record<string, number> = {
@@ -36,7 +36,7 @@ export function initialState(): DemoState {
     ticketSeq: 107,
     offline: false,
     queue: [],
-    ...seedBakery(),
+    ...seedSites(),
   }
 }
 

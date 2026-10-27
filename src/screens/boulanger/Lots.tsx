@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useApp } from '../../store/context'
 import { Big, Card, Kpi, Notice, Screen, Table } from '../../components/ui'
-import { figures, LOT_FLOW, lotDay, matLabel, matQty, yieldTone, type Correction, type LotStatus } from '../../data/boulanger'
+import { figures, LOT_FLOW, lotDay, matLabel, matQty, mpOf, yieldTone, type Correction, type LotStatus, type MatKey } from '../../data/boulanger'
+import { workshopKey } from '../../data/stock'
 import { dec, nowStamp, num } from '../../lib/format'
 import { LotFrise, StatusBadge, TraceInfo, useBaker } from './shared'
 
@@ -32,10 +33,11 @@ export function BLots() {
     if (cur + delta < 0) return say('Correction impossible : la quantité corrigée deviendrait négative.')
     if (kind === 'mat' && delta > stock[key as keyof typeof stock]) return say('Stock atelier insuffisant pour cette contre-écriture : le stock ne peut jamais devenir négatif.')
     const c: Correction = { at: nowStamp(), by: user.name, motif: fix.motif.trim(), kind, key, delta }
+    const k = workshopKey(site, 'ATL-B')
     update(s => ({
       ...s,
-      lots: s.lots.map(l => l.id === lot.id ? { ...l, corrections: [...l.corrections, c] } : l),
-      atelier: kind === 'mat' ? { ...s.atelier, [site]: { ...s.atelier[site], [key]: +(s.atelier[site][key as keyof typeof stock] - delta).toFixed(3) } } : s.atelier,
+      lots: s.lots.map(l => l.id === lot.id && l.site === lot.site ? { ...l, corrections: [...l.corrections, c] } : l),
+      workshop: kind === 'mat' ? { ...s.workshop, [k]: { ...s.workshop[k], [mpOf(key as MatKey)]: +(((s.workshop[k] || {})[mpOf(key as MatKey)] || 0) - delta).toFixed(4) } } : s.workshop,
     }))
     audit('Contre-écriture de pétrissée', `${lot.id} : ${kind === 'mat' ? matLabel(key as never) : key} ${delta > 0 ? '+' : ''}${dec(delta, 2)} — motif : ${c.motif} (écriture d’origine conservée)`)
     say('Contre-écriture tracée'); setFix({ target: '', delta: '', motif: '' })

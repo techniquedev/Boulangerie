@@ -24,7 +24,7 @@ export const siteShort = (code: string) =>
 
 export const roleLabels: Record<Role, string> = {
   direction: 'Directeur Général', magasinierCentral: 'Magasinier central', controleur: 'Contrôleur central',
-  achats: 'Responsable Service Achats', boulanger: 'Boulanger', enfourneur: 'Enfourneur', magasinier: 'Magasinier',
+  achats: 'Responsable Service Achats', boulanger: 'Boulanger', enfourneur: 'Enfourneur', magasinier: 'Magasinier de site',
   boutiquier: 'Boutiquier', caissiere: 'Caissière', patissier: 'Pâtissier / Opératrice yaourts-glaces',
   livreur: 'Livreur',
 }
@@ -47,7 +47,7 @@ const siteTeam = (start: number, g: 'SITE 1' | 'SITE 2' | 'SITE 3', s: string, p
   const spec: [Role, string, string][] = [
     ['boulanger', 'boulanger', 'Saisie de la production (lots, pâtons) ; confirme les bons de sortie matières'],
     ['enfourneur', 'enfourneur', 'Saisie de la cuisson et des rebuts'],
-    ['magasinier', 'magasinier', 'Stock et bordereaux de son site'],
+    ['magasinier', 'magasinier', 'Réceptions fournisseurs du site, bons de sortie vers les ateliers, stock de son magasin'],
     ['boutiquier', 'boutiquier', 'Réception à l’aveugle des bordereaux, invendus et pertes'],
     ['caissiere', 'caissiere', 'Vente, encaissements et clôture de caisse à l’aveugle ; AUCUN bouton de dépense'],
     ['patissier', 'patissier', 'Productions pâtisserie, yaourts et glaces'],

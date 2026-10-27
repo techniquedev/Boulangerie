@@ -5,6 +5,7 @@ export type ScreenId =
   | 'expenses' | 'versements' | 'orders' | 'credit' | 'plan' | 'inventory' | 'quality' | 'purchases' | 'tour'
   | 'catalog' | 'org' | 'reports' | 'treasury' | 'audit' | 'devices' | 'v3' | 'notifications' | 'rbac'
   | 'bHome' | 'bReception' | 'bPetrissee' | 'bLots' | 'bCuisson' | 'bHistory'
+  | 'mHome' | 'mReceptions' | 'mSorties' | 'mStocks' | 'mSuivi' | 'mHistory'
 
 export type MenuItem = { id: ScreenId; label: string; group: string }
 
@@ -45,30 +46,38 @@ const all = {
   bLots: M('bLots', 'Mes lots de production', 'Mon atelier'),
   bCuisson: M('bCuisson', 'Rapports de cuisson', 'Mon atelier'),
   bHistory: M('bHistory', 'Historique et rendement', 'Mon atelier'),
+  // Tableau de bord Magasinier de site (modèle unique, identique sur les 3 sites, distinct du magasinier central)
+  mHome: M('mHome', 'Accueil', 'Mon magasin'),
+  mReceptions: M('mReceptions', 'Réceptions fournisseurs', 'Mon magasin'),
+  mSorties: M('mSorties', 'Sorties vers les ateliers', 'Mon magasin'),
+  mStocks: M('mStocks', 'État des stocks et seuils', 'Mon magasin'),
+  mSuivi: M('mSuivi', 'Suivi des bons et rapprochements', 'Mon magasin'),
+  mHistory: M('mHistory', 'Historique et piste d’audit', 'Mon magasin'),
 }
 
 const bakerTabs: ScreenId[] = ['bHome', 'bReception', 'bPetrissee', 'bLots', 'bCuisson', 'bHistory']
+const storeTabs: ScreenId[] = ['mHome', 'mReceptions', 'mSorties', 'mStocks', 'mSuivi', 'mHistory']
 
 const pick = (...ids: ScreenId[]) => ids.map(i => all[i])
 
 // Matrice RBAC : menus visibles par rôle (ENF-05 : à doubler côté serveur en production).
 export const menuByRole: Record<Role, MenuItem[]> = {
-  direction: Object.values(all).filter(m => m.id !== 'pos' && !bakerTabs.includes(m.id)),
+  direction: Object.values(all).filter(m => m.id !== 'pos' && !bakerTabs.includes(m.id) && !storeTabs.includes(m.id)),
   magasinierCentral: pick('magasin', 'bdl', 'purchases', 'inventory', 'notifications'),
   controleur: pick('dashboard', 'alerts', 'inventory', 'quality', 'production', 'bdl', 'reports', 'audit', 'notifications'),
   achats: pick('expenses', 'purchases', 'magasin', 'notifications'),
   boulanger: pick(...bakerTabs),   // saisie production, lecture des rapports de cuisson ; ni alertes ni écrans financiers
   enfourneur: pick('cuisson', 'notifications'),
-  magasinier: pick('magasin', 'bdl', 'invendus', 'notifications'),
+  magasinier: pick(...storeTabs),   // saisie réceptions et bons de sortie ; ni alertes, ni caisse, ni dépenses, ni prix
   boutiquier: pick('bdl', 'invendus', 'notifications'),
   caissiere: pick('pos', 'caisse', 'versements', 'notifications'),
-  patissier: pick('production', 'orders', 'notifications'),
+  patissier: pick('production', 'bReception', 'orders', 'notifications'),
   livreur: pick('tour', 'expenses', 'notifications'),
 }
 
 export const homeByRole: Record<Role, ScreenId> = {
   direction: 'dashboard', magasinierCentral: 'magasin', controleur: 'dashboard', achats: 'expenses',
-  boulanger: 'bHome', enfourneur: 'cuisson', magasinier: 'magasin', boutiquier: 'bdl',
+  boulanger: 'bHome', enfourneur: 'cuisson', magasinier: 'mHome', boutiquier: 'bdl',
   caissiere: 'pos', patissier: 'production', livreur: 'tour',
 }
 
@@ -92,6 +101,7 @@ export const can = {
   editPrices: (r: Role) => r === 'direction',                                    // US-15
   saisieProduction: (r: Role) => r === 'boulanger' || r === 'patissier' || r === 'direction',
   saisieCuisson: (r: Role) => r === 'enfourneur',                              // boulanger : lecture seule (US-04)
+  exportStore: (r: Role) => r === 'magasinier' || r === 'direction' || r === 'controleur',
   exportProduction: (r: Role) => r === 'boulanger' || r === 'direction' || r === 'controleur',
   setEpsThreshold: (r: Role) => r === 'direction',
   receiveBlind: (r: Role) => r === 'boutiquier',                                 // RG-06

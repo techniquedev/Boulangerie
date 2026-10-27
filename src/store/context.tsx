@@ -3,7 +3,7 @@ import type { User } from '../data/types'
 import type { DemoState } from '../data/state'
 import { loadState, initialState, STORAGE_KEY } from './initial'
 import { nowStamp } from '../lib/format'
-import { deviceFor } from '../data/boulanger'
+import { deviceFor } from '../data/trace'
 
 type Ctx = {
   user: User | null

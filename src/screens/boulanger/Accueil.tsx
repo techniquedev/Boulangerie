@@ -2,6 +2,7 @@ import { ClipboardCheck, PackageCheck, Plus } from 'lucide-react'
 import { useNav } from '../../store/nav'
 import { Badge, Card, Kpi, Screen, Table } from '../../components/ui'
 import { emptyStock, figures, FORMATS, isToday, LOT_FLOW, MATS, matQty } from '../../data/boulanger'
+import { BS } from '../../data/stock'
 import { dec, num, today } from '../../lib/format'
 import { StatusBadge, useBaker, YieldGauge } from './shared'
 
@@ -20,10 +21,10 @@ export function BHome() {
   figs.forEach(f => f.lines.forEach(l => byFormat.set(l.label, (byFormat.get(l.label) || 0) + l.qty)))
 
   const sentToOven = lots.filter(l => l.status !== 'Créé')
-  const pending = bons.filter(b => b.status === 'À confirmer')
+  const pending = bons.filter(b => b.status === BS.emis)
   const receivedToday = emptyStock()
-  bons.filter(b => b.status === 'Confirmé' && b.confirmTs && isToday(b.confirmTs))
-    .forEach(b => b.lines.forEach(l => { receivedToday[l.mat] += l.received ?? l.qty }))
+  bons.filter(b => (b.status === BS.conf || b.status === BS.clos) && b.confirmTs && isToday(b.confirmTs))
+    .forEach(b => b.lines.forEach(l => { const m = MATS.find(x => x.mp === l.mp); if (m) receivedToday[m.key] += l.received ?? l.qty }))
 
   return (
     <Screen title="Accueil" sub={`Atelier boulangerie ${siteName} — journée du ${today()}`}>
