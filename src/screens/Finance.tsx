@@ -3,6 +3,10 @@ import { useApp } from '../store/context'
 import { Badge, Big, Card, Notice, Screen, Steps, Table } from '../components/ui'
 import { money } from '../lib/format'
 import { can } from '../data/rbac'
+import { BAKERY_SITES } from '../data/boulanger'
+import { nextShopMoveId, productName, SHOP_PRODUCTS, shopName } from '../data/shop'
+import { siteShort } from '../data/org'
+import { traceFor } from '../data/trace'
 
 export function Expenses() {
   const { user, state, update, audit, say } = useApp()
@@ -63,15 +67,42 @@ export function Versements() {
   )
 }
 
+// Direction : taux de perte par produit et par boutique, et validation des contre-écritures au-delà du seuil (US-22).
 export function Invendus() {
-  const { state, user } = useApp()
-  const rows = state.losses.filter(l => (user!.group !== 'DIRECTION GÉNÉRALE' ? user!.sites.includes(l.site) : true))
-  const total = rows.reduce((a, l) => a + l.qty, 0)
+  const { state, user, update, audit, say } = useApp()
+  const sites = BAKERY_SITES.filter(x => user!.sites.includes(x))
+  const received = (site: string, code: string) => state.shopMoves.filter(m => m.site === site && m.code === code && m.kind === 'Réception BDL').reduce((a, m) => a + m.qty, 0)
+  const lost = (site: string, code: string) => -state.shopMoves.filter(m => m.site === site && m.code === code && m.kind === 'Invendu / perte').reduce((a, m) => a + m.qty, 0)
+  const rate = (r: number, l: number) => (r ? `${((l / r) * 100).toFixed(1).replace('.', ',')} %` : '—')
+  const pending = state.shopFixes.filter(f => f.status === 'En attente de validation' && sites.includes(f.site))
+
+  const decide = (id: string, ok: boolean) => {
+    const f = state.shopFixes.find(x => x.id === id)!
+    const ts = Date.now()
+    update(s => ({
+      ...s, shopFixes: s.shopFixes.map(x => x.id === id ? { ...x, status: ok ? 'Validée par la direction' : 'Refusée par la direction', decidedBy: user!.name } : x),
+      shopMoves: ok ? [...s.shopMoves, { id: nextShopMoveId(s.shopMoves, f.site), site: f.site, code: f.code, lot: f.lot, qty: f.delta, kind: 'Contre-écriture', ref: f.id, ts, trace: traceFor(user!.name, f.site, s.offline), motif: `${f.motif} (validée par ${user!.name})` }] : s.shopMoves,
+    }))
+    audit('Contre-écriture stock vendant', `${id} ${ok ? 'validée' : 'refusée'} par la direction`); say(ok ? 'Contre-écriture validée et appliquée' : 'Contre-écriture refusée')
+  }
+
   return (
-    <Screen title="Invendus, pertes et retours" sub="Déclaration de fin de journée — boutique A (US-22)">
-      <Card title="Déclarations du 26/10/2026" sub={`${total} unités déclarées`}>
-        <Table head={['Quantité', 'Produit', 'Motif', 'Destination', 'Photo', 'Heure']} rows={rows.map(l => [
-          <b>{l.qty}</b>, l.label, l.reason, l.destination, l.photo ? <Badge tone="ok">Jointe</Badge> : '—', l.at])} />
+    <Screen title="Invendus, pertes et retours" sub="Taux de perte par produit et par boutique — pertes déclarées / quantités reçues (US-22)">
+      <Card title="Taux de perte par produit et par boutique">
+        <Table head={['Produit', ...sites.map(siteShort), 'Toutes boutiques']} rows={SHOP_PRODUCTS.map(p => {
+          const r = sites.map(x => received(x, p.code)), l = sites.map(x => lost(x, p.code))
+          return [productName(p.code), ...sites.map((_, i) => `${rate(r[i], l[i])} (${l[i]} / ${r[i]})`), <b>{rate(r.reduce((a, b) => a + b, 0), l.reduce((a, b) => a + b, 0))}</b>]
+        })} />
+      </Card>
+      <Card title="Contre-écritures en attente de validation" sub="Corrections de plus de 10 unités demandées par les boutiquiers">
+        {pending.length ? <Table head={['N°', 'Boutique', 'Déclaration', 'Produit', 'Correction', 'Motif', 'Demandée par', '']} rows={pending.map(f => [f.id, shopName(f.site), f.ref, productName(f.code),
+          <b>{f.delta > 0 ? '+' : ''}{f.delta}</b>, f.motif, `${f.trace.author} · ${f.trace.localAt}`,
+          <div className="btn-row"><Big onClick={() => decide(f.id, true)}>Valider</Big><Big tone="ghost" onClick={() => decide(f.id, false)}>Refuser</Big></div>])} />
+          : <Notice tone="ok">Aucune contre-écriture en attente.</Notice>}
+      </Card>
+      <Card title="Dernières déclarations">
+        <Table head={['N°', 'Boutique', 'Date', 'Lignes', 'Photos']} rows={state.declarations.filter(d => sites.includes(d.site)).sort((a, b) => b.ts - a.ts).slice(0, 15).map(d => [d.id, shopName(d.site), d.trace.localAt,
+          d.lines.map(l => `${l.qty} ${productName(l.code)} (${l.motif} → ${l.dest})`).join(' · '), d.lines.some(l => l.photo) ? <Badge tone="ok">Jointe(s)</Badge> : '—'])} />
       </Card>
     </Screen>
   )

@@ -51,8 +51,9 @@ export function BdlScreen() {
   return (
     <Screen title="Bordereaux de livraison (BDL)" sub={blind ? 'Réception à l’aveugle (RG-06) : les quantités expédiées sont masquées' : 'Numéros uniques — stock central décrémenté à l’émission (US-07)'}>
       {visible.map(b => {
+        const key = `${b.id}-${b.toSite}`
         const pending = b.toSite && b.lines.some(l => l.counted === undefined) && can.receiveBlind(role)
-        return <Card key={b.id} title={b.id} sub={`Destination : ${b.to}${b.note ? ` · ${b.note}` : ''}`} actions={<Badge tone={blind ? 'ok' : tone(b.status)}>{shown(b.status)}</Badge>}>
+        return <Card key={key} title={b.id} sub={`Destination : ${b.to}${b.note ? ` · ${b.note}` : ''}`} actions={<Badge tone={blind ? 'ok' : tone(b.status)}>{shown(b.status)}</Badge>}>
           <Table head={blind ? ['Article attendu', 'Quantité comptée'] : ['Article', 'Expédié', 'Compté', 'Écart']} rows={b.lines.map((l, i) => blind
             ? [l.label, <b>{l.counted ?? '—'}</b>]
             : [l.label, num(l.sent), l.counted ?? '—', l.counted === undefined ? '—' : <b className={l.counted - l.sent ? 'neg' : ''}>{l.counted - l.sent}</b>])} />

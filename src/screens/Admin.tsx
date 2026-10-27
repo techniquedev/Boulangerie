@@ -6,6 +6,7 @@ import { can, rbacMatrix } from '../data/rbac'
 import { products } from '../data/catalog'
 import { clients, drivers, params, suppliers } from '../data/partners'
 import { locationLabels, roleLabels, sites } from '../data/org'
+import { productName, SHOP_PRODUCTS } from '../data/shop'
 
 export function Catalog() {
   const { user } = useApp()
@@ -29,7 +30,17 @@ export function Org() {
     audit('Paramètre modifié', `Rendement minimum boulangerie : ${state.epsThreshold} → ${v} EPS/sac`)
     say('Seuil de rendement mis à jour')
   }
-  const rows = params.map(p => p.label === 'Rendement minimum boulangerie' ? { ...p, value: `${state.epsThreshold} EPS/sac` } : p)
+  // Tolérance d'écart BDL par produit (0 par défaut) et seuil de photo obligatoire des pertes.
+  const [tol, setTol] = useState<Record<string, string>>(Object.fromEntries(SHOP_PRODUCTS.map(p => [p.code, String(state.bdlTolerance[p.code] ?? 0)])))
+  const [photo, setPhoto] = useState(String(state.lossPhotoThreshold))
+  const saveShop = () => {
+    const t = Object.fromEntries(Object.entries(tol).map(([c, v]) => [c, Number(v) || 0]).filter(([, v]) => v))
+    update(s => ({ ...s, bdlTolerance: t, lossPhotoThreshold: Number(photo) || 0 }))
+    audit('Paramètre modifié', `Tolérances BDL : ${Object.entries(t).map(([c, v]) => `${c} ${v}`).join(', ') || 'aucune'} · photo des pertes au-delà de ${Number(photo) || 0} FCFA`)
+    say('Paramètres des boutiques mis à jour')
+  }
+  const rows = params.map(p => p.label === 'Rendement minimum boulangerie' ? { ...p, value: `${state.epsThreshold} EPS/sac` }
+    : p.label.startsWith('Tolérance écart BDL') ? { ...p, override: Object.entries(state.bdlTolerance).map(([c, v]) => `${productName(c)} : ${v}`).join(' · ') || '—' } : p)
   return (
     <Screen title="Sites, tiers et seuils" sub="Boulangerie-Pâtisserie DÉLICE PLUS Sarl (US-14, US-16)">
       <Card title="Sites et emplacements"><Table head={['Code', 'Site', 'Statut', 'Emplacements de stock']} rows={sites.map(s => [
@@ -43,6 +54,13 @@ export function Org() {
           <label className="unit-input"><input className="num-input sm" inputMode="numeric" value={eps} onChange={e => setEps(e.target.value.replace(/\D/g, ''))} /><span>EPS/sac</span></label>
           <Big tone="ghost" onClick={saveEps}>Modifier le rendement minimum</Big>
         </div>}</Card>
+      {can.setEpsThreshold(user!.role) && <Card title="Boutiques : tolérance d’écart BDL et photos des pertes" sub="Tolérance en unités par produit (0 par défaut) — au-delà, le BDL passe « Réceptionné avec écart » et une alerte est générée">
+        <div className="count-grid">{SHOP_PRODUCTS.map(p => <label key={p.code}>{productName(p.code)}
+          <input className="num-input sm" inputMode="numeric" value={tol[p.code]} onChange={e => setTol({ ...tol, [p.code]: e.target.value.replace(/\D/g, '') })} /></label>)}
+          <label>Photo obligatoire pour une perte au-delà de (FCFA)<input className="num-input sm" inputMode="numeric" value={photo} onChange={e => setPhoto(e.target.value.replace(/\D/g, ''))} /></label>
+        </div>
+        <Big tone="ghost" onClick={saveShop}>Enregistrer les paramètres des boutiques</Big>
+      </Card>}
     </Screen>
   )
 }

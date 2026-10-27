@@ -6,6 +6,7 @@ export type ScreenId =
   | 'catalog' | 'org' | 'reports' | 'treasury' | 'audit' | 'devices' | 'v3' | 'notifications' | 'rbac'
   | 'bHome' | 'bReception' | 'bPetrissee' | 'bLots' | 'bCuisson' | 'bHistory'
   | 'mHome' | 'mReceptions' | 'mSorties' | 'mStocks' | 'mSuivi' | 'mHistory'
+  | 'sHome' | 'sReception' | 'sSuivi' | 'sStock' | 'sPertes' | 'sHistory'
 
 export type MenuItem = { id: ScreenId; label: string; group: string }
 
@@ -53,23 +54,31 @@ const all = {
   mStocks: M('mStocks', 'État des stocks et seuils', 'Mon magasin'),
   mSuivi: M('mSuivi', 'Suivi des bons et rapprochements', 'Mon magasin'),
   mHistory: M('mHistory', 'Historique et piste d’audit', 'Mon magasin'),
+  // Tableau de bord Boutiquier (modèle unique, identique sur les 3 sites, distinct de la caissière)
+  sHome: M('sHome', 'Accueil', 'Ma boutique'),
+  sReception: M('sReception', 'Réception à l’aveugle', 'Ma boutique'),
+  sSuivi: M('sSuivi', 'Suivi de mes réceptions', 'Ma boutique'),
+  sStock: M('sStock', 'Stock vendant', 'Ma boutique'),
+  sPertes: M('sPertes', 'Invendus, pertes et retours', 'Ma boutique'),
+  sHistory: M('sHistory', 'Historique et piste d’audit', 'Ma boutique'),
 }
 
 const bakerTabs: ScreenId[] = ['bHome', 'bReception', 'bPetrissee', 'bLots', 'bCuisson', 'bHistory']
 const storeTabs: ScreenId[] = ['mHome', 'mReceptions', 'mSorties', 'mStocks', 'mSuivi', 'mHistory']
+const shopTabs: ScreenId[] = ['sHome', 'sReception', 'sSuivi', 'sStock', 'sPertes', 'sHistory']
 
 const pick = (...ids: ScreenId[]) => ids.map(i => all[i])
 
 // Matrice RBAC : menus visibles par rôle (ENF-05 : à doubler côté serveur en production).
 export const menuByRole: Record<Role, MenuItem[]> = {
-  direction: Object.values(all).filter(m => m.id !== 'pos' && !bakerTabs.includes(m.id) && !storeTabs.includes(m.id)),
+  direction: Object.values(all).filter(m => m.id !== 'pos' && !bakerTabs.includes(m.id) && !storeTabs.includes(m.id) && !shopTabs.includes(m.id)),
   magasinierCentral: pick('magasin', 'bdl', 'purchases', 'inventory', 'notifications'),
   controleur: pick('dashboard', 'alerts', 'inventory', 'quality', 'production', 'bdl', 'reports', 'audit', 'notifications'),
   achats: pick('expenses', 'purchases', 'magasin', 'notifications'),
   boulanger: pick(...bakerTabs),   // saisie production, lecture des rapports de cuisson ; ni alertes ni écrans financiers
   enfourneur: pick('cuisson', 'notifications'),
   magasinier: pick(...storeTabs),   // saisie réceptions et bons de sortie ; ni alertes, ni caisse, ni dépenses, ni prix
-  boutiquier: pick('bdl', 'invendus', 'notifications'),
+  boutiquier: pick(...shopTabs),   // réceptions à l'aveugle et déclarations ; ni caisse, ni dépenses, ni prix, ni alertes
   caissiere: pick('pos', 'caisse', 'versements', 'notifications'),
   patissier: pick('production', 'bReception', 'orders', 'notifications'),
   livreur: pick('tour', 'expenses', 'notifications'),
@@ -77,7 +86,7 @@ export const menuByRole: Record<Role, MenuItem[]> = {
 
 export const homeByRole: Record<Role, ScreenId> = {
   direction: 'dashboard', magasinierCentral: 'magasin', controleur: 'dashboard', achats: 'expenses',
-  boulanger: 'bHome', enfourneur: 'cuisson', magasinier: 'mHome', boutiquier: 'bdl',
+  boulanger: 'bHome', enfourneur: 'cuisson', magasinier: 'mHome', boutiquier: 'sHome',
   caissiere: 'pos', patissier: 'production', livreur: 'tour',
 }
 
@@ -101,6 +110,8 @@ export const can = {
   editPrices: (r: Role) => r === 'direction',                                    // US-15
   saisieProduction: (r: Role) => r === 'boulanger' || r === 'patissier' || r === 'direction',
   saisieCuisson: (r: Role) => r === 'enfourneur',                              // boulanger : lecture seule (US-04)
+  exportShop: (r: Role) => r === 'boutiquier' || r === 'direction' || r === 'controleur',
+  validateShopFix: (r: Role) => r === 'direction',
   exportStore: (r: Role) => r === 'magasinier' || r === 'direction' || r === 'controleur',
   exportProduction: (r: Role) => r === 'boulanger' || r === 'direction' || r === 'controleur',
   setEpsThreshold: (r: Role) => r === 'direction',

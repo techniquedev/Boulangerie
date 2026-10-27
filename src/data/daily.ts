@@ -2,6 +2,7 @@ import type { DemoState } from './state'
 import type { Trace } from './trace'
 import { BAKERY_SITES, figures, mpOf, nextAlertId } from './boulanger'
 import { BS, fmtQty, matName, SITE_MATS, siteStock } from './stock'
+import { BDL_ST, productName } from './shop'
 import { dayOf, nowStamp } from '../lib/format'
 
 // RG : rapprochement de fin de journée de l'atelier boulangerie.
@@ -33,6 +34,8 @@ export function reconcileDay(s: DemoState, day: string): DemoState {
     next = {
       ...next, alerts, endOfDay: [...next.endOfDay, key],
       bonsSortie: next.bonsSortie.map(b => bons.includes(b) ? { ...b, status: BS.clos, reconcile: { at, result, detail } } : b),
+      // Boutique : les BDL réceptionnés conformes dans la journée sont clôturés (les BDL avec écart le sont à la clôture de l'alerte).
+      bdls: next.bdls.map(b => b.toSite === site && b.status === BDL_ST.ok && b.counts?.length && dayOf(b.counts[b.counts.length - 1].ts) === day ? { ...b, status: BDL_ST.clos } : b),
     }
   }
   return next
@@ -42,7 +45,10 @@ export function reconcileDay(s: DemoState, day: string): DemoState {
 export function stockConflicts(s: DemoState) {
   return BAKERY_SITES.flatMap(site => {
     const st = siteStock(s.movements, site)
-    return SITE_MATS.filter(m => st[m.mp] < -1e-6).map(m => `${site} : ${matName(m.mp)} (${fmtQty(m.mp, st[m.mp])})`)
+    const lots: Record<string, number> = {}
+    s.shopMoves.filter(m => m.site === site).forEach(m => { lots[`${m.code}|${m.lot}`] = (lots[`${m.code}|${m.lot}`] || 0) + m.qty })
+    const shop = Object.entries(lots).filter(([, q]) => q < -1e-6).map(([k, q]) => `${site} : ${productName(k.split('|')[0])} (${q})`)
+    return [...SITE_MATS.filter(m => st[m.mp] < -1e-6).map(m => `${site} : ${matName(m.mp)} (${fmtQty(m.mp, st[m.mp])})`), ...shop]
   })
 }
 
@@ -53,6 +59,10 @@ export function syncPending(s: DemoState): DemoState {
   return {
     ...s, offline: false, queue: [],
     lots: s.lots.map(stamp),
+    shopMoves: s.shopMoves.map(stamp),
+    declarations: s.declarations.map(stamp),
+    shopFixes: s.shopFixes.map(stamp),
+    bdls: s.bdls.map(b => b.counts?.some(c => !c.trace.at) ? { ...b, counts: b.counts.map(c => (c.trace.at ? c : { ...c, trace: { ...c.trace, at } })) } : b),
     receptions: s.receptions.map(stamp),
     movements: s.movements.map(stamp),
     bonsSortie: s.bonsSortie.map(b => {

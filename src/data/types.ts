@@ -1,3 +1,5 @@
+import type { Trace } from './trace'
+
 export type Role =
   | 'direction' | 'magasinierCentral' | 'controleur' | 'achats'
   | 'boulanger' | 'enfourneur' | 'magasinier' | 'boutiquier' | 'caissiere' | 'patissier' | 'livreur'
@@ -29,15 +31,22 @@ export type WholesaleClient = { code: string; name: string; ceiling: number; out
 export type Param = { label: string; value: string; override: string }
 
 export type AlertStatus = 'Nouvelle' | 'En investigation' | 'Justifiée' | 'Imputée' | 'Clôturée'
+// `ref` : objet contrôlé (ex. BDL d'une boutique), pour clôturer le BDL à la clôture de l'alerte.
 export type AlertItem = {
   id: string; type: string; severity: 'Haute' | 'Moyenne' | 'Basse'; value: number | null
   detail: string; people: string; status: AlertStatus
   history: { at: string; by: string; text: string }[]
+  ref?: { kind: 'BDL'; id: string; site: SiteCode }
 }
 
-export type BdlLine = { label: string; sent: number; counted?: number }
+export type BdlLine = { label: string; sent: number; counted?: number; code?: string; lot?: string; dlc?: string }
+export type BdlPhoto = { kind: string; name: string; thumb: string }
+// Passage de comptage à l'aveugle (une réception partielle puis son complément = deux passages sur le même BDL).
+export type BdlCount = { ts: number; trace: Trace; counts: number[]; partial: boolean; remark?: string; photos: BdlPhoto[] }
+export type BdlRequest = { at: string; by: string; text: string; answer?: { at: string; by: string; text: string } }
 export type Bdl = {
   id: string; to: string; toSite: SiteCode | null; status: string; lines: BdlLine[]; note?: string
+  ts?: number; by?: string; counts?: BdlCount[]; requests?: BdlRequest[]
 }
 
 export type Payment = { mode: 'Espèces' | 'MTN MoMo' | 'Moov Money' | 'Celtiis Cash'; amount: number; ref?: string }

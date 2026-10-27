@@ -5,7 +5,7 @@ const A = (at: string, author: string, device: string, site: string, action: str
 
 export const auditBase: AuditEntry[] = [
   A('26/10/2026 06:45', 'Junior AHOUANVOEDO', 'TAB-SIT02', 'SIT-02', 'Connexion', 'Connexion — ouverture de CAISSE-A-20261026 (fond 10 000 FCFA)'),
-  A('26/10/2026 07:12', 'Système', 'Serveur', 'SIT-02', 'Alerte', 'AL-2026-0088 générée (écart BDL-2026-0261)'),
+  A('26/10/2026 07:12', 'Système', 'Serveur', 'SIT-02', 'Alerte', 'AL-2026-0088 générée (écart de réception, boutique SITE 2)'),
   A('26/10/2026 09:05', 'Dr Carine SODJI', 'PC-DIR', 'SIT-01', 'Alerte', 'AL-2026-0088 : Nouvelle → En investigation'),
   A('26/10/2026 16:22', 'Paul HOUNSA', 'TAB-SIT02', 'SIT-02', 'Annulation de vente', 'Ticket TK-A-0106 (300 FCFA) annulé — motif : erreur de saisie'),
   A('26/10/2026 17:40', 'Awa ADJOVI', 'PC-DIR', 'SIT-01', 'Validation de dépense', 'DÉP-2026-0031 validée (15 000 FCFA)'),

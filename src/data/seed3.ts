@@ -1,5 +1,5 @@
 import type { Expense } from './types'
-import type { Inventory, Loss, Nc, Order, PurchaseRow, Reading, Versement } from './state'
+import type { Inventory, Nc, Order, PurchaseRow, Reading, Versement } from './state'
 
 export const expensesBase: Expense[] = [
   { id: 'DÉP-2026-0031', label: 'Demande de carburant livreur', amount: 15000, by: 'Sani DAOUDA', status: 'Rapprochée', photo: true,
@@ -11,12 +11,6 @@ export const expensesBase: Expense[] = [
 export const versementsBase: Versement[] = [
   { id: 'BV-2026-018', site: 'SIT-02', amount: 83800, by: 'Junior AHOUANVOEDO', status: 'Rapprochée banque',
     flow: ['Versée', 'Reçue au bureau central', 'Rapprochée banque'], bank: 'BOA', ref: 'BOA-2610-7741' },
-]
-
-export const lossesBase: Loss[] = [
-  { id: 'PERTE-A-01', site: 'SIT-02', qty: 12, label: 'Pain standard 100 g', reason: 'Invendu', destination: 'Retour atelier recyclage', photo: false, at: '26/10/2026 19:05' },
-  { id: 'PERTE-A-02', site: 'SIT-02', qty: 4, label: 'Yaourt vanille', reason: 'Périmé', destination: 'Destruction', photo: true, at: '26/10/2026 19:08' },
-  { id: 'PERTE-A-03', site: 'SIT-02', qty: 2, label: 'Crème glacée cornet', reason: 'Casse', destination: 'Destruction', photo: false, at: '26/10/2026 19:10' },
 ]
 
 export const inventoryBase: Inventory = {

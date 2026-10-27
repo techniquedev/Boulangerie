@@ -11,6 +11,7 @@ import {
 } from '../../data/stock'
 import { dayOf, dec, nowStamp, today } from '../../lib/format'
 import { exportExcel, exportPdf } from '../../lib/export'
+import { readPhoto } from '../../lib/photo'
 import { cleanNum, toNum, TraceInfo } from '../boulanger/shared'
 import { useStore } from './shared'
 
@@ -18,20 +19,6 @@ type Row = { mp: string; unit: string; ordered: string; received: string; remark
 const blankRow = (): Row => ({ mp: '', unit: '', ordered: '', received: '', remark: '' })
 const isoToday = () => today().split('/').reverse().join('-')
 const fromIso = (v: string) => v.split('-').reverse().join('/')
-
-// Photo réduite (vignette) pour rester légère en stockage local hors-ligne.
-const readPhoto = (file: File) => new Promise<string>((resolve, reject) => {
-  const img = new Image()
-  img.onload = () => {
-    const k = Math.min(1, 480 / Math.max(img.width, img.height))
-    const c = document.createElement('canvas')
-    c.width = img.width * k; c.height = img.height * k
-    c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height)
-    URL.revokeObjectURL(img.src); resolve(c.toDataURL('image/jpeg', 0.6))
-  }
-  img.onerror = reject
-  img.src = URL.createObjectURL(file)
-})
 
 const groupStatus = (g?: RecGroup) => g?.partial
   ? <Badge tone="warn">Réception partielle — reliquat : {g.reliquat.map(r => `${matName(r.mp)} ${fmtQty(r.mp, r.qty)}`).join(', ')}</Badge>

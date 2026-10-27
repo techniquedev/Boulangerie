@@ -5,6 +5,8 @@ import { Big, Notice, Screen } from '../components/ui'
 import { money, nowStamp } from '../lib/format'
 import { products } from '../data/catalog'
 import type { Payment } from '../data/types'
+import { fefo, nextShopMoveId, shopLots, shopProduct, shopStock, type ShopMove } from '../data/shop'
+import { traceFor } from '../data/trace'
 
 type Mode = Payment['mode']
 const MODES: Mode[] = ['Espèces', 'MTN MoMo', 'Moov Money', 'Celtiis Cash']
@@ -16,9 +18,11 @@ export function Pos() {
   const [pay, setPay] = useState<Record<string, string>>({})
   const [refs, setRefs] = useState<Record<string, string>>({})
   const [cat, setCat] = useState('Tous')
-  const stock = state.stockA
+  // Stock vendant de la boutique du site : seuls les lots non périmés sont vendables (FEFO).
+  const site = user!.sites[0]
+  const stock = Object.fromEntries(Object.entries(shopStock(state.shopMoves, site)).map(([c, v]) => [c, v.sellable]))
   const cats = ['Tous', ...Array.from(new Set(products.map(p => p.category)))]
-  const shown = products.filter(p => (cat === 'Tous' || p.category === cat) && p.code in stock)
+  const shown = products.filter(p => (cat === 'Tous' || p.category === cat) && !!shopProduct(p.code))
   const total = Object.entries(cart).reduce((a, [c, q]) => a + q * products.find(p => p.code === c)!.retail, 0)
   const paidSum = MODES.reduce((a, m) => a + (Number(pay[m]) || 0), 0)
   const open = session?.status === 'Ouverte'
@@ -40,9 +44,13 @@ export function Pos() {
       const p = products.find(x => x.code === code)!
       return { code, label: `${p.name} ${p.format}`, qty, unit: p.retail }
     })
+    const ticket = `TK-A-0${state.ticketSeq}`
+    const lots = shopLots(state.shopMoves, site)
+    const t = traceFor(user!.name, site, state.offline), ts = Date.now()
+    const sold: Omit<ShopMove, 'id'>[] = lines.flatMap(l => (fefo(lots, l.code, l.qty) || []).map(x => ({ site, code: l.code, lot: x.lot, dlc: x.dlc, qty: -x.qty, kind: 'Vente (caisse)' as const, ref: ticket, ts, trace: t })))
     update(s => ({
       ...s, ticketSeq: s.ticketSeq + 1,
-      stockA: Object.fromEntries(Object.entries(s.stockA).map(([c, q]) => [c, q - (cart[c] || 0)])),
+      shopMoves: [...s.shopMoves, ...sold.map((m, i) => ({ ...m, id: nextShopMoveId(s.shopMoves, site, i) }))],
       queue: s.offline ? [{ id: `TK-A-0${s.ticketSeq}`, text: `Vente de ${total} FCFA`, at: nowStamp() }, ...s.queue] : s.queue,
       sessions: s.sessions.map(x => x.id === session.id ? { ...x, tickets: [...x.tickets, { id: `TK-A-0${s.ticketSeq}`, at: nowStamp(), lines, payments }] } : x),
     }))

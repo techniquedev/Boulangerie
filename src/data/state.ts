@@ -1,6 +1,7 @@
 import type { AlertItem, AuditEntry, Bdl, Device, Expense, Notification, Payment, SiteCode } from './types'
 import type { ProdLot } from './boulanger'
 import type { BonSortie, Movement, Reception } from './stock'
+import type { Declaration, ShopFix, ShopMove } from './shop'
 
 export type SaleLine = { code: string; label: string; qty: number; unit: number }
 export type SaleTicket = {
@@ -18,7 +19,6 @@ export type Versement = {
   id: string; site: SiteCode; amount: number; by: string; status: string
   flow: string[]; bank?: string; ref?: string
 }
-export type Loss = { id: string; site: SiteCode; qty: number; label: string; reason: string; destination: string; photo: boolean; at: string }
 export type InventoryLine = { code: string; label: string; theoretical: number; counted?: number; unit: number }
 export type Inventory = {
   id: string; location: string; status: 'En cours' | 'En attente de validation direction' | 'Validé'
@@ -35,7 +35,6 @@ export type DemoState = {
   sessions: CashSession[]
   expenses: Expense[]
   versements: Versement[]
-  losses: Loss[]
   inventory: Inventory
   ncs: Nc[]
   readings: Reading[]
@@ -45,7 +44,6 @@ export type DemoState = {
   devices: Device[]
   notifications: Notification[]
   matStock: Record<string, number>
-  stockA: Record<string, number>
   ticketSeq: number
   offline: boolean
   queue: { id: string; text: string; at: string }[]
@@ -57,4 +55,10 @@ export type DemoState = {
   workshop: Record<string, Record<string, number>>  // stock des ateliers (site|atelier → matière)
   lots: ProdLot[]
   endOfDay: string[]                                // rapprochements de fin de journée déjà faits (site|jour)
+  // Boutiques (stock vendant par site)
+  shopMoves: ShopMove[]                             // mouvements du stock vendant (seule source du stock)
+  declarations: Declaration[]                       // invendus, pertes et retours
+  shopFixes: ShopFix[]                              // contre-écritures du stock vendant
+  bdlTolerance: Record<string, number>              // tolérance d'écart BDL par produit (0 par défaut)
+  lossPhotoThreshold: number                        // valeur (FCFA) au-delà de laquelle la photo d'une perte est obligatoire
 }

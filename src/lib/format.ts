@@ -24,6 +24,8 @@ export const nowStamp = () => stampAt(new Date())
 // Jour JJ/MM/AAAA (Porto-Novo) d'un instant.
 export const dayOf = (ts: number) => stampAt(new Date(ts)).slice(0, 10)
 export const today = () => dayOf(Date.now())
+// Minuit (Porto-Novo, UTC+1) d'un jour JJ/MM/AAAA.
+export const dayStartTs = (day: string) => { const [d, m, y] = day.split('/').map(Number); return Date.UTC(y, m - 1, d, -1, 0) }
 export const hourNow = () => Number(nowStamp().slice(11, 13))
 
 // Instant à HH:MM (heure de Porto-Novo, UTC+1 sans heure d'été) il y a `daysAgo` jours.

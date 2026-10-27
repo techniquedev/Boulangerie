@@ -33,6 +33,12 @@ import { MSorties } from './screens/magasin/Sorties'
 import { MStocks } from './screens/magasin/Stocks'
 import { MSuivi } from './screens/magasin/Suivi'
 import { MHistory } from './screens/magasin/Historique'
+import { SHome } from './screens/boutique/Accueil'
+import { SReception } from './screens/boutique/Reception'
+import { SSuivi } from './screens/boutique/Suivi'
+import { SStock } from './screens/boutique/Stock'
+import { SPertes } from './screens/boutique/Pertes'
+import { SHistory } from './screens/boutique/Historique'
 
 const screens: Record<ScreenId, () => React.ReactElement> = {
   dashboard: Dashboard, alerts: Alerts, production: Production, cuisson: Cuisson, magasin: Magasin, bdl: BdlScreen, pos: Pos,
@@ -41,6 +47,7 @@ const screens: Record<ScreenId, () => React.ReactElement> = {
   reports: Reports, treasury: Treasury, audit: Audit, devices: Devices, v3: V3, notifications: Notifications, rbac: Rbac,
   bHome: BHome, bReception: BReception, bPetrissee: BPetrissee, bLots: BLots, bCuisson: BCuisson, bHistory: BHistory,
   mHome: MHome, mReceptions: MReceptions, mSorties: MSorties, mStocks: MStocks, mSuivi: MSuivi, mHistory: MHistory,
+  sHome: SHome, sReception: SReception, sSuivi: SSuivi, sStock: SStock, sPertes: SPertes, sHistory: SHistory,
 }
 
 function Shell() {
