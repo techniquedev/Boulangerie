@@ -9,7 +9,7 @@ import { seedShop } from '../data/seedShop'
 
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v))
 
-export const STORAGE_KEY = 'delice-plus-demo-v4'
+export const STORAGE_KEY = 'delice-plus-demo-v5'
 
 export function initialState(): DemoState {
   const shop = seedShop()

@@ -1,12 +1,13 @@
 import type { DemoState } from './state'
 import type { Trace } from './trace'
 import { BAKERY_SITES, figures, mpOf, nextAlertId } from './boulanger'
-import { BS, fmtQty, matName, SITE_MATS, siteStock } from './stock'
+import { atelierLabel, ATELIERS, BS, fmtQty, matName, SITE_MATS, siteStock, type BonSortie, type Reconcile } from './stock'
+import { patFigures, prodLine } from './patisserie'
 import { BDL_ST, productName } from './shop'
 import { dayOf, nowStamp } from '../lib/format'
 
-// RG : rapprochement de fin de journée de l'atelier boulangerie.
-// Matières sorties du magasin du site (bons confirmés du jour) / matières déclarées consommées dans les pétrissées.
+// RG : rapprochement de fin de journée des ateliers (boulangerie, pâtisserie, yaourts / crèmes glacées).
+// Matières sorties du magasin du site (bons confirmés du jour) / matières déclarées consommées (pétrissées, lots de production).
 // Les bons rapprochés passent « Clôturé » avec le résultat « Conforme » ou « Écart à traiter » (visible du magasinier) ;
 // tout écart génère en plus une alerte réservée à la direction et au contrôleur central.
 export function reconcileDay(s: DemoState, day: string): DemoState {
@@ -14,26 +15,34 @@ export function reconcileDay(s: DemoState, day: string): DemoState {
   for (const site of BAKERY_SITES) {
     const key = `${site}|${day}`
     if (next.endOfDay.includes(key)) continue
-    const bons = next.bonsSortie.filter(b => b.site === site && b.atelier === 'ATL-B' && b.status === BS.conf && dayOf(b.ts) === day)
-    const out: Record<string, number> = {}, used: Record<string, number> = {}
-    bons.forEach(b => b.lines.forEach(l => { out[l.mp] = (out[l.mp] || 0) + l.qty }))
-    next.lots.filter(l => l.site === site && dayOf(l.ts) === day)
-      .forEach(l => figures(l).mats.forEach(m => { used[mpOf(m.mat)] = (used[mpOf(m.mat)] || 0) + m.qty }))
-    const gaps = SITE_MATS.filter(m => Math.abs((out[m.mp] || 0) - (used[m.mp] || 0)) > 1e-6)
-    const detail = gaps.length
-      ? gaps.map(m => `${matName(m.mp)} : sorti ${fmtQty(m.mp, out[m.mp] || 0)} / consommé ${fmtQty(m.mp, used[m.mp] || 0)}`).join(' ; ')
-      : 'Sorties du jour égales aux consommations déclarées.'
     const at = nowStamp()
-    const result = gaps.length ? 'Écart à traiter' as const : 'Conforme' as const
-    const alerts = gaps.length ? [{
-      id: nextAlertId(next.alerts), type: 'Écart matières fin de journée', severity: 'Moyenne' as const, value: null,
-      detail: `Atelier boulangerie ${site} — ${day} : ${detail}`,
-      people: 'Magasinier de site / boulanger du site', status: 'Nouvelle' as const,
-      history: [{ at, by: 'Système', text: 'Rapprochement automatique de fin de journée.' }],
-    }, ...next.alerts] : next.alerts
+    let alerts = next.alerts
+    const closed = new Map<BonSortie, Reconcile>()
+    for (const atl of ATELIERS.map(a => a.code)) {
+      const bons = next.bonsSortie.filter(b => b.site === site && b.atelier === atl && b.status === BS.conf && dayOf(b.ts) === day)
+      const out: Record<string, number> = {}, used: Record<string, number> = {}
+      bons.forEach(b => b.lines.forEach(l => { out[l.mp] = (out[l.mp] || 0) + l.qty }))
+      if (atl === 'ATL-B') next.lots.filter(l => l.site === site && dayOf(l.ts) === day)
+        .forEach(l => figures(l).mats.forEach(m => { used[mpOf(m.mat)] = (used[mpOf(m.mat)] || 0) + m.qty }))
+      else next.patLots.filter(l => l.site === site && l.fab === day && prodLine(l.line).atelier === atl)
+        .forEach(l => patFigures(l).mats.forEach(m => { used[m.mp] = (used[m.mp] || 0) + m.qty }))
+      if (!bons.length && !Object.keys(used).length) continue
+      const gaps = SITE_MATS.filter(m => Math.abs((out[m.mp] || 0) - (used[m.mp] || 0)) > 1e-6)
+      const detail = gaps.length
+        ? gaps.map(m => `${matName(m.mp)} : sorti ${fmtQty(m.mp, out[m.mp] || 0)} / consommé ${fmtQty(m.mp, used[m.mp] || 0)}`).join(' ; ')
+        : 'Sorties du jour égales aux consommations déclarées.'
+      const result = gaps.length ? 'Écart à traiter' as const : 'Conforme' as const
+      bons.forEach(b => closed.set(b, { at, result, detail }))
+      if (gaps.length) alerts = [{
+        id: nextAlertId(alerts), type: 'Écart matières fin de journée', severity: 'Moyenne' as const, value: null,
+        detail: `${atelierLabel(atl)} ${site} — ${day} : ${detail}`,
+        people: `Magasinier de site / ${atl === 'ATL-B' ? 'boulanger' : 'pâtissier – opératrice yaourts-glaces'} du site`, status: 'Nouvelle' as const,
+        history: [{ at, by: 'Système', text: 'Rapprochement automatique de fin de journée.' }],
+      }, ...alerts]
+    }
     next = {
       ...next, alerts, endOfDay: [...next.endOfDay, key],
-      bonsSortie: next.bonsSortie.map(b => bons.includes(b) ? { ...b, status: BS.clos, reconcile: { at, result, detail } } : b),
+      bonsSortie: next.bonsSortie.map(b => closed.has(b) ? { ...b, status: BS.clos, reconcile: closed.get(b) } : b),
       // Boutique : les BDL réceptionnés conformes dans la journée sont clôturés (les BDL avec écart le sont à la clôture de l'alerte).
       bdls: next.bdls.map(b => b.toSite === site && b.status === BDL_ST.ok && b.counts?.length && dayOf(b.counts[b.counts.length - 1].ts) === day ? { ...b, status: BDL_ST.clos } : b),
     }
@@ -59,6 +68,7 @@ export function syncPending(s: DemoState): DemoState {
   return {
     ...s, offline: false, queue: [],
     lots: s.lots.map(stamp),
+    patLots: s.patLots.map(stamp),
     shopMoves: s.shopMoves.map(stamp),
     declarations: s.declarations.map(stamp),
     shopFixes: s.shopFixes.map(stamp),

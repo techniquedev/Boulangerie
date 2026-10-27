@@ -1,5 +1,6 @@
 import type { AlertItem, AuditEntry, Bdl, Device, Expense, Notification, Payment, SiteCode } from './types'
 import type { ProdLot } from './boulanger'
+import type { PatLot } from './patisserie'
 import type { BonSortie, Movement, Reception } from './stock'
 import type { Declaration, ShopFix, ShopMove } from './shop'
 
@@ -54,6 +55,7 @@ export type DemoState = {
   bonsSortie: BonSortie[]                           // bons de sortie magasin de site → ateliers
   workshop: Record<string, Record<string, number>>  // stock des ateliers (site|atelier → matière)
   lots: ProdLot[]
+  patLots: PatLot[]                                 // lots pâtisserie / yaourts / glaces
   endOfDay: string[]                                // rapprochements de fin de journée déjà faits (site|jour)
   // Boutiques (stock vendant par site)
   shopMoves: ShopMove[]                             // mouvements du stock vendant (seule source du stock)

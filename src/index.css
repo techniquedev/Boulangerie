@@ -294,3 +294,11 @@
 .photo-cell img,.thumb{width:56px;height:42px;object-fit:cover;border-radius:6px;border:1px solid var(--border)}
 .big-btn.sm{min-height:40px;padding:8px 12px;font-size:13px}
 .file-btn.required{border-color:var(--danger);color:var(--danger)}
+
+/* Ateliers pâtisserie / yaourts-glaces (tablette) */
+.quick-actions.four{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.atelier-btn.tall{min-height:110px;font-size:18px}
+.atelier-btn span{display:flex;flex-direction:column;gap:2px}
+.atelier-btn small{font-size:12px;font-weight:500;color:var(--muted)}
+.recipe-block{display:flex;flex-direction:column;gap:8px}
+.recipe-block h4{display:flex;align-items:center;gap:6px;font-size:14px}

@@ -7,6 +7,7 @@ import {
   BS, fmtQty, matName, nextReceptionId, siteMat, SITE_MATS, workshopKey,
   type AtelierCode, type BonSortie, type Movement, type MoveKind, type Reception, type Reconcile, type Treatment,
 } from './stock'
+import { addDaysTo, nextPatLotId, prodLine, recipe, theoretical, type PatItem, type PatLot } from './patisserie'
 import { dayOf, demoTs, stampAt } from '../lib/format'
 
 // Données de démonstration : même principe sur les 3 sites, données isolées par site.
@@ -18,6 +19,7 @@ const TEAMS: { site: SiteCode; store: string; baker: string; oven: string; pat: 
   { site: 'SIT-03', store: 'Nadège AÏSSAN', baker: 'Séverin TCHEKPLI', oven: 'Omar GADO', pat: 'Reine AZON' },
 ]
 const HISTORY_DAYS = 30
+const PAT_DAYS = 6       // historique des lignes pâtisserie / yaourts / glaces (tous les jours, dimanche compris)
 const LOW_MOTIFS = ['Farine humide, pâte trop molle : pâtons repris', 'Coupure de courant pendant le pétrissage', 'Pâtons trop lourds au façonnage (balance à recalibrer)']
 
 // Stock du magasin de site visé au soir du 25/10/2026 (sucre et glace passent sous le minimum le 26/10).
@@ -57,6 +59,7 @@ type BonOpts = { confirmTs?: number; confirmBy?: string; received?: Record<strin
 
 export function seedSites() {
   const lots: ProdLot[] = []
+  const patLots: PatLot[] = []
   const bons: BonSortie[] = []
   const receptions: Reception[] = []
   const movements: Movement[] = []
@@ -139,9 +142,48 @@ export function seedSites() {
       endOfDay.push(`${site}|${dayOf(demoTs(d, 12, 0))}`)
     }
 
+    // Production pâtisserie / yaourts / glaces : consommation réelle = recette × facteur ; ingrédients déduits du stock d'atelier.
+    const addPat = (t: number, line: string, items: Omit<PatItem, 'dlc'>[], factor: Record<string, number> = {}, motif?: string) => {
+      const fab = dayOf(t)
+      const theo = theoretical(items.map(i => ({ code: i.code, qty: i.planned })))
+      const mats = Object.entries(theo).map(([mp, q]) => ({ mp, qty: +(q * (factor[mp] ?? 1)).toFixed(4) }))
+      const n = lots.filter(l => l.site === site && dayOf(l.ts) === fab).length + patLots.filter(l => l.site === site && l.fab === fab).length
+      const lot: PatLot = {
+        id: nextPatLotId(line, site, t, n), site, line, ts: t, fab, trace: trace(pat, site, t), motif, corrections: [], mats, yieldTheo: prodLine(line).yieldTheo,
+        items: items.map(i => ({ ...i, dlc: addDaysTo(fab, recipe(i.code).shelf) })),
+      }
+      patLots.push(lot)
+      mats.forEach(m => ws(prodLine(line).atelier, m.mp, -m.qty))
+      return lot
+    }
+    // Bon d'atelier du matin égal aux consommations des lots de la journée (rapprochement « Conforme »).
+    const patDay = (d: number, plan: { line: string; at: [number, number]; items: Omit<PatItem, 'dlc'>[]; factor?: Record<string, number>; motif?: string }[], bonTimes: Record<string, [number, number]>, close: boolean) => {
+      const made = plan.map(p => ({ p, theo: theoretical(p.items.map(i => ({ code: i.code, qty: i.planned }))) }))
+      const dayBons = (['ATL-P', 'ATL-YG'] as AtelierCode[]).map(atl => {
+        const need: Record<string, number> = {}
+        made.filter(m => prodLine(m.p.line).atelier === atl).forEach(m => Object.entries(m.theo).forEach(([mp, q]) => { need[mp] = +((need[mp] || 0) + +(q * (m.p.factor?.[mp] ?? 1)).toFixed(4)).toFixed(4) }))
+        const [hh, mm] = bonTimes[atl]
+        return Object.keys(need).length ? addBon(demoTs(d, hh, mm), atl, Object.entries(need), { confirmTs: demoTs(d, hh, mm + 5) }) : null
+      }).filter(Boolean) as BonSortie[]
+      plan.forEach(p => addPat(demoTs(d, p.at[0], p.at[1]), p.line, p.items, p.factor, p.motif))
+      if (close) dayBons.forEach(b => { b.status = BS.clos; b.reconcile = { at: at(demoTs(d, 20, 0)), result: 'Conforme', detail: 'Sorties du jour égales aux consommations déclarées.' } })
+    }
+
+    const patHistory = (d: number) => patDay(d, [
+      { line: 'P', at: [7, 30], items: [{ code: 'PF-07', planned: 37, produced: 35, rejects: 2, rejectMotif: 'Cuisson ratée' }, { code: 'PF-08', planned: 55, produced: 55, rejects: 0 },
+        ...(d % 2 === 0 ? [{ code: 'PF-09', planned: 6, produced: 6, rejects: 0 }] : [])] },
+      { line: 'Y', at: [8, 30], items: [{ code: 'PF-11', planned: 82, produced: 80, rejects: 2, rejectMotif: 'Défaut de remplissage' }, { code: 'PF-12', planned: 30, produced: 30, rejects: 0 }],
+        ...(d === 3 ? { factor: { 'MP-04': 1.12 }, motif: 'Sucre dosé à la main : balance électronique en panne' } : {}) },
+      { line: 'G', at: [9, 30], items: d === 5
+        ? [{ code: 'PF-14', planned: 55, produced: 45, rejects: 6, rejectMotif: 'Défaut d’aspect', flavor: 'Chocolat' }, { code: 'PF-15', planned: 25, produced: 25, rejects: 0, flavor: 'Vanille' }]
+        : [{ code: 'PF-14', planned: 45, produced: 45, rejects: 0, flavor: d % 2 ? 'Vanille' : 'Fraise' }, { code: 'PF-15', planned: 25, produced: 24, rejects: 1, rejectMotif: 'Chute / casse', flavor: 'Chocolat' }],
+        ...(d === 5 ? { motif: 'Coupure de courant : 10 cornets ratés pendant le passage en surgélation' } : {}) },
+    ], { 'ATL-P': [6, 0], 'ATL-YG': [6, 10] }, true)
+
     // ——— Historique ———
     for (let d = HISTORY_DAYS; d >= 1; d--) {
-      if (sunday(demoTs(d, 12, 0))) continue
+
+      if (sunday(demoTs(d, 12, 0))) { if (d <= PAT_DAYS) patHistory(d); continue }
       const bags = d % 3 === 0 ? 4 : 3
       const mats: [MatKey, number][] = [['farine', bags], ['levure', bags * 0.5], ['sel', bags * 0.5], ['glace', bags * 20]]
       const dayBons: BonSortie[] = []
@@ -163,8 +205,6 @@ export function seedSites() {
       const lot = addLot(t0, mats, linesFor(bags, perBag, d % 4 === 1), 'Clôturé', low ? LOW_MOTIFS[d % 3] : undefined)
       closeDay(d, dayBons, lot)
 
-      if (d % 7 === 2) addBon(demoTs(d, 6, 0), 'ATL-P', [['MP-01', 1], ['MP-04', 10], ['MP-06', 60], ['MP-07', 5]], { confirmTs: demoTs(d, 6, 20) })
-      if (d % 7 === 4) addBon(demoTs(d, 6, 10), 'ATL-YG', [['MP-05', 12], ['MP-04', 8], ['MP-10', 320]], { confirmTs: demoTs(d, 6, 30) })
 
       if (d % 7 === 0) addRec(demoTs(d, 7, 30), 'FR-01', [['MP-01', 'sac', 20, 20], ['MP-02', 'carton', 2, 2]])
       if (d % 14 === 3) addRec(demoTs(d, 8, 0), 'FR-04', [['MP-04', 'sac 50 kg', 1, 1], ['MP-03', 'sac 25 kg', 1, 1]])
@@ -173,6 +213,7 @@ export function seedSites() {
       if (d === 10) addRec(demoTs(d, 10, 0), 'FR-04', [['MP-04', 'sac 50 kg', 2, 1, 'Le camion n’avait qu’un sac : le second livré plus tard']], { invoiceNo: 'FAC-FR04-0131' })
       if (d === 9) addRec(demoTs(d, 10, 0), 'FR-04', [['MP-04', 'sac 50 kg', 1, 1, 'Complément de la facture FAC-FR04-0131']], { invoiceNo: 'FAC-FR04-0131', complementOf: receptions.find(r => r.site === site && r.invoiceNo === 'FAC-FR04-0131')!.id })
       if (d === 4) addRec(demoTs(d, 10, 30), 'FR-03', [['MP-11', 'carton 500', 2, 1, 'Rupture chez le fournisseur : 1 carton en reliquat']], { invoiceNo: 'FAC-FR03-0077' })
+      if (d <= PAT_DAYS) patHistory(d)
     }
 
     // ——— Journée du 26/10/2026 (exemples chiffrés du cahier des charges) ———
@@ -188,6 +229,14 @@ export function seedSites() {
     addRec(d0(7, 30), 'FR-01', [['MP-01', 'sac', 20, 20], ['MP-02', 'carton', 4, 4]], { invoiceNo: 'FAC-FR01-0261' })
     // Bon complémentaire en attente : permet à l'atelier boulangerie de confirmer une réception puis de saisir une pétrissée.
     addBon(d0(8, 0), 'ATL-B', [['MP-01', 4], ['MP-02', 5], ['MP-03', 5], ['MP-08', 60]])
+    // Productions du jour (exemples chiffrés) : LOT-P-20261026-02, LOT-Y-20261026-03, LOT-G-20261026-04.
+    patDay(0, [
+      { line: 'P', at: [9, 0], items: [{ code: 'PF-09', planned: 40, produced: 40, rejects: 0 }, { code: 'PF-07', planned: 100, produced: 100, rejects: 0 }, { code: 'PF-08', planned: 150, produced: 150, rejects: 0 }] },
+      { line: 'Y', at: [10, 0], items: [{ code: 'PF-11', planned: 300, produced: 300, rejects: 0 }, { code: 'PF-12', planned: 200, produced: 200, rejects: 0 }] },
+      { line: 'G', at: [11, 0], items: [{ code: 'PF-14', planned: 200, produced: 200, rejects: 0, flavor: 'Vanille' }, { code: 'PF-15', planned: 150, produced: 150, rejects: 0, flavor: 'Chocolat' }] },
+    ], { 'ATL-P': [8, 10], 'ATL-YG': [8, 20] }, false)
+    // Bon en attente vers l'atelier pâtisserie (BS-2026-042, vers les yaourts-glaces, est déjà en attente).
+    addBon(d0(12, 0), 'ATL-P', [['MP-01', 1], ['MP-04', 10], ['MP-06', 120], ['MP-07', 5], ['MP-09', 0.5], ['MP-05', 2], ['MP-02', 0.5]])
 
     // Numérotation : l'historique se termine à BS-2026-040, la journée du 26/10 commence à BS-2026-041.
     const hist = siteBons.filter(b => b.ts < demoTs(0, 0, 0)).sort((a, b) => a.ts - b.ts)
@@ -214,5 +263,5 @@ export function seedSites() {
     movements.push(...siteMoves.map((m, i) => ({ ...m, id: `MVT-S${site.slice(-1)}-${String(i + 1).padStart(5, '0')}` })))
   })
 
-  return { lots, bonsSortie: bons, receptions, movements, workshop, endOfDay, epsThreshold: MIN_EPS_PER_BAG }
+  return { lots, patLots, bonsSortie: bons, receptions, movements, workshop, endOfDay, epsThreshold: MIN_EPS_PER_BAG }
 }

@@ -32,11 +32,11 @@ const ymd = (ts: number) => dayOf(ts).split('/').reverse().join('')
 const sunday = (ts: number) => new Date(ts + 3600000).getUTCDay() === 0
 const addDays = (ts: number, n: number) => dayOf(ts + n * 86400000)
 
-// Ligne de BDL : lot et date limite pour les produits frais (lot du jour de production, la veille de la livraison).
+// Ligne de BDL : lot et date limite pour les produits frais (lot fabriqué la veille de la livraison, DLC = fabrication + conservation).
 const line = (code: string, sent: number, ts: number): BdlLine => {
   const p = shopProduct(code)!
   return p.perishable
-    ? { code, label: productName(code), sent, lot: `${p.prefix}-${ymd(ts - 86400000)}`, dlc: addDays(ts, p.shelf) }
+    ? { code, label: productName(code), sent, lot: `${p.prefix}-${ymd(ts - 86400000)}`, dlc: addDays(ts - 86400000, p.shelf) }
     : { code, label: productName(code), sent }
 }
 

@@ -10,7 +10,7 @@ export type ShopProduct = { code: string; perishable: boolean; shelf: number; pr
 const P = (code: string, alert: number, shelf = 0, prefix = ''): ShopProduct => ({ code, perishable: shelf > 0, shelf, prefix, alert })
 export const SHOP_PRODUCTS: ShopProduct[] = [
   P('PF-01', 60), P('PF-02', 40), P('PF-03', 20), P('PF-04', 20), P('PF-05', 15), P('PF-06', 10),
-  P('PF-07', 10, 2, 'P'), P('PF-08', 15), P('PF-11', 20, 14, 'Y'), P('PF-12', 10, 14, 'Y'), P('PF-14', 15, 90, 'G'), P('PF-15', 10, 90, 'G'),
+  P('PF-07', 10, 2, 'P'), P('PF-08', 15), P('PF-11', 20, 14, 'Y'), P('PF-12', 10, 14, 'Y'), P('PF-14', 15, 182, 'G'), P('PF-15', 10, 182, 'G'),
 ]
 export const shopProduct = (code: string) => SHOP_PRODUCTS.find(p => p.code === code)
 export const product = (code: string) => products.find(p => p.code === code)!

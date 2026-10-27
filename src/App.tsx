@@ -18,7 +18,7 @@ import { Reports, Treasury, Tour, Notifications } from './screens/Reports'
 import { homeByRole, menuByRole, siteBound, type ScreenId } from './data/rbac'
 import { roleLabels } from './data/org'
 import { hourNow, nowStamp, today } from './lib/format'
-import { NavContext } from './store/nav'
+import { NavArgContext, NavContext } from './store/nav'
 import { END_OF_DAY_HOUR } from './data/boulanger'
 import { reconcileDay, stockConflicts, syncPending } from './data/daily'
 import { BHome } from './screens/boulanger/Accueil'
@@ -39,6 +39,11 @@ import { SSuivi } from './screens/boutique/Suivi'
 import { SStock } from './screens/boutique/Stock'
 import { SPertes } from './screens/boutique/Pertes'
 import { SHistory } from './screens/boutique/Historique'
+import { PHome } from './screens/patisserie/Accueil'
+import { PProduction } from './screens/patisserie/Production'
+import { PLots } from './screens/patisserie/Lots'
+import { PStocks } from './screens/patisserie/Stocks'
+import { PHistory } from './screens/patisserie/Historique'
 
 const screens: Record<ScreenId, () => React.ReactElement> = {
   dashboard: Dashboard, alerts: Alerts, production: Production, cuisson: Cuisson, magasin: Magasin, bdl: BdlScreen, pos: Pos,
@@ -48,11 +53,14 @@ const screens: Record<ScreenId, () => React.ReactElement> = {
   bHome: BHome, bReception: BReception, bPetrissee: BPetrissee, bLots: BLots, bCuisson: BCuisson, bHistory: BHistory,
   mHome: MHome, mReceptions: MReceptions, mSorties: MSorties, mStocks: MStocks, mSuivi: MSuivi, mHistory: MHistory,
   sHome: SHome, sReception: SReception, sSuivi: SSuivi, sStock: SStock, sPertes: SPertes, sHistory: SHistory,
+  pHome: PHome, pProduction: PProduction, pLots: PLots, pStocks: PStocks, pHistory: PHistory,
 }
 
 function Shell() {
   const { user, setUser, state, update, toast, reset, say, audit } = useApp()
   const [view, setView] = useState<ScreenId>('dashboard')
+  const [navArg, setNavArg] = useState<string | undefined>()
+  const go = (id: ScreenId, arg?: string) => { setNavArg(arg); setView(id) }
 
   useEffect(() => { if (user) setView(homeByRole[user.role]) }, [user])
 
@@ -97,7 +105,7 @@ function Shell() {
       <aside className="side2">
         <div className="logo2"><span className="logo-mark"><Wheat size={20} /></span><div><b>DÉLICE PLUS</b><small>Gestion boulangerie</small></div></div>
         <nav>{groups.map(g => <div key={g}><h5>{g}</h5>{menu.filter(m => m.group === g).map(m =>
-          <button key={m.id} className={m.id === current ? 'active' : ''} onClick={() => setView(m.id)}>{m.label}</button>)}</div>)}</nav>
+          <button key={m.id} className={m.id === current ? 'active' : ''} onClick={() => go(m.id)}>{m.label}</button>)}</div>)}</nav>
         <button className="reset" onClick={reset}><RotateCcw size={16} /> Réinitialiser la démo</button>
       </aside>
       <main className="main2">
@@ -115,7 +123,7 @@ function Shell() {
         {state.offline && <div className="offline-bar"><WifiOff size={16} /> Mode hors-ligne — {state.queue.length} opération(s) en attente de synchronisation</div>}
         <section className="content2">{outOfSite
           ? <div className="notice warn">Aucune donnée de démonstration pour votre site ({user.siteLabel}) sur cet écran : les données de ce module appartiennent à SITE 1. Chaque compte reste limité à son propre site.</div>
-          : <NavContext.Provider value={setView}><View /></NavContext.Provider>}</section>
+          : <NavContext.Provider value={go}><NavArgContext.Provider value={navArg}><View key={`${current}-${navArg || ''}`} /></NavArgContext.Provider></NavContext.Provider>}</section>
       </main>
       {toast && <div className="toast">{toast}</div>}
     </div>
