@@ -1,71 +1,63 @@
-import { useState } from 'react'
 import { useApp } from '../store/context'
-import { Card, Kpi, Screen, Table, Badge, Notice } from '../components/ui'
+import { useNav } from '../store/nav'
+import { Badge, Card, Kpi, Notice, Screen, Table } from '../components/ui'
+import { useSiteFilter } from '../components/SiteFilter'
 import { siteShort } from '../data/org'
+import { bakeryDay, pastryDay, shopSales, shopStatus, storeStatus, toursOf } from '../data/direction'
 import { money, num } from '../lib/format'
-import { boulLot, cuissonLot, doughKg, epsOf, rejectRate, otherLots } from '../data/production'
-import { rawMaterials } from '../data/catalog'
-import { sale, paid } from '../data/seed2'
-import type { SiteCode } from '../data/types'
 
 export function Dashboard() {
   const { user, state } = useApp()
-  const u = user!
-  const [filter, setFilter] = useState<'all' | SiteCode>('all')
-  const shopSites: SiteCode[] = ['SIT-02', 'SIT-03']
-  const scope = filter === 'all' ? shopSites : [filter]
+  const go = useNav()
+  const { scope, day, bar } = useSiteFilter()
+  const full = user!.role === 'direction' || user!.role === 'controleur'
 
-  const rows = scope.map(code => {
-    const s = state.sessions.find(x => x.site === code)!
-    const ca = s.summary ? s.summary.ca : s.tickets.reduce((a, t) => a + sale(t), 0)
-    const cash = s.summary ? s.summary.cash : s.tickets.reduce((a, t) => a + paid(t, 'Espèces'), 0)
-    const momo = s.summary ? s.summary.momo : s.tickets.reduce((a, t) => a + paid(t, 'momo'), 0)
-    return { code, name: siteShort(code), ca, cash, momo }
-  })
-  const ca = rows.reduce((a, r) => a + r.ca, 0)
-  const cash = rows.reduce((a, r) => a + r.cash, 0)
-  const momo = rows.reduce((a, r) => a + r.momo, 0)
-
-  const full = u.role === 'direction' || u.role === 'controleur'
-  const kg = doughKg(boulLot.lines), eps = epsOf(kg), rate = rejectRate(cuissonLot.rejects.reduce((a, r) => a + r.qty, 0), cuissonLot.received)
+  const rows = scope.map(site => ({
+    site, sales: shopSales(state, site, day), bake: bakeryDay(state, site, day), pat: pastryDay(state, site, day),
+    store: storeStatus(state, site), shop: shopStatus(state, site, day), tours: toursOf(state, site, day),
+  }))
+  const sum = (f: (r: typeof rows[number]) => number) => rows.reduce((a, r) => a + f(r), 0)
+  const bags = sum(r => r.bake.bags), eps = sum(r => r.bake.eps)
+  const tourCash = sum(r => r.tours.reduce((a, x) => a + x.f.cash, 0)), tourMomo = sum(r => r.tours.reduce((a, x) => a + x.f.momo, 0))
   const openAlerts = state.alerts.filter(a => a.status !== 'Clôturée')
-  const valid = state.expenses.filter(e => e.status !== 'Demandée').reduce((a, e) => a + e.amount, 0)
+  const valid = state.expenses.filter(e => e.status !== 'Demandée' && e.status !== 'Refusée').reduce((a, e) => a + e.amount, 0)
   const pending = state.expenses.filter(e => e.status === 'Demandée').reduce((a, e) => a + e.amount, 0)
-  const low = rawMaterials.filter(m => (state.matStock[m.code] ?? m.stock) < m.min)
-  const piece = (l: string) => otherLots.find(x => x.line === l)!.items.reduce((a, i) => a + i.qty, 0)
-  const bdl = state.bdls
 
   return (
-    <Screen title="Tableau de bord" sub="Journée du lundi 26/10/2026 — filtres par site, boutique ou vue consolidée">
-      <div className="filter-row">
-        {[['all', 'Vue consolidée'], ...shopSites.map(c => [c, siteShort(c)])].map(([k, l]) =>
-          <button key={k} className={filter === k ? 'chip on' : 'chip'} onClick={() => setFilter(k as 'all' | SiteCode)}>{l}</button>)}
-      </div>
+    <Screen title="Tableau de bord" sub={`Journée du ${day} — vue consolidée des 3 sites ou par site`}>
+      {bar}
       <div className="kpi-row">
-        <Kpi label={filter === 'all' ? 'CA consolidé J' : 'CA du jour'} value={money(ca)} note={rows.map(r => `${r.name} ${num(r.ca)}`).join(' + ')} />
-        <Kpi label="Encaissements espèces / Mobile Money" value={`${num(cash)} / ${num(momo)} FCFA`} />
-        {full && <>
-          <Kpi label="Dépenses validées / en attente" value={`${num(valid)} / ${num(pending)} FCFA`} />
-          <Kpi label="Alertes ouvertes" value={String(openAlerts.length)} tone={openAlerts.length ? 'warn' : 'ok'} note="Visibles Direction et Contrôleur uniquement" />
-        </>}
+        <Kpi label="Ventes boutiques" value={money(sum(r => r.sales.ca))} note={rows.map(r => `${siteShort(r.site)} ${num(r.sales.ca)}`).join(' · ')} />
+        <Kpi label="Encaissements tournées (espèces / Mobile Money)" value={`${num(tourCash)} / ${num(tourMomo)} FCFA`} />
+        <Kpi label="Rendement boulangerie" value={bags ? `${num(eps / bags)} EPS/sac` : '—'} tone={bags ? (eps / bags >= state.epsThreshold ? 'ok' : 'danger') : undefined} note={`${num(bags)} sacs · seuil ${state.epsThreshold}`} />
+        {full && <Kpi label="Alertes ouvertes" value={String(openAlerts.length)} tone={openAlerts.length ? 'warn' : 'ok'} note="Visibles Direction et Contrôleur uniquement" />}
+        {full && <Kpi label="Dépenses validées / en attente" value={`${num(valid)} / ${num(pending)} FCFA`} />}
       </div>
-      <Card title="Production du jour (SITE 1)">
-        <div className="kpi-row">
-          <Kpi label="Farine pétrie" value={`${boulLot.bags} sacs (${boulLot.bags * 50} kg)`} />
-          <Kpi label="Rendement moyen" value={`${Math.round(eps / boulLot.bags)} EPS/sac`} note="Seuil : 400" tone="ok" />
-          <Kpi label="Pains cuits conformes / rebuts" value={`${num(cuissonLot.good)} conformes — ${cuissonLot.rejects.reduce((a, r) => a + r.qty, 0)} rebuts (${rate.toFixed(2).replace('.', ',')} %)`} />
-          <Kpi label="Pâtisserie / Yaourts / Glaces" value={`${piece('Pâtisserie')} pièces / ${piece('Yaourts')} pots / ${piece('Glaces')} unités`} />
-        </div>
+
+      <Card title="Production" sub="Boulangerie, pâtisserie, yaourts et crèmes glacées" actions={<button className="link-btn" onClick={() => go('production')}>Détail</button>}>
+        <Table head={['Site', 'Pétrissées', 'Pâtons', 'Rendement', 'Pains conformes / rebuts', 'Pâtisserie', 'Yaourts', 'Glaces']} rows={rows.map(r => [
+          <b>{siteShort(r.site)}</b>, num(r.bake.lots.length), num(r.bake.patons),
+          r.bake.bags ? <Badge tone={r.bake.perBag >= state.epsThreshold ? 'ok' : 'danger'}>{num(r.bake.perBag)} EPS/sac</Badge> : '—',
+          r.bake.good || r.bake.rejects ? `${num(r.bake.good)} / ${num(r.bake.rejects)}` : '—', num(r.pat.P), num(r.pat.Y), num(r.pat.G)])} />
       </Card>
-      <Card title="Bordereaux de livraison">
-        <div className="kpi-row">
-          <Kpi label="BDL émis / réceptionnés / avec écart" value={`${bdl.length} / ${bdl.filter(b => b.status.startsWith('Réception') || b.status.startsWith('Clôturé')).length} / ${bdl.filter(b => b.status.includes('écart')).length}`} />
-          {full && <Kpi label="Stock en alerte réappro" value={low.map(m => `${m.name} ${m.code}`).join(', ') || 'Aucun'} tone={low.length ? 'warn' : 'ok'} />}
-        </div>
+
+      <Card title="Magasins de site et boutiques" actions={<div className="btn-row"><button className="link-btn" onClick={() => go('magasin')}>Magasins</button><button className="link-btn" onClick={() => go('bdl')}>Bordereaux</button></div>}>
+        <Table head={['Site', 'Matières sous le minimum', 'Valeur stock magasin', 'Bons en attente / écarts', 'BDL en transit / avec écart', 'Références en rupture', 'Pertes boutique']} rows={rows.map(r => [
+          <b>{siteShort(r.site)}</b>, r.store.low.length ? <Badge tone="warn">{r.store.low.map(m => m.name).join(', ')}</Badge> : <Badge tone="ok">Aucune</Badge>,
+          money(r.store.value), `${r.store.pending} / ${r.store.toTreat}`, `${r.shop.transit} / ${r.shop.gaps}`, num(r.shop.rupture),
+          r.shop.lossQty ? `${num(r.shop.lossQty)} u. (${money(r.shop.lossValue)})` : '—'])} />
       </Card>
-      {full ? <Card title="Alertes ouvertes" sub="Jamais visibles par les opérateurs concernés (RG-10)">
-        <Table head={['N°', 'Type', 'Gravité', 'Valeur', 'Statut']} rows={openAlerts.map(a => [
-          a.id, a.type, <Badge tone={a.severity === 'Haute' ? 'danger' : 'warn'}>{a.severity}</Badge>, a.value ? money(a.value) : '—', a.status])} />
+
+      <Card title="Tournées des livreurs" actions={<button className="link-btn" onClick={() => go('tour')}>Détail</button>}>
+        {rows.some(r => r.tours.length) ? <Table head={['Site', 'Tournée', 'Livreur', 'Statut', 'Livré', 'Encaissé', 'Équilibrage']} rows={rows.flatMap(r => r.tours.map(({ t, f }) => [
+          siteShort(r.site), t.id, t.driver, <Badge tone={t.status === 'Soldée' ? 'ok' : t.status === 'Soldée avec écart' ? 'danger' : 'warn'}>{t.status}</Badge>,
+          f.rows.map(x => `${x.delivered}/${x.loaded}`).join(' · '), `${money(f.cash)} + ${money(f.momo)} MM`,
+          t.status.startsWith('Soldée') ? (f.qtyOk && f.cashOk ? 'Équilibrée' : 'Écart') : '—']))} /> : <Notice>Aucune tournée ce jour.</Notice>}
+      </Card>
+
+      {full ? <Card title="Alertes ouvertes" sub="Jamais visibles par les opérateurs concernés (RG-10)" actions={<button className="link-btn" onClick={() => go('alerts')}>Traiter</button>}>
+        <Table head={['N°', 'Type', 'Gravité', 'Détail', 'Statut']} rows={openAlerts.slice(0, 12).map(a => [
+          a.id, a.type, <Badge tone={a.severity === 'Haute' ? 'danger' : 'warn'}>{a.severity}</Badge>, <small>{a.detail}</small>, a.status])} />
       </Card> : <Notice>Les alertes d’écart et de fraude sont réservées aux rôles Contrôleur et Direction.</Notice>}
     </Screen>
   )

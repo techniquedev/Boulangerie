@@ -13,7 +13,7 @@ import { Caisse } from './screens/Caisse'
 import { Expenses, Versements, Invendus } from './screens/Finance'
 import { Orders, Credit, Plan } from './screens/Commercial'
 import { InventoryScreen, QualityScreen, PurchasesScreen } from './screens/Control'
-import { Catalog, Org, Rbac, Devices, Audit, V3 } from './screens/Admin'
+import { Catalog, Org, Rbac, Devices, Audit } from './screens/Admin'
 import { Reports, Treasury, Tour, Notifications } from './screens/Reports'
 import { homeByRole, menuByRole, siteBound, type ScreenId } from './data/rbac'
 import { roleLabels } from './data/org'
@@ -55,7 +55,7 @@ const screens: Record<ScreenId, () => React.ReactElement> = {
   dashboard: Dashboard, alerts: Alerts, production: Production, cuisson: Cuisson, magasin: Magasin, bdl: BdlScreen, pos: Pos,
   caisse: Caisse, invendus: Invendus, expenses: Expenses, versements: Versements, orders: Orders, credit: Credit, plan: Plan,
   inventory: InventoryScreen, quality: QualityScreen, purchases: PurchasesScreen, tour: Tour, catalog: Catalog, org: Org,
-  reports: Reports, treasury: Treasury, audit: Audit, devices: Devices, v3: V3, notifications: Notifications, rbac: Rbac,
+  reports: Reports, treasury: Treasury, audit: Audit, devices: Devices, notifications: Notifications, rbac: Rbac,
   bHome: BHome, bReception: BReception, bPetrissee: BPetrissee, bLots: BLots, bCuisson: BCuisson, bHistory: BHistory,
   mHome: MHome, mReceptions: MReceptions, mSorties: MSorties, mStocks: MStocks, mSuivi: MSuivi, mHistory: MHistory,
   sHome: SHome, sReception: SReception, sSuivi: SSuivi, sStock: SStock, sPertes: SPertes, sHistory: SHistory,

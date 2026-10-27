@@ -3,7 +3,7 @@ import type { Role, SiteCode, User } from './types'
 export type ScreenId =
   | 'dashboard' | 'alerts' | 'production' | 'cuisson' | 'magasin' | 'bdl' | 'pos' | 'caisse' | 'invendus'
   | 'expenses' | 'versements' | 'orders' | 'credit' | 'plan' | 'inventory' | 'quality' | 'purchases' | 'tour'
-  | 'catalog' | 'org' | 'reports' | 'treasury' | 'audit' | 'devices' | 'v3' | 'notifications' | 'rbac'
+  | 'catalog' | 'org' | 'reports' | 'treasury' | 'audit' | 'devices' | 'notifications' | 'rbac'
   | 'bHome' | 'bReception' | 'bPetrissee' | 'bLots' | 'bCuisson' | 'bHistory'
   | 'mHome' | 'mReceptions' | 'mSorties' | 'mStocks' | 'mSuivi' | 'mHistory'
   | 'sHome' | 'sReception' | 'sSuivi' | 'sStock' | 'sPertes' | 'sHistory'
@@ -40,7 +40,6 @@ const all = {
   rbac: M('rbac', 'Rôles & droits', 'Administration'),
   devices: M('devices', 'Appareils', 'Administration'),
   audit: M('audit', 'Journal d’audit', 'Administration'),
-  v3: M('v3', 'IA (V3)', 'Administration'),
   notifications: M('notifications', 'Notifications', 'Pilotage'),
   // Tableau de bord Boulanger (modèle unique, identique sur les 3 sites)
   bHome: M('bHome', 'Accueil', 'Mon atelier'),

@@ -96,17 +96,3 @@ export function Audit() {
     </Screen>
   )
 }
-
-export function V3() {
-  const q = ['Quelle boutique a le plus fort taux de perte cette semaine ?', 'Quel est le rendement moyen par sac sur 30 jours ?', 'Quels fournisseurs ont les factures en écart ?']
-  return (
-    <Screen title="Intelligence artificielle (V3)" sub="Écrans présentés grisés — non disponibles dans cette version (US-36, US-37)">
-      <div className="greyed">
-        <Card title="Prévisions IA des ventes (US-36)" actions={<Badge tone="neutral">V3</Badge>}><p>Écart prévision / réalisé affiché sur le plan de production.</p></Card>
-        <Card title="Assistant Direction en langage naturel (US-37)" actions={<Badge tone="neutral">V3 premium</Badge>}>
-          <ul>{q.map(x => <li key={x}>{x}</li>)}</ul><input className="ref-input wide" disabled placeholder="Posez votre question…" />
-        </Card>
-      </div>
-    </Screen>
-  )
-}

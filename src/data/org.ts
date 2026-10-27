@@ -4,17 +4,21 @@ export const COMPANY = 'Boulangerie-Pâtisserie DÉLICE PLUS Sarl'
 export const COMPANY_ACTIVITIES = 'boulangerie, pâtisserie, yaourts, crèmes glacées'
 export const DEMO_PASSWORD = 'Demo@2026'
 
+// Chaque site dispose de son magasin, de ses ateliers (boulangerie, pâtisserie, yaourts / glaces), d'un stock de produits finis,
+// d'une boutique et d'une caisse ; le magasin central de la Direction Générale est implanté sur SITE 1.
 export const sites: Site[] = [
-  { code: 'SIT-01', name: 'SITE 1 — Unité de production', status: 'Actif',
-    locations: ['MAG-MP', 'CF-01', 'ATL-B', 'ATL-P', 'ATL-YG', 'STK-PF'] },
-  { code: 'SIT-02', name: 'SITE 2 (Boutique A)', status: 'Actif', locations: ['STK-VA', 'CF-A', 'CAISSE-A'] },
-  { code: 'SIT-03', name: 'SITE 3 (Boutique B)', status: 'Actif', locations: ['STK-VB', 'CF-B', 'CAISSE-B'] },
+  { code: 'SIT-01', name: 'SITE 1 — Unité de production et magasin central', status: 'Actif',
+    locations: ['MAG-MP', 'MAG-S1', 'CF-01', 'ATL-B', 'ATL-P', 'ATL-YG', 'STK-PF', 'STK-V1', 'CAISSE-1'] },
+  { code: 'SIT-02', name: 'SITE 2 (Boutique A)', status: 'Actif', locations: ['MAG-S2', 'CF-02', 'ATL-B', 'ATL-P', 'ATL-YG', 'STK-PF', 'STK-VA', 'CF-A', 'CAISSE-A'] },
+  { code: 'SIT-03', name: 'SITE 3 (Boutique B)', status: 'Actif', locations: ['MAG-S3', 'CF-03', 'ATL-B', 'ATL-P', 'ATL-YG', 'STK-PF', 'STK-VB', 'CF-B', 'CAISSE-B'] },
   { code: 'SIT-04', name: 'Boutique C', status: 'Désactivé', locations: [], note: 'Historique conservé (US-14)' },
 ]
 
 export const locationLabels: Record<string, string> = {
-  'MAG-MP': 'Magasin matières premières', 'CF-01': 'Chambre froide', 'ATL-B': 'Atelier boulangerie',
-  'ATL-P': 'Atelier pâtisserie', 'ATL-YG': 'Atelier yaourts/glaces', 'STK-PF': 'Stock produits finis',
+  'MAG-MP': 'Magasin central (Direction Générale)', 'MAG-S1': 'Magasin matières du site', 'MAG-S2': 'Magasin matières du site', 'MAG-S3': 'Magasin matières du site',
+  'CF-01': 'Chambre froide', 'CF-02': 'Chambre froide', 'CF-03': 'Chambre froide',
+  'ATL-B': 'Atelier boulangerie', 'ATL-P': 'Atelier pâtisserie', 'ATL-YG': 'Atelier yaourts/glaces', 'STK-PF': 'Stock produits finis',
+  'STK-V1': 'Stock vendant boutique', 'CAISSE-1': 'Caisse boutique',
   'STK-VA': 'Stock vendant A', 'CF-A': 'Chambre froide boutique A', 'CAISSE-A': 'Caisse A',
   'STK-VB': 'Stock vendant B', 'CF-B': 'Chambre froide boutique B', 'CAISSE-B': 'Caisse B',
 }

@@ -1,42 +1,51 @@
 import { useApp } from '../store/context'
-import { Badge, Card, Kpi, Notice, Screen, Table } from '../components/ui'
-import { num } from '../lib/format'
-import { boulLot, doughKg, epsOf, EPS_GRAMS, MIN_EPS_PER_BAG, otherLots, recipeVersions } from '../data/production'
+import { Badge, Card, Kpi, Screen, Table } from '../components/ui'
+import { useSiteFilter } from '../components/SiteFilter'
+import { siteShort } from '../data/org'
+import { bakeryDay } from '../data/direction'
+import { figures, yieldTone } from '../data/boulanger'
+import { patFigures, patStatus, pfLots, prodLine, RECIPES } from '../data/patisserie'
+import { productName } from '../data/shop'
+import { recipeVersions } from '../data/production'
+import { dec, num } from '../lib/format'
 
+// Production des 3 sites : pétrissées (lots boulangerie) et lots pâtisserie / yaourts / glaces.
 export function Production() {
-  const { user } = useApp()
-  const role = user!.role
-  const kg = doughKg(boulLot.lines)
-  const eps = epsOf(kg)
-  const perBag = eps / boulLot.bags
-  const total = boulLot.lines.reduce((a, l) => a + l.qty, 0)
-  const showBoul = role !== 'patissier'
-  const showOther = role !== 'boulanger'
+  const { state } = useApp()
+  const { scope, day, bar } = useSiteFilter()
+  const lots = state.lots.filter(l => scope.includes(l.site) && bakeryDay(state, l.site, day).lots.includes(l))
+  const pat = state.patLots.filter(l => scope.includes(l.site) && l.fab === day)
+  const pf = Object.fromEntries(scope.map(s => [s, pfLots(state.patLots.filter(l => l.site === s), state.bdls, s)]))
+  const f = lots.map(figures)
+  const bags = f.reduce((a, x) => a + x.bags, 0), eps = f.reduce((a, x) => a + x.eps, 0)
 
   return (
-    <Screen title="Production" sub="Lots du lundi 26/10/2026 — RG-01 : EPS = poids total de pâte ÷ 146 g">
-      {showBoul && <Card title={boulLot.id} sub={`Saisi par ${boulLot.by} à 03 h 40 · à partir de ${boulLot.source} · recette ${boulLot.recipe}`}
-        actions={<Badge tone="ok">{boulLot.status}</Badge>}>
-        <Table head={['Produit', 'Nombre', 'Grammage', 'Poids de pâte']}
-          rows={boulLot.lines.map(l => [l.label, num(l.qty), `${l.grams} g`, `${((l.qty * l.grams) / 1000).toString().replace('.', ',')} kg`])} />
-        <div className="kpi-row">
-          <Kpi label="Poids total de pâte" value={`${kg.toString().replace('.', ',')} kg`} />
-          <Kpi label={`EPS (÷ ${EPS_GRAMS} g)`} value={`≈ ${num(eps)} EPS`} note={`${num(kg * 1000)} g ÷ ${EPS_GRAMS}`} />
-          <Kpi label="Rendement" value={`${Math.round(perBag)} EPS/sac`} tone={perBag >= MIN_EPS_PER_BAG ? 'ok' : 'danger'} note={`${boulLot.bags} sacs · seuil ${MIN_EPS_PER_BAG}`} />
-          <Kpi label="Pâtons façonnés" value={num(total)} />
-        </div>
-        {perBag >= MIN_EPS_PER_BAG
-          ? <Notice tone="ok">Rendement supérieur au seuil de {MIN_EPS_PER_BAG} EPS/sac : aucune alerte.</Notice>
-          : <Notice tone="danger">Rendement sous le seuil : alerte générée.</Notice>}
-      </Card>}
-      {showOther && otherLots.map(l => <Card key={l.id} title={l.id} sub={`${l.line} · saisi par ${l.by}${l.dlc !== '—' ? ` · DLC ${l.dlc}` : ''}`}
-        actions={<Badge tone="ok">Mis en stock STK-PF</Badge>}>
-        <Table head={['Code', 'Produit', 'Quantité']} rows={l.items.map(i => [i.code, i.label, num(i.qty)])} />
-        {l.dlc !== '—' && <Notice>Lot avec date limite de consommation : suivi FEFO (RG-11).</Notice>}
-      </Card>)}
-      {role !== 'patissier' && <Card title="Recette R-BOUL-01 — versions (US-13)">
-        <Table head={['Version', 'Depuis', 'Détail']} rows={recipeVersions.map(v => [<b>{v.v}</b>, v.since, v.note])} />
-      </Card>}
+    <Screen title="Production" sub={`Lots du ${day} — RG-01 : EPS = poids total de pâte ÷ 146 g`}>
+      {bar}
+      <div className="kpi-row">
+        <Kpi label="Pétrissées" value={num(lots.length)} note={`${num(bags)} sacs de farine`} />
+        <Kpi label="EPS / rendement moyen" value={bags ? `${num(eps)} EPS · ${num(eps / bags)} EPS/sac` : '—'} tone={bags ? yieldTone(eps / bags, state.epsThreshold) : undefined} note={`Seuil ${state.epsThreshold} EPS/sac`} />
+        <Kpi label="Lots pâtisserie / yaourts / glaces" value={num(pat.length)} />
+      </div>
+      <Card title="Boulangerie — pétrissées et lots">
+        <Table head={['Site', 'Lot', 'Boulanger', 'Pâtons', 'Pâte', 'Rendement', 'Motif', 'Statut', 'Cuisson (conformes / rebuts)']} rows={lots.map((l, i) => [
+          siteShort(l.site), <b>{l.id}</b>, l.trace.author, num(f[i].patons), `${dec(f[i].kg)} kg`,
+          <Badge tone={yieldTone(f[i].perBag, l.threshold)}>{num(f[i].perBag)} EPS/sac</Badge>, l.motif || '—', l.status,
+          l.cuisson ? `${num(l.cuisson.good)} / ${num(l.cuisson.rejects.reduce((a, r) => a + r.qty, 0))}` : 'En attente'])} />
+      </Card>
+      <Card title="Pâtisserie, yaourts et crèmes glacées">
+        <Table head={['Site', 'Lot', 'Ligne', 'Opérateur', 'Produits', 'Rendement réel / recette', 'DLC', 'Statut']} rows={pat.map(l => {
+          const p = patFigures(l)
+          return [siteShort(l.site), <b>{l.id}</b>, prodLine(l.line).label, l.trace.author, p.items.map(i => `${num(i.produced)} ${productName(i.code)}`).join(' · '),
+            <Badge tone={Math.abs(p.yieldGap) > 5 ? 'danger' : 'ok'}>{dec(p.yieldReal)} % / {l.yieldTheo} %</Badge>, [...new Set(l.items.map(i => i.dlc))].join(', '), patStatus(l, pf[l.site])]
+        })} />
+      </Card>
+      <Card title="Recettes — versions applicables (US-13)">
+        <Table head={['Recette', 'Version', 'Depuis', 'Détail']} rows={[
+          ...recipeVersions.map(v => ['R-BOUL-01 (pain)', <b>{v.v}</b>, v.since, v.note]),
+          ...RECIPES.map(r => [productName(r.code), <b>{r.version}</b>, r.since, r.previous?.map(p => `${p.version} : ${p.note}`).join(' ; ') || '—']),
+        ]} />
+      </Card>
     </Screen>
   )
 }
