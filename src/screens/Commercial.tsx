@@ -68,7 +68,9 @@ export function Credit() {
 // puis explosion des recettes et comparaison au stock du magasin de site et des ateliers.
 export function Plan() {
   const { state } = useApp()
-  const { scope, day, bar } = useSiteFilter()
+  // Le plan part du dernier jour de la période choisie.
+  const { scope, period, bar } = useSiteFilter()
+  const day = period.last
   const next = dayOf(dayStartTs(day) + 36 * 3600000)
   const recent = (site: string) => {
     const days = activityDays(state).filter(d => dayStartTs(d) <= dayStartTs(day)).slice(0, 6)

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../store/context'
 import { Badge, Big, Card, Kpi, Notice, Screen, Table } from '../components/ui'
-import { REJECT_THRESHOLD, rejectRate } from '../data/production'
+import { rejectRate } from '../data/production'
 import { figures, REJECT_REASONS, type RejectReason } from '../data/boulanger'
 import { siteShort } from '../data/org'
 import { can } from '../data/rbac'
@@ -34,7 +34,7 @@ export function Cuisson() {
     if (!equal) return say(`Clôture bloquée : ${num(g)} + ${num(rejects)} ≠ ${num(received)}.`)
     const at = nowStamp()
     const report = { by: u.name, at, received, good: g, rejects: rows.map(x => ({ reason: x.reason, qty: Number(x.qty) || 0, photo: x.photo })) }
-    update(s => ({ ...s, lots: s.lots.map(l => l.id === lot.id ? { ...l, cuisson: report, status: 'Mis en stock',
+    update(s => ({ ...s, lots: s.lots.map(l => l.id === lot.id && l.site === lot.site ? { ...l, cuisson: report, status: 'Mis en stock',
       history: [...l.history, { status: 'Cuit', at, by: u.name }, { status: 'Mis en stock', at, by: u.name }] } : l) }))
     audit('Cuisson', `${lot.id} : ${g} conformes + ${rejects} rebuts = ${received} pâtons reçus`)
     say('Lot cuit et mis en stock STK-PF')
@@ -44,7 +44,7 @@ export function Cuisson() {
     <Screen title="Cuisson et rebuts" sub="Pâtons reçus = conformes + rebuts — les pâtons reçus proviennent du lot du boulanger et ne sont pas modifiables">
       <div className="split">
         <div className="list-col scroll-list">
-          {lots.map(l => <button key={l.id} className={`list-item ${l.id === lot.id ? 'on' : ''}`} onClick={() => pick(l.id)}>
+          {lots.map(l => <button key={`${l.site}-${l.id}`} className={`list-item ${l === lot ? 'on' : ''}`} onClick={() => pick(l.id)}>
             <b>{l.id}</b><small>{l.trace.localAt} · {siteShort(l.site)} · {l.trace.author}</small>
             <Badge tone={l.status === 'Remis au four' ? 'warn' : 'ok'}>{l.status}</Badge>
           </button>)}
@@ -58,7 +58,7 @@ export function Cuisson() {
               ? <label className="kpi-tile"><p>Pains conformes</p><input className="num-input" inputMode="numeric" value={good} placeholder="0" onChange={e => setGood(e.target.value.replace(/\D/g, ''))} /></label>
               : <Kpi label="Pains conformes" value={num(g)} />}
             <Kpi label="Rebuts" value={num(rejects)} />
-            <Kpi label="Taux de rebut" value={`${rate.toFixed(2).replace('.', ',')} %`} tone={rate <= REJECT_THRESHOLD ? 'ok' : 'danger'} note={`Seuil ${REJECT_THRESHOLD} %`} />
+            <Kpi label="Taux de rebut" value={`${rate.toFixed(2).replace('.', ',')} %`} tone={rate <= state.rejectThreshold ? 'ok' : 'danger'} note={`Seuil ${state.rejectThreshold} %`} />
           </div>
           <Notice tone={equal ? 'ok' : 'danger'}>{num(g)} + {num(rejects)} = {num(g + rejects)} {equal ? '= ' : '≠ '}{num(received)} {equal ? '✓' : '— clôture impossible'}</Notice>
           <Table head={['Motif du rebut', 'Quantité', 'Photo']} rows={editing

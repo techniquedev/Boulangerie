@@ -47,12 +47,24 @@ export const END_OF_DAY_HOUR = 20
 // ——— Lots de production ———
 
 export type Line = { label: string; grams: number; qty: number }
-export type LotStatus = 'Créé' | 'Remis au four' | 'Cuit' | 'Mis en stock' | 'Clôturé'
+export type LotStatus = 'Créé' | 'Remis au four' | 'En cours de cuisson' | 'Cuit' | 'Mis en stock' | 'Clôturé'
+// Frise du cycle de vie (la prise en charge par l'enfourneur reste à l'étape « Remis au four »).
 export const LOT_FLOW: LotStatus[] = ['Créé', 'Remis au four', 'Cuit', 'Mis en stock', 'Clôturé']
+export const LOT_STATUSES: LotStatus[] = ['Créé', 'Remis au four', 'En cours de cuisson', 'Cuit', 'Mis en stock', 'Clôturé']
+export const flowIndex = (s: LotStatus) => (s === 'En cours de cuisson' ? LOT_FLOW.indexOf('Remis au four') : LOT_FLOW.indexOf(s))
 
 export type RejectReason = 'Brûlé' | 'Déformé' | 'Tombé' | 'Autre'
 export const REJECT_REASONS: RejectReason[] = ['Brûlé', 'Déformé', 'Tombé', 'Autre']
-export type CuissonReport = { by: string; at: string; received: number; good: number; rejects: { reason: RejectReason; qty: number; photo: boolean }[] }
+export type RejectPhoto = { name: string; thumb: string }
+// Ligne de rebut : format de pain, motif (texte obligatoire si « Autre ») et photo (obligatoire au-delà du seuil).
+export type RejectLine = { reason: RejectReason; qty: number; photo: boolean; format?: string; note?: string; image?: RejectPhoto }
+export type CuissonReport = {
+  by: string; at: string; received: number; good: number; rejects: RejectLine[]
+  goodBy?: Record<string, number>; rateMotif?: string; trace?: Trace
+}
+// Contre-écriture de cuisson : reclassement de pains entre « Conforme » et un motif de rebut, sur un format.
+export type OvenFix = { at: string; by: string; motif: string; format: string; from: 'Conforme' | RejectReason; to: 'Conforme' | RejectReason; qty: number; trace: Trace }
+export type Anomaly = { at: string; by: string; text: string; trace: Trace; answer?: { at: string; by: string; text: string } }
 
 // Contre-écriture : la pétrissée d'origine n'est jamais modifiée.
 export type Correction = { at: string; by: string; motif: string; kind: 'mat' | 'line'; key: string; delta: number }
@@ -63,6 +75,8 @@ export type ProdLot = {
   threshold: number; motif?: string
   status: LotStatus; history: { status: LotStatus; at: string; by: string }[]
   cuisson?: CuissonReport; corrections: Correction[]
+  oven?: { by: string; trace: Trace; ts: number }   // prise en charge par l'enfourneur
+  anomalies?: Anomaly[]; ovenFixes?: OvenFix[]
 }
 
 // ——— Calculs ———
@@ -93,13 +107,34 @@ export function figures(l: ProdLot) {
 
 export const lotDay = (l: ProdLot) => dayOf(l.ts)
 
+// Rapport de cuisson effectif (rapport d'origine + contre-écritures) : conformes par format, rebuts par format et motif.
+export function cuissonFigures(l: ProdLot) {
+  const r = l.cuisson
+  if (!r) return null
+  const goodBy: Record<string, number> = { ...(r.goodBy || {}) }
+  if (!r.goodBy) goodBy['Tous formats'] = r.good
+  const rej = new Map<string, number>()   // clé « format|motif »
+  r.rejects.forEach(x => { const k = `${x.format || 'Tous formats'}|${x.reason}`; rej.set(k, (rej.get(k) || 0) + x.qty) })
+  ;(l.ovenFixes || []).forEach(f => {
+    const move = (side: 'Conforme' | RejectReason, d: number) => side === 'Conforme'
+      ? (goodBy[f.format] = (goodBy[f.format] || 0) + d)
+      : rej.set(`${f.format}|${side}`, (rej.get(`${f.format}|${side}`) || 0) + d)
+    move(f.from, -f.qty); move(f.to, f.qty)
+  })
+  const good = Object.values(goodBy).reduce((a, b) => a + b, 0)
+  const rejects = [...rej].map(([k, qty]) => { const [format, reason] = k.split('|'); return { format, reason: reason as RejectReason, qty } }).filter(x => x.qty)
+  const rejectTotal = rejects.reduce((a, b) => a + b.qty, 0)
+  return { received: r.received, goodBy, good, rejects, rejectTotal, rate: r.received ? (rejectTotal / r.received) * 100 : 0, balance: r.received - good - rejectTotal }
+}
+
 // ——— Identifiants ———
 
-export const lotIdFor = (site: string, ts: number, n: number) =>
-  `LOT-B-S${site.slice(-1)}-${dayOf(ts).split('/').reverse().join('')}-${String(n).padStart(2, '0')}`
+// N° de lot : LOT-B-{AAAAMMJJ}-{n° d'ordre des lots de production du site dans la journée} (unique par site).
+export const lotIdFor = (ts: number, n: number) =>
+  `LOT-B-${dayOf(ts).split('/').reverse().join('')}-${String(n).padStart(2, '0')}`
 
-export const nextLotId = (lots: ProdLot[], site: SiteCode, ts: number) =>
-  lotIdFor(site, ts, lots.filter(l => l.site === site && dayOf(l.ts) === dayOf(ts)).length + 1)
+export const nextLotId = (lots: ProdLot[], patLots: { site: string; fab: string }[], site: SiteCode, ts: number) =>
+  lotIdFor(ts, lots.filter(l => l.site === site && dayOf(l.ts) === dayOf(ts)).length + patLots.filter(l => l.site === site && l.fab === dayOf(ts)).length + 1)
 
 export const nextAlertId = (alerts: AlertItem[]) => {
   const max = alerts.reduce((m, a) => Math.max(m, Number(a.id.split('-').pop()) || 0), 0)

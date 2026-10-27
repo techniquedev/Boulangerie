@@ -8,18 +8,18 @@ import { dec, nowStamp, num } from '../../lib/format'
 import { TraceInfo } from '../boulanger/shared'
 import { DlcBadge } from '../boutique/shared'
 import { LineIcon, PatBadge, usePat } from './shared'
+import { usePeriod } from '../../components/PeriodFilter'
 
 export function PLots() {
   const { update, audit, say } = useApp()
   const { user, site, mine, pf, status, stockOf } = usePat()
   const [line, setLine] = useState('')
-  const [day, setDay] = useState('')
+  const period = usePeriod(mine.map(l => l.fab))
   const [st, setSt] = useState<PatStatus | ''>('')
-  const list = mine.filter(l => (!line || l.line === line) && (!day || l.fab === day) && (!st || status(l) === st))
+  const list = mine.filter(l => (!line || l.line === line) && period.match(l.fab) && (!st || status(l) === st))
   const [sel, setSel] = useState(mine[0]?.id)
   const lot = list.find(l => l.id === sel) || list[0]
   const [fix, setFix] = useState({ target: '', delta: '', motif: '' })
-  const days = Array.from(new Set(mine.map(l => l.fab)))
 
   // Ordre FEFO des lots encore en stock, par produit.
   const fefoRank = new Map<object, number>()
@@ -59,7 +59,7 @@ export function PLots() {
       <div className="filter-row">
         <button className={!line ? 'chip on' : 'chip'} onClick={() => setLine('')}>Toutes les lignes</button>
         {PROD_LINES.map(l => <button key={l.code} className={line === l.code ? 'chip on' : 'chip'} onClick={() => setLine(l.code)}><LineIcon line={l} size={16} /> {l.label}</button>)}
-        <select className="ref-input" value={day} onChange={e => setDay(e.target.value)}><option value="">Toutes les dates</option>{days.map(d => <option key={d}>{d}</option>)}</select>
+        {period.bar}
         <select className="ref-input" value={st} onChange={e => setSt(e.target.value as PatStatus | '')}><option value="">Tous les statuts</option>{PAT_STATUSES.map(x => <option key={x}>{x}</option>)}</select>
       </div>
       {!lot || !f ? <Notice>Aucun lot pour ces filtres.</Notice> : <div className="split">

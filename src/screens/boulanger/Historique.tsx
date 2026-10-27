@@ -7,6 +7,7 @@ import { can } from '../../data/rbac'
 import { dayOf, dec, monthOf, num, today, weekOf } from '../../lib/format'
 import { exportExcel, exportPdf } from '../../lib/export'
 import { useBaker } from './shared'
+import { usePeriod } from '../../components/PeriodFilter'
 
 type Period = 'jour' | 'semaine' | 'mois'
 const keyOf = { jour: dayOf, semaine: weekOf, mois: monthOf }
@@ -60,7 +61,9 @@ function YieldChart({ data, threshold }: { data: Agg[]; threshold: number }) {
 
 export function BHistory() {
   const { user: u } = useApp()
-  const { mine, threshold, siteName, user } = useBaker()
+  const { mine: allLots, threshold, siteName, user } = useBaker()
+  const per = usePeriod(allLots.map(l => dayOf(l.ts)))
+  const mine = allLots.filter(l => per.match(dayOf(l.ts)))
   const [period, setPeriod] = useState<Period>('jour')
   const groups = aggregate(mine, keyOf[period])
   const daily = aggregate([...mine].reverse(), dayOf).slice(-30)
@@ -81,6 +84,7 @@ export function BHistory() {
 
   return (
     <Screen title="Historique et rendement" sub={`Mes pétrissées — ${siteName} · rendement = EPS ÷ sacs de farine, comparé au seuil de ${threshold} EPS/sac`}>
+      {per.bar}
       {all && <div className="kpi-row">
         <Kpi label="Pétrissées enregistrées" value={num(all.count)} />
         <Kpi label="Rendement moyen global" value={`${num(all.perBag)} EPS/sac`} tone={yieldTone(all.perBag, threshold)} />

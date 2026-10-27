@@ -9,15 +9,16 @@ import { dayOf, money, num, today } from '../../lib/format'
 import { exportPdf } from '../../lib/export'
 import { TraceInfo } from '../boulanger/shared'
 import { driverTrace, FuelBadge, TourBadge, useTour } from './shared'
+import { usePeriod } from '../../components/PeriodFilter'
 
 const STATUSES: TourStatus[] = ['Affectée', 'En cours', 'Soldée', 'Soldée avec écart']
 
 export function LHistory() {
   const { state, update, audit, say } = useApp()
   const { user, site, tours, fig, fuel, remitStatus } = useTour()
-  const [day, setDay] = useState('')
+  const period = usePeriod(tours.map(t => dayOf(t.ts)))
   const [st, setSt] = useState<TourStatus | ''>('')
-  const list = tours.filter(t => (!day || dayOf(t.ts) === day) && (!st || t.status === st))
+  const list = tours.filter(t => period.match(dayOf(t.ts)) && (!st || t.status === st))
   const [sel, setSel] = useState(tours[0]?.id)
   const t = list.find(x => x.id === sel) || list[0]
   const [open, setOpen] = useState<string | null>(null)
@@ -51,7 +52,7 @@ export function LHistory() {
   return (
     <Screen title="Historique de mes tournées" sub="Tournées, livraisons, carburant et contre-écritures — piste d’audit">
       <div className="filter-row">
-        <select className="ref-input" value={day} onChange={e => setDay(e.target.value)}><option value="">Toutes les dates</option>{[...new Set(tours.map(x => dayOf(x.ts)))].map(d => <option key={d}>{d}</option>)}</select>
+        {period.bar}
         <select className="ref-input" value={st} onChange={e => setSt(e.target.value as TourStatus | '')}><option value="">Tous les statuts</option>{STATUSES.map(s => <option key={s}>{s}</option>)}</select>
       </div>
       {!t || !f ? <Notice>Aucune tournée pour ces filtres.</Notice> : <div className="split">

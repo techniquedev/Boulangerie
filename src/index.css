@@ -364,3 +364,10 @@
 .quick-btn:hover:not(:disabled){filter:brightness(1.08)}
 .side2 h5{color:#c9b6a3}
 .recipe-block h4,.detail h3,.demo-head{color:var(--title)}
+
+/* Filtre de période : Jour / Mois / Année */
+.period-filter{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap;color:var(--title)}
+.period-filter .seg{display:inline-flex;background:var(--soft);border:1px solid var(--border);border-radius:999px;padding:3px;gap:2px}
+.period-filter .seg button{border:0;background:none;border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--ink);min-height:36px;transition:background .15s,color .15s}
+.period-filter .seg button.on{background:var(--primary);color:#fff;box-shadow:0 2px 6px #6b442340}
+.period-filter .ref-input{min-height:40px;font-size:14px;font-weight:600}

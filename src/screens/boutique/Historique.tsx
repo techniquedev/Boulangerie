@@ -4,28 +4,26 @@ import { useApp } from '../../store/context'
 import { Badge, Big, Card, Notice, Screen, Table } from '../../components/ui'
 import { can } from '../../data/rbac'
 import { productName, SHOP_KINDS, SHOP_PRODUCTS, shopStock, type ShopMoveKind } from '../../data/shop'
-import { dayOf, num, stampAt, today } from '../../lib/format'
+import { dayOf, dayStartTs, num, stampAt, today } from '../../lib/format'
 import { exportExcel, exportPdf, type Section } from '../../lib/export'
 import { useShop } from './shared'
+import { usePeriod } from '../../components/PeriodFilter'
 
-const startOf = (iso: string) => { const [y, m, d] = iso.split('-').map(Number); return Date.UTC(y, m - 1, d, -1, 0) }
-const fr = (iso: string) => iso.split('-').reverse().join('/')
 type Content = 'mouvements' | 'receptions' | 'stock'
 
 export function SHistory() {
   const { state } = useApp()
   const { user, site, shop, moves, bdls, fixes } = useShop()
-  const [from, setFrom] = useState('')
-  const [to, setTo] = useState('')
   const [kind, setKind] = useState<ShopMoveKind | ''>('')
   const [code, setCode] = useState('')
   const [content, setContent] = useState<Content>('mouvements')
 
-  const lo = from ? startOf(from) : -Infinity
-  const hi = to ? startOf(to) + 86400000 : Infinity
-  const inPeriod = (ts: number) => ts >= lo && ts < hi
+  const per = usePeriod(moves.map(m => dayOf(m.ts)))
+  const inPeriod = (ts: number) => per.match(dayOf(ts))
+  // Fin de la période (état du stock) : fin du dernier jour de la sélection.
+  const hi = per.mode === 'tout' ? Infinity : dayStartTs(per.last) + 86400000
   const list = moves.filter(m => inPeriod(m.ts) && (!kind || m.kind === kind) && (!code || m.code === code))
-  const period = `${from ? fr(from) : 'début'} → ${to ? fr(to) : 'aujourd’hui'}`
+  const period = per.label
 
   // Exports : les réceptions ne contiennent que les quantités comptées (jamais les quantités expédiées).
   const sections: Record<Content, Section> = {
@@ -36,7 +34,7 @@ export function SHistory() {
         c.partial ? 'Réception partielle' : b.status, c.trace.author, c.trace.device]))) },
     stock: (() => {
       const st = shopStock(state.shopMoves, site, hi === Infinity ? Date.now() : hi - 1)
-      return { title: `État du stock vendant au ${to ? fr(to) : today()}`, head: ['Produit', 'Lot', 'Date limite', 'Quantité'],
+      return { title: `État du stock vendant au ${per.mode === 'tout' ? today() : per.last}`, head: ['Produit', 'Lot', 'Date limite', 'Quantité'],
         rows: SHOP_PRODUCTS.flatMap(p => st[p.code].lots.map(l => [productName(p.code), l.lot || '—', l.dlc || '—', l.qty])) }
     })(),
   }
@@ -46,8 +44,7 @@ export function SHistory() {
     <Screen title="Historique et piste d’audit" sub={`Tous les mouvements de la ${shop} — écritures non modifiables`}>
       <Card title="Filtres">
         <div className="filter-row">
-          <label className="field">Du<input className="ref-input" type="date" value={from} onChange={e => setFrom(e.target.value)} /></label>
-          <label className="field">Au<input className="ref-input" type="date" value={to} onChange={e => setTo(e.target.value)} /></label>
+          {per.bar}
           <label className="field">Type<select className="ref-input" value={kind} onChange={e => setKind(e.target.value as ShopMoveKind | '')}><option value="">Tous les mouvements</option>{SHOP_KINDS.map(k => <option key={k}>{k}</option>)}</select></label>
           <label className="field">Produit<select className="ref-input" value={code} onChange={e => setCode(e.target.value)}><option value="">Tous</option>{SHOP_PRODUCTS.map(p => <option key={p.code} value={p.code}>{productName(p.code)}</option>)}</select></label>
         </div>

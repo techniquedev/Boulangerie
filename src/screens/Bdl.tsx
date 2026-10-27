@@ -5,7 +5,7 @@ import { useSiteFilter } from '../components/SiteFilter'
 import { siteShort } from '../data/org'
 import { BDL_ST } from '../data/shop'
 import { can } from '../data/rbac'
-import { num, stampAt } from '../lib/format'
+import { dayOf, num, stampAt } from '../lib/format'
 
 const tone = (s: string) => (s.includes('écart') ? 'danger' : s.startsWith('Clôturé') || s.includes('conforme') || s.includes('soldée') ? 'ok' : 'warn') as 'danger' | 'ok' | 'warn'
 
@@ -13,10 +13,10 @@ const tone = (s: string) => (s.includes('écart') ? 'danger' : s.startsWith('Cl�
 // Vue Direction / Contrôleur / magasinier central : quantités expédiées et comptées, écarts.
 export function BdlScreen() {
   const { user, state } = useApp()
-  const { scope, bar } = useSiteFilter(false)
+  const { scope, inP, bar } = useSiteFilter({ all: true, days: state.bdls.filter(b => b.ts).map(b => dayOf(b.ts!)) })
   const [kind, setKind] = useState<'all' | 'boutique' | 'tournee'>('all')
   const [status, setStatus] = useState('')
-  const all = state.bdls.filter(b => (!b.toSite || scope.includes(b.toSite)) && (kind === 'all' || (kind === 'tournee' ? b.kind === 'tournee' : b.kind !== 'tournee')))
+  const all = state.bdls.filter(b => (!b.toSite || scope.includes(b.toSite)) && (!b.ts || inP(dayOf(b.ts))) && (kind === 'all' || (kind === 'tournee' ? b.kind === 'tournee' : b.kind !== 'tournee')))
   const list = all.filter(b => !status || b.status === status).sort((a, b) => (b.ts || 0) - (a.ts || 0))
   const [sel, setSel] = useState<string | null>(null)
   const b = list.find(x => `${x.id}-${x.toSite}` === sel) || list[0]

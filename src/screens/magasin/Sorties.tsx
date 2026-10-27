@@ -7,6 +7,7 @@ import { ATELIERS, atelierLabel, bonDay, BS, fmtQty, matName, nextBonId, nextMov
 import { dayOf, nowStamp, num, today } from '../../lib/format'
 import { cleanNum, toNum } from '../boulanger/shared'
 import { BonBadge, useStore } from './shared'
+import { usePeriod } from '../../components/PeriodFilter'
 
 type Row = { mp: string; unit: string; qty: string }
 const blankRow = (): Row => ({ mp: '', unit: '', qty: '' })
@@ -17,8 +18,7 @@ export function MSorties() {
   const { user, site, siteName, stock, bons } = useStore()
   const [atelier, setAtelier] = useState<AtelierCode | ''>('')
   const [rows, setRows] = useState<Row[]>([blankRow()])
-  const days = Array.from(new Set([today(), ...bons.map(bonDay)]))
-  const [day, setDay] = useState(bons.some(b => bonDay(b) === today()) ? today() : bons[0] ? bonDay(bons[0]) : today())
+  const per = usePeriod([today(), ...bons.map(bonDay)], { all: false, initial: 'jour' })
   const [open, setOpen] = useState<string | null>(null)
 
   const setRow = (i: number, v: Partial<Row>) => setRows(rows.map((r, k) => k === i ? { ...r, ...v } : r))
@@ -49,11 +49,11 @@ export function MSorties() {
     })
     audit('Bon de sortie émis', `${b.id} → ${atelierLabel(atelier)} : ${b.lines.map(l => `${matName(l.mp)} ${fmtQty(l.mp, l.qty)}`).join(' · ')}`)
     say(state.offline ? `Bon ${b.id} enregistré hors-ligne : en attente de synchronisation` : `Bon ${b.id} émis : en attente de confirmation par l’atelier`)
-    setAtelier(''); setRows([blankRow()]); setDay(today()); setOpen(b.id)
+    setAtelier(''); setRows([blankRow()]); setOpen(b.id)
   }
 
   // Vue journalière consolidée : total par matière et par atelier.
-  const dayBons = bons.filter(b => bonDay(b) === day)
+  const dayBons = bons.filter(b => per.match(bonDay(b)))
   const counted = dayBons.filter(b => b.status !== BS.refus)
   const mps = SITE_MATS.filter(m => counted.some(b => b.lines.some(l => l.mp === m.mp)))
   const total = (mp: string, atl?: string) => counted.filter(b => !atl || b.atelier === atl).reduce((s, b) => s + b.lines.filter(l => l.mp === mp).reduce((a, l) => a + l.qty, 0), 0)
@@ -89,16 +89,16 @@ export function MSorties() {
       </Card>
 
       <Card title="Vue journalière consolidée" sub="Total des matières sorties par atelier et par matière, avec les bons du jour"
-        actions={<select className="ref-input" value={day} onChange={e => setDay(e.target.value)}>{days.map(d => <option key={d}>{d}</option>)}</select>}>
+        actions={per.bar}>
         {counted.length ? <Table head={['Matière', ...ATELIERS.map(a => a.label), 'Total']} rows={mps.map(m => [<b>{m.name}</b>,
           ...ATELIERS.map(a => { const q = total(m.mp, a.code); return q ? fmtQty(m.mp, q) : '—' }), <b>{fmtQty(m.mp, total(m.mp))}</b>])} />
-          : <p className="muted">Aucune sortie le {day}.</p>}
+          : <p className="muted">Aucune sortie sur la période ({per.label}).</p>}
         <Table head={['Bon', 'Heure', 'Atelier', 'Lignes', 'Statut']} rows={dayBons.map(b => [
           <button className="link-btn" onClick={() => setOpen(open === b.id ? null : b.id)}>{b.id}</button>, b.trace.localAt.slice(11), atelierLabel(b.atelier),
           open === b.id ? <ul className="plain">{b.lines.map(l => <li key={l.mp}>{matName(l.mp)} : {fmtQty(l.mp, l.qty)}{l.received !== undefined && l.received < l.qty ? ` (reçu ${fmtQty(l.mp, l.received)} — ${l.motif || 'écart'})` : ''}</li>)}</ul> : `${num(b.lines.length)} matière(s)`,
           <BonBadge b={b} />])} />
       </Card>
-      <p className="muted small-note">Unités convertibles : saisie possible en unité de stock ou d’achat ({unitQty('sac', 1)} = 50 kg, carton ↔ unité, litre ↔ ml). Jour sélectionné : {dayOf(Date.now()) === day ? 'aujourd’hui' : day}.</p>
+      <p className="muted small-note">Unités convertibles : saisie possible en unité de stock ou d’achat ({unitQty('sac', 1)} = 50 kg, carton ↔ unité, litre ↔ ml).</p>
     </Screen>
   )
 }

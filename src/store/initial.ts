@@ -10,13 +10,14 @@ import { seedTours } from '../data/seedTours'
 
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v))
 
-export const STORAGE_KEY = 'delice-plus-demo-v6'
+export const STORAGE_KEY = 'delice-plus-demo-v7'
 
 export function initialState(): DemoState {
   const shop = seedShop()
   const tours = seedTours()
+  const { ovenAlerts, ...sites } = seedSites()
   return {
-    alerts: [...shop.shopAlerts, ...tours.tourAlerts, ...clone(alertBase)].sort((a, b) => b.id.localeCompare(a.id)),
+    alerts: [...shop.shopAlerts, ...tours.tourAlerts, ...ovenAlerts, ...clone(alertBase)].sort((a, b) => b.id.localeCompare(a.id)),
     bdls: [...shop.shopBdls, ...tours.tourBdls, ...clone(bdlBase)],
     sessions: clone([sessionA, sessionB]),
     expenses: clone(expensesBase),
@@ -33,7 +34,7 @@ export function initialState(): DemoState {
     ticketSeq: 107,
     offline: false,
     queue: [],
-    ...seedSites(),
+    ...sites,
     shopMoves: shop.shopMoves,
     declarations: shop.declarations,
     shopFixes: [],
@@ -43,6 +44,8 @@ export function initialState(): DemoState {
     tourFixes: [],
     bdlTolerance: { 'PF-11': 2, 'PF-12': 2, 'PF-13': 2 },
     lossPhotoThreshold: 500,
+    rejectThreshold: 2,
+    rejectPhotoQty: 5,
   }
 }
 

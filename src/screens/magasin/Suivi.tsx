@@ -7,6 +7,7 @@ import { atelierLabel, BON_FLOW, bonDay, BS, fmtQty, matName, needsTreatment, ne
 import { dayOf, nowStamp, num } from '../../lib/format'
 import { TraceInfo } from '../boulanger/shared'
 import { BonBadge, useStore } from './shared'
+import { usePeriod } from '../../components/PeriodFilter'
 
 type F = 'all' | 'emis' | 'conf' | 'clos' | 'ecart' | 'refus'
 const FILTERS: [F, string][] = [['all', 'Tous'], ['emis', BS.emis], ['conf', BS.conf], ['clos', BS.clos], ['ecart', 'Avec écart'], ['refus', BS.refus]]
@@ -18,7 +19,9 @@ export function MSuivi() {
   const go = useNav()
   const { user, site, siteName, bons, groups } = useStore()
   const [f, setF] = useState<F>(bons.some(needsTreatment) ? 'ecart' : 'all')
-  const list = bons.filter(b => match(f, b))
+  const per = usePeriod(bons.map(bonDay))
+  const inP = bons.filter(b => per.match(bonDay(b)))
+  const list = inP.filter(b => match(f, b))
   const [sel, setSel] = useState((bons.find(needsTreatment) || bons[0])?.id)
   const b = list.find(x => x.id === sel) || list[0]
   const [form, setForm] = useState({ text: '', mp: '', qty: '' })
@@ -56,7 +59,8 @@ export function MSuivi() {
       </div>
 
       <Card title="Bons de sortie">
-        <div className="filter-row">{FILTERS.map(([k, l]) => <button key={k} className={f === k ? 'chip on' : 'chip'} onClick={() => setF(k)}>{l} ({bons.filter(x => match(k, x)).length})</button>)}</div>
+        {per.bar}
+        <div className="filter-row">{FILTERS.map(([k, l]) => <button key={k} className={f === k ? 'chip on' : 'chip'} onClick={() => setF(k)}>{l} ({inP.filter(x => match(k, x)).length})</button>)}</div>
         {!b ? <p className="muted">Aucun bon pour ce filtre.</p> : <div className="split">
           <div className="list-col scroll-list">{list.map(x => <button key={x.id} className={`list-item ${x.id === b.id ? 'on' : ''}`} onClick={() => setSel(x.id)}>
             <b>{x.id}</b><small>{x.trace.localAt} · {atelierLabel(x.atelier)}</small><BonBadge b={x} />

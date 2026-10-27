@@ -1,4 +1,4 @@
-import type { SiteCode } from './types'
+import type { AlertItem, SiteCode } from './types'
 import type { Trace } from './trace'
 import { deviceFor } from './trace'
 import { EPS_GRAMS, MIN_EPS_PER_BAG } from './production'
@@ -41,10 +41,15 @@ const linesFor = (bags: number, perBag: number, with200: boolean): Line[] => {
   return share.map(([label, grams, p]) => ({ label, grams, qty: Math.round((g * p) / grams) }))
 }
 
-const report = (oven: string, ts: number, received: number, burnt: number, deformed: number, fallen: number): CuissonReport => ({
-  by: oven, at: at(ts), received, good: received - burnt - deformed - fallen,
-  rejects: [{ reason: 'Brûlé', qty: burnt, photo: true }, { reason: 'Déformé', qty: deformed, photo: true }, { reason: 'Tombé', qty: fallen, photo: true }, { reason: 'Autre', qty: 0, photo: false }],
-})
+// Rapport de cuisson détaillé : brûlés sur le 1er format, déformés sur le 2e, tombés sur le 3e ; conformes par format.
+const report = (oven: string, site: SiteCode, ts: number, lines: Line[], burnt: number, deformed: number, fallen: number, rateMotif?: string): CuissonReport => {
+  const fmt = (i: number) => lines[Math.min(i, lines.length - 1)].label
+  const rejects = ([['Brûlé', burnt, 0], ['Déformé', deformed, 1], ['Tombé', fallen, 2]] as const).filter(([, q]) => q > 0)
+    .map(([reason, qty, i]) => ({ reason, qty, format: fmt(i), photo: true, image: { name: `rebut-${reason.toLowerCase()}-${dayOf(ts).split('/').reverse().join('')}.jpg`, thumb: '' } }))
+  const goodBy = Object.fromEntries(lines.map(l => [l.label, l.qty - rejects.filter(r => r.format === l.label).reduce((a, r) => a + r.qty, 0)]))
+  const received = patonsOf(lines)
+  return { by: oven, at: at(ts), received, good: received - burnt - deformed - fallen, goodBy, rejects, rateMotif, trace: trace(oven, site, ts) }
+}
 
 const flow = (baker: string, oven: string, t0: number, upTo: LotStatus) => {
   const steps: [LotStatus, number, string][] = [
@@ -59,6 +64,7 @@ type BonOpts = { confirmTs?: number; confirmBy?: string; received?: Record<strin
 
 export function seedSites() {
   const lots: ProdLot[] = []
+  const ovenAlerts: AlertItem[] = []
   const patLots: PatLot[] = []
   const bons: BonSortie[] = []
   const receptions: Reception[] = []
@@ -114,13 +120,16 @@ export function seedSites() {
       return b
     }
 
-    const addLot = (t0: number, mats: [MatKey, number][], lines: Line[], upTo: LotStatus, motif?: string, rej = [0.008, 0.004, 0.002]) => {
+    const addLot = (t0: number, mats: [MatKey, number][], lines: Line[], upTo: LotStatus, motif?: string, rej = [0.008, 0.004, 0.002], rateMotif?: string) => {
       const total = patonsOf(lines)
+      const n = lots.filter(l => l.site === site && dayOf(l.ts) === dayOf(t0)).length + patLots.filter(l => l.site === site && l.fab === dayOf(t0)).length + 1
+      const cooked = LOT_FLOW.indexOf(upTo) >= LOT_FLOW.indexOf('Cuit')
       const lot: ProdLot = {
-        id: lotIdFor(site, t0, 1), site, ts: t0, trace: trace(baker, site, t0),
+        id: lotIdFor(t0, n), site, ts: t0, trace: trace(baker, site, t0),
         mats: mats.map(([mat, qty]) => ({ mat, qty })), lines, threshold: MIN_EPS_PER_BAG, motif,
         status: upTo, history: flow(baker, oven, t0, upTo),
-        cuisson: report(oven, t0 + 150 * 60000, total, Math.round(total * rej[0]), Math.round(total * rej[1]), Math.round(total * rej[2])),
+        cuisson: cooked ? report(oven, site, t0 + 150 * 60000, lines, Math.round(total * rej[0]), Math.round(total * rej[1]), Math.round(total * rej[2]), rateMotif) : undefined,
+        oven: cooked ? { by: oven, trace: trace(oven, site, t0 + 20 * 60000), ts: t0 + 20 * 60000 } : undefined,
         corrections: [],
       }
       lots.push(lot)
@@ -202,7 +211,18 @@ export function seedSites() {
       const low = (d + ti) % 9 === 4
       const perBag = low ? 368 + ((d * 7 + ti * 5) % 28) : 455 + Math.round(55 * Math.sin(d * 1.7 + ti) + ((d * 13) % 20) + d * 0.3)
       const t0 = demoTs(d, 3, 40)
-      const lot = addLot(t0, mats, linesFor(bags, perBag, d % 4 === 1), 'Clôturé', low ? LOW_MOTIFS[d % 3] : undefined)
+      const hot = d === 9   // samedi 17/10 : lot à rebuts excessifs (3,5 %)
+      const lot = addLot(t0, mats, linesFor(bags, perBag, d % 4 === 1), 'Clôturé', low ? LOW_MOTIFS[d % 3] : undefined,
+        hot ? [0.025, 0.006, 0.004] : undefined, hot ? 'Thermostat du four n°2 déréglé : sole trop chaude en fin de fournée' : undefined)
+      if (hot) {
+        const c = lot.cuisson!, rej = c.rejects.reduce((a, r) => a + r.qty, 0)
+        ovenAlerts.push({
+          id: ({ 'SIT-01': 'AL-2026-0077', 'SIT-02': 'AL-2026-0078', 'SIT-03': 'AL-2026-0079' } as Record<string, string>)[site], type: 'Rebut excessif en cuisson', severity: 'Moyenne', value: null,
+          detail: `${lot.id} (${site}) : ${rej} rebuts sur ${c.received} pâtons, soit ${((rej / c.received) * 100).toFixed(1).replace('.', ',')} % (seuil 2 %) — motif de l’enfourneur : ${c.rateMotif}`,
+          people: `${oven} (enfourneur)`, status: 'Clôturée',
+          history: [{ at: c.at, by: 'Système', text: 'Alerte générée à la validation de la cuisson.' }, { at: at(demoTs(d - 1, 9, 0)), by: 'Dr Carine SODJI', text: 'Clôturée : thermostat remplacé, contrôle des fournées suivantes conforme.' }],
+        })
+      }
       closeDay(d, dayBons, lot)
 
 
@@ -223,7 +243,7 @@ export function seedSites() {
     addLot(d0(3, 40), [['farine', 3], ['levure', 1.5], ['sel', 1.5], ['glace', 60]], [
       { label: 'Pain 150 g', grams: 150, qty: 800 }, { label: 'Pain 100 g', grams: 100, qty: 600 },
       { label: 'Pain 50 g', grams: 50, qty: 500 }, { label: 'Pain découpé 115 FCFA', grams: 115, qty: 300 },
-    ], 'Mis en stock', undefined, [20 / 2200, 8 / 2200, 4 / 2200])
+    ], 'Remis au four')
     addRec(d0(6, 30), 'FR-04', [['MP-03', 'sac 25 kg', 2, 2]])
     addRec(d0(7, 0), 'FR-03', [['MP-10', 'carton 1 000', 2, 1, 'Second carton annoncé pour la semaine prochaine']])
     addRec(d0(7, 30), 'FR-01', [['MP-01', 'sac', 20, 20], ['MP-02', 'carton', 4, 4]], { invoiceNo: 'FAC-FR01-0261' })
@@ -263,5 +283,5 @@ export function seedSites() {
     movements.push(...siteMoves.map((m, i) => ({ ...m, id: `MVT-S${site.slice(-1)}-${String(i + 1).padStart(5, '0')}` })))
   })
 
-  return { lots, patLots, bonsSortie: bons, receptions, movements, workshop, endOfDay, epsThreshold: MIN_EPS_PER_BAG }
+  return { ovenAlerts, lots, patLots, bonsSortie: bons, receptions, movements, workshop, endOfDay, epsThreshold: MIN_EPS_PER_BAG }
 }

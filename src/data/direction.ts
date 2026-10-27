@@ -18,22 +18,25 @@ export function activityDays(s: DemoState) {
   return [...new Set(ts.map(dayOf))].sort((a, b) => dayStartTs(b) - dayStartTs(a))
 }
 
-// Ventes boutique d'un jour : mouvements « Vente (caisse) » valorisés au prix de détail, plus les tickets de caisse
+// Les fonctions ci-dessous prennent `inP` : appartenance d'un jour (JJ/MM/AAAA) à la période filtrée.
+export type InPeriod = (day: string) => boolean
+
+// Ventes boutique de la période : mouvements « Vente (caisse) » valorisés au prix de détail, plus les tickets de caisse
 // de démonstration qui n'ont pas de mouvement de stock (session du 26/10).
-export function shopSales(s: DemoState, site: string, day: string) {
-  const moves = s.shopMoves.filter(m => m.site === site && m.kind === 'Vente (caisse)' && dayOf(m.ts) === day)
+export function shopSales(s: DemoState, site: string, inP: InPeriod) {
+  const moves = s.shopMoves.filter(m => m.site === site && m.kind === 'Vente (caisse)' && inP(dayOf(m.ts)))
   const refs = new Set(moves.map(m => m.ref))
   let ca = moves.reduce((a, m) => a - m.qty * product(m.code).retail, 0)
   let qty = moves.reduce((a, m) => a - m.qty, 0)
-  s.sessions.filter(x => x.site === site && x.openedAt.startsWith(day)).forEach(x => {
+  s.sessions.filter(x => x.site === site && inP(x.openedAt.slice(0, 10))).forEach(x => {
     x.tickets.filter(t => !refs.has(t.id)).forEach(t => { ca += sale(t); qty += t.cancelled ? 0 : t.lines.reduce((a, l) => a + l.qty, 0) })
     if (!x.tickets.length && x.summary) ca += x.summary.ca
   })
   return { ca, qty }
 }
 
-export function bakeryDay(s: DemoState, site: string, day: string) {
-  const lots = s.lots.filter(l => l.site === site && dayOf(l.ts) === day)
+export function bakeryDay(s: DemoState, site: string, inP: InPeriod) {
+  const lots = s.lots.filter(l => l.site === site && inP(dayOf(l.ts)))
   const f = lots.map(figures)
   const bags = f.reduce((a, x) => a + x.bags, 0), eps = f.reduce((a, x) => a + x.eps, 0)
   const cooked = lots.filter(l => l.cuisson)
@@ -43,8 +46,8 @@ export function bakeryDay(s: DemoState, site: string, day: string) {
   }
 }
 
-export function pastryDay(s: DemoState, site: string, day: string) {
-  const lots = s.patLots.filter(l => l.site === site && l.fab === day)
+export function pastryDay(s: DemoState, site: string, inP: InPeriod) {
+  const lots = s.patLots.filter(l => l.site === site && inP(l.fab))
   const byLine = (code: string) => lots.filter(l => l.line === code).reduce((a, l) => a + patFigures(l).produced, 0)
   return { lots, P: byLine('P'), Y: byLine('Y'), G: byLine('G'), unit: (code: string) => prodLine(code).unitLabel }
 }
@@ -60,10 +63,10 @@ export function storeStatus(s: DemoState, site: string) {
   }
 }
 
-export function shopStatus(s: DemoState, site: string, day: string) {
+export function shopStatus(s: DemoState, site: string, inP: InPeriod) {
   const bdls = s.bdls.filter(b => b.toSite === site && b.kind !== 'tournee')
   const st = shopStock(s.shopMoves, site)
-  const losses = s.shopMoves.filter(m => m.site === site && m.kind === 'Invendu / perte' && dayOf(m.ts) === day)
+  const losses = s.shopMoves.filter(m => m.site === site && m.kind === 'Invendu / perte' && inP(dayOf(m.ts)))
   return {
     transit: bdls.filter(b => b.status === BDL_ST.transit || b.status === BDL_ST.partial).length,
     gaps: bdls.filter(b => b.status === BDL_ST.gap).length,
@@ -74,7 +77,7 @@ export function shopStatus(s: DemoState, site: string, day: string) {
   }
 }
 
-export function toursOf(s: DemoState, site: string, day?: string) {
-  return s.tours.filter(t => t.site === site && (!day || dayOf(t.ts) === day)).sort((a, b) => b.ts - a.ts)
+export function toursOf(s: DemoState, site: string, inP?: InPeriod) {
+  return s.tours.filter(t => t.site === site && (!inP || inP(dayOf(t.ts)))).sort((a, b) => b.ts - a.ts)
     .map(t => ({ t, f: tourFigures(t, s.deliveries, s.tourDeposits, s.tourFixes) }))
 }

@@ -11,15 +11,16 @@ import { dec, num } from '../lib/format'
 // Production des 3 sites : pétrissées (lots boulangerie) et lots pâtisserie / yaourts / glaces.
 export function Production() {
   const { state } = useApp()
-  const { scope, day, bar } = useSiteFilter()
-  const lots = state.lots.filter(l => scope.includes(l.site) && bakeryDay(state, l.site, day).lots.includes(l))
-  const pat = state.patLots.filter(l => scope.includes(l.site) && l.fab === day)
+  const { scope, inP, label, bar } = useSiteFilter()
+  // Du plus récent au plus ancien.
+  const lots = state.lots.filter(l => scope.includes(l.site) && bakeryDay(state, l.site, inP).lots.includes(l)).sort((a, b) => b.ts - a.ts)
+  const pat = state.patLots.filter(l => scope.includes(l.site) && inP(l.fab)).sort((a, b) => b.ts - a.ts)
   const pf = Object.fromEntries(scope.map(s => [s, pfLots(state.patLots.filter(l => l.site === s), state.bdls, s)]))
   const f = lots.map(figures)
   const bags = f.reduce((a, x) => a + x.bags, 0), eps = f.reduce((a, x) => a + x.eps, 0)
 
   return (
-    <Screen title="Production" sub={`Lots du ${day} — EPS = poids total de pâte ÷ 146 g`}>
+    <Screen title="Production" sub={`Lots — ${label} · EPS = poids total de pâte ÷ 146 g`}>
       {bar}
       <div className="kpi-row">
         <Kpi label="Pétrissées" value={num(lots.length)} note={`${num(bags)} sacs de farine`} />

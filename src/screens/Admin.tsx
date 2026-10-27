@@ -7,6 +7,7 @@ import { products } from '../data/catalog'
 import { clients, drivers, params, suppliers } from '../data/partners'
 import { locationLabels, roleLabels, sites } from '../data/org'
 import { productName, SHOP_PRODUCTS } from '../data/shop'
+import { usePeriod } from '../components/PeriodFilter'
 
 export function Catalog() {
   const { user } = useApp()
@@ -33,6 +34,14 @@ export function Org() {
   // Tolérance d'écart BDL par produit (0 par défaut) et seuil de photo obligatoire des pertes.
   const [tol, setTol] = useState<Record<string, string>>(Object.fromEntries(SHOP_PRODUCTS.map(p => [p.code, String(state.bdlTolerance[p.code] ?? 0)])))
   const [photo, setPhoto] = useState(String(state.lossPhotoThreshold))
+  const [oven, setOven] = useState({ rate: String(state.rejectThreshold).replace('.', ','), qty: String(state.rejectPhotoQty) })
+  const saveOven = () => {
+    const rate = Number(oven.rate.replace(',', '.')), qty = Number(oven.qty)
+    if (!rate || rate <= 0 || !qty) return say('Saisissez un taux et un nombre valides.')
+    update(s => ({ ...s, rejectThreshold: rate, rejectPhotoQty: qty }))
+    audit('Paramètre modifié', `Cuisson : taux de rebut acceptable ${rate} %, photo exigée à partir de ${qty} rebuts par ligne`)
+    say('Seuils de cuisson mis à jour')
+  }
   const saveShop = () => {
     const t = Object.fromEntries(Object.entries(tol).map(([c, v]) => [c, Number(v) || 0]).filter(([, v]) => v))
     update(s => ({ ...s, bdlTolerance: t, lossPhotoThreshold: Number(photo) || 0 }))
@@ -40,6 +49,7 @@ export function Org() {
     say('Paramètres des boutiques mis à jour')
   }
   const rows = params.map(p => p.label === 'Rendement minimum boulangerie' ? { ...p, value: `${state.epsThreshold} EPS/sac` }
+    : p.label === 'Taux de rebut acceptable' ? { ...p, value: `${String(state.rejectThreshold).replace('.', ',')} %`, override: `Photo du rebut exigée à partir de ${state.rejectPhotoQty} par ligne` }
     : p.label.startsWith('Tolérance écart BDL') ? { ...p, override: Object.entries(state.bdlTolerance).map(([c, v]) => `${productName(c)} : ${v}`).join(' · ') || '—' } : p)
   return (
     <Screen title="Sites, tiers et seuils">
@@ -54,6 +64,13 @@ export function Org() {
           <label className="unit-input"><input className="num-input sm" inputMode="numeric" value={eps} onChange={e => setEps(e.target.value.replace(/\D/g, ''))} /><span>EPS/sac</span></label>
           <Big tone="ghost" onClick={saveEps}>Modifier le rendement minimum</Big>
         </div>}</Card>
+      {can.setEpsThreshold(user!.role) && <Card title="Cuisson : taux de rebut acceptable et photos des rebuts" sub="Au-delà du taux, l’enfourneur doit saisir un motif et une alerte est générée pour la direction">
+        <div className="btn-row">
+          <label className="field">Taux de rebut acceptable (%)<input className="num-input sm" inputMode="decimal" value={oven.rate} onChange={e => setOven({ ...oven, rate: e.target.value.replace(/[^\d,.]/g, '') })} /></label>
+          <label className="field">Photo exigée à partir de (rebuts par ligne)<input className="num-input sm" inputMode="numeric" value={oven.qty} onChange={e => setOven({ ...oven, qty: e.target.value.replace(/\D/g, '') })} /></label>
+        </div>
+        <Big tone="ghost" onClick={saveOven}>Enregistrer les seuils de cuisson</Big>
+      </Card>}
       {can.setEpsThreshold(user!.role) && <Card title="Boutiques : tolérance d’écart BDL et photos des pertes" sub="Tolérance en unités par produit (0 par défaut) — au-delà, le BDL passe « Réceptionné avec écart » et une alerte est générée">
         <div className="count-grid">{SHOP_PRODUCTS.map(p => <label key={p.code}>{productName(p.code)}
           <input className="num-input sm" inputMode="numeric" value={tol[p.code]} onChange={e => setTol({ ...tol, [p.code]: e.target.value.replace(/\D/g, '') })} /></label>)}
@@ -89,9 +106,11 @@ export function Devices() {
 
 export function Audit() {
   const { state } = useApp()
+  const per = usePeriod(state.audit.map(a => a.localAt))
   return (
     <Screen title="Journal d’audit" sub="Écritures non modifiables — auteur, appareil, site, horodatage serveur et local">
-      <Card><Table head={['Horodatage serveur', 'Heure locale', 'Auteur', 'Appareil', 'Site', 'Action', 'Détail']} rows={state.audit.map(a => [a.at, a.localAt, a.author, a.device, a.site, <b>{a.action}</b>, a.detail])} /></Card>
+      {per.bar}
+      <Card><Table head={['Horodatage serveur', 'Heure locale', 'Auteur', 'Appareil', 'Site', 'Action', 'Détail']} rows={state.audit.filter(a => per.match(a.localAt)).map(a => [a.at, a.localAt, a.author, a.device, a.site, <b>{a.action}</b>, a.detail])} /></Card>
       <Notice>Aucune donnée validée n’est supprimable : toute correction passe par une contre-écriture tracée.</Notice>
     </Screen>
   )

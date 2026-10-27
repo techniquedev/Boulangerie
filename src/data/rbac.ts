@@ -9,6 +9,7 @@ export type ScreenId =
   | 'sHome' | 'sReception' | 'sSuivi' | 'sStock' | 'sPertes' | 'sHistory'
   | 'pHome' | 'pProduction' | 'pLots' | 'pStocks' | 'pHistory'
   | 'lHome' | 'lLoad' | 'lDeliver' | 'lCash' | 'lClose' | 'lHistory'
+  | 'eHome' | 'eLots' | 'eCuisson' | 'eMine' | 'eRejects' | 'eHistory'
 
 export type MenuItem = { id: ScreenId; label: string; group: string }
 
@@ -75,6 +76,13 @@ const all = {
   lCash: M('lCash', 'Encaissements et carburant', 'Ma tournée'),
   lClose: M('lClose', 'Fin de tournée', 'Ma tournée'),
   lHistory: M('lHistory', 'Historique et audit', 'Ma tournée'),
+  // Tableau de bord Enfourneur (modèle unique, identique sur les 3 sites)
+  eHome: M('eHome', 'Accueil', 'Mon four'),
+  eLots: M('eLots', 'Lots reçus du boulanger', 'Mon four'),
+  eCuisson: M('eCuisson', 'Saisie de cuisson', 'Mon four'),
+  eMine: M('eMine', 'Mes cuissons', 'Mon four'),
+  eRejects: M('eRejects', 'Suivi des rebuts', 'Mon four'),
+  eHistory: M('eHistory', 'Historique et audit', 'Mon four'),
 }
 
 const bakerTabs: ScreenId[] = ['bHome', 'bReception', 'bPetrissee', 'bLots', 'bCuisson', 'bHistory']
@@ -82,17 +90,18 @@ const storeTabs: ScreenId[] = ['mHome', 'mReceptions', 'mSorties', 'mStocks', 'm
 const shopTabs: ScreenId[] = ['sHome', 'sReception', 'sSuivi', 'sStock', 'sPertes', 'sHistory']
 const patTabs: ScreenId[] = ['pHome', 'bReception', 'pProduction', 'pLots', 'pStocks', 'pHistory']
 export const driverTabs: ScreenId[] = ['lHome', 'lLoad', 'lDeliver', 'lCash', 'lClose', 'lHistory']
+const ovenTabs: ScreenId[] = ['eHome', 'eLots', 'eCuisson', 'eMine', 'eRejects', 'eHistory']
 
 const pick = (...ids: ScreenId[]) => ids.map(i => all[i])
 
 // Matrice RBAC : menus visibles par rôle (à doubler côté serveur en production).
 export const menuByRole: Record<Role, MenuItem[]> = {
-  direction: Object.values(all).filter(m => m.id !== 'pos' && m.id !== 'devices' && !bakerTabs.includes(m.id) && !storeTabs.includes(m.id) && !shopTabs.includes(m.id) && !patTabs.includes(m.id) && !driverTabs.includes(m.id)),
+  direction: Object.values(all).filter(m => m.id !== 'pos' && m.id !== 'devices' && !bakerTabs.includes(m.id) && !storeTabs.includes(m.id) && !shopTabs.includes(m.id) && !patTabs.includes(m.id) && !driverTabs.includes(m.id) && !ovenTabs.includes(m.id)),
   magasinierCentral: pick('magasin', 'bdl', 'purchases', 'inventory', 'notifications'),
   controleur: pick('dashboard', 'alerts', 'inventory', 'quality', 'production', 'bdl', 'reports', 'audit', 'notifications'),
   achats: pick('expenses', 'purchases', 'magasin', 'notifications'),
   boulanger: pick(...bakerTabs),   // saisie production, lecture des rapports de cuisson ; ni alertes ni écrans financiers
-  enfourneur: pick('cuisson', 'notifications'),
+  enfourneur: pick(...ovenTabs),   // saisie des cuissons et rebuts ; lecture des lots ; ni caisse, ni dépenses, ni prix, ni alertes
   magasinier: pick(...storeTabs),   // saisie réceptions et bons de sortie ; ni alertes, ni caisse, ni dépenses, ni prix
   boutiquier: pick(...shopTabs),   // réceptions à l'aveugle et déclarations ; ni caisse, ni dépenses, ni prix, ni alertes
   caissiere: pick('pos', 'caisse', 'versements', 'notifications'),
@@ -102,7 +111,7 @@ export const menuByRole: Record<Role, MenuItem[]> = {
 
 export const homeByRole: Record<Role, ScreenId> = {
   direction: 'dashboard', magasinierCentral: 'magasin', controleur: 'dashboard', achats: 'expenses',
-  boulanger: 'bHome', enfourneur: 'cuisson', magasinier: 'mHome', boutiquier: 'sHome',
+  boulanger: 'bHome', enfourneur: 'eHome', magasinier: 'mHome', boutiquier: 'sHome',
   caissiere: 'pos', patissier: 'pHome', livreur: 'lHome',
 }
 
@@ -126,6 +135,7 @@ export const can = {
   editPrices: (r: Role) => r === 'direction',
   saisieProduction: (r: Role) => r === 'boulanger' || r === 'patissier' || r === 'direction',
   saisieCuisson: (r: Role) => r === 'enfourneur',                              // boulanger : lecture seule
+  exportOven: (r: Role) => r === 'enfourneur' || r === 'direction' || r === 'controleur',
   exportTour: (r: Role) => r === 'livreur' || r === 'direction' || r === 'controleur',
   exportPat: (r: Role) => r === 'patissier' || r === 'direction' || r === 'controleur',
   exportShop: (r: Role) => r === 'boutiquier' || r === 'direction' || r === 'controleur',

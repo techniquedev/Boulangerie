@@ -9,6 +9,7 @@ import { atelierLabel, BS, fmtQty, matName } from '../../data/stock'
 import { dayStartTs, dec, monthOf, num, today, weekOf } from '../../lib/format'
 import { exportExcel, exportPdf, type Section } from '../../lib/export'
 import { LineIcon, usePat } from './shared'
+import { usePeriod } from '../../components/PeriodFilter'
 
 type Period = 'jour' | 'semaine' | 'mois'
 const lotTs = (l: PatLot) => dayStartTs(l.fab) + 12 * 3600000
@@ -49,10 +50,8 @@ export function PHistory() {
   const { user, siteName, mine, bons, stockOf, pf } = usePat()
   const [period, setPeriod] = useState<Period>('jour')
   const [line, setLine] = useState(PROD_LINES[0].code)
-  const [from, setFrom] = useState('')
-  const [to, setTo] = useState('')
-  const isoTs = (v: string) => dayStartTs(v.split('-').reverse().join('/'))
-  const inPeriod = (l: PatLot) => (!from || dayStartTs(l.fab) >= isoTs(from)) && (!to || dayStartTs(l.fab) <= isoTs(to))
+  const per = usePeriod(mine.map(l => l.fab))
+  const inPeriod = (l: PatLot) => per.match(l.fab)
   const lots = mine.filter(l => l.line === line)
   const L = prodLine(line)
 
@@ -69,7 +68,7 @@ export function PHistory() {
   const prodRows = lots.filter(inPeriod).map(l => { const f = patFigures(l); return [l.fab, l.id, f.items.map(i => `${i.produced} ${productName(i.code)}`).join(' + '), f.produced,
     f.gaps.map(g => `${matName(g.mp)} ${dec(g.theo, 3)} / ${dec(g.real, 3)}`).join(' ; '), `${dec(f.yieldReal)} %`, `${dec(f.yieldGap)} pts`, `${dec(f.rejectRate)} %`] })
   const sections: Section[] = [
-    { title: `Productions — ${L.label} (${from ? from.split('-').reverse().join('/') : 'début'} → ${to ? to.split('-').reverse().join('/') : 'aujourd’hui'})`, head: ['Fabrication', 'Lot', 'Produits', 'Quantité produite', 'Consommation théorique / réelle', 'Rendement', 'Écart de rendement', 'Taux de rebut'], rows: prodRows },
+    { title: `Productions — ${L.label} (${per.label})`, head: ['Fabrication', 'Lot', 'Produits', 'Quantité produite', 'Consommation théorique / réelle', 'Rendement', 'Écart de rendement', 'Taux de rebut'], rows: prodRows },
     { title: 'État des stocks', head: ['Type', 'Article', 'Lot', 'DLC', 'Quantité'], rows: [
       ...(['ATL-P', 'ATL-YG'] as const).flatMap(a => Object.entries(stockOf(a)).filter(([, q]) => q > 0).map(([mp, q]) => [`Ingrédient — ${atelierLabel(a)}`, matName(mp), '', '', fmtQty(mp, q)])),
       ...pf.filter(p => p.remaining > 0).map(p => ['Produit fini', productName(p.item.code), p.lot.id, p.item.dlc, p.remaining]),
@@ -107,8 +106,7 @@ export function PHistory() {
 
       {can.exportPat(user.role) && <Card title="Exports" sub={`Productions de la ligne ${L.label.toLowerCase()} et état des stocks`}>
         <div className="btn-row">
-          <label className="field">Du<input className="ref-input" type="date" value={from} onChange={e => setFrom(e.target.value)} /></label>
-          <label className="field">Au<input className="ref-input" type="date" value={to} onChange={e => setTo(e.target.value)} /></label>
+          {per.bar}
           <Big tone="ghost" onClick={() => exportExcel(fileBase, sections)}><FileSpreadsheet size={18} /> Excel</Big>
           <Big tone="ghost" onClick={() => exportPdf(fileBase, `Productions et stocks — ${siteName}`, `Édité le ${today()} par ${user.name}`, sections)}><FileText size={18} /> PDF</Big>
         </div>

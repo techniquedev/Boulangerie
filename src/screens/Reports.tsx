@@ -14,33 +14,33 @@ import { TraceInfo } from './boulanger/shared'
 
 export function Reports() {
   const { state, user, say } = useApp()
-  const { scope, day, bar } = useSiteFilter()
-  const rows = scope.map(site => ({ site, sales: shopSales(state, site, day), bake: bakeryDay(state, site, day), pat: pastryDay(state, site, day), shop: shopStatus(state, site, day), tours: toursOf(state, site, day) }))
+  const { scope, inP, label, bar } = useSiteFilter()
+  const rows = scope.map(site => ({ site, sales: shopSales(state, site, inP), bake: bakeryDay(state, site, inP), pat: pastryDay(state, site, inP), shop: shopStatus(state, site, inP), tours: toursOf(state, site, inP) }))
   const sum = (f: (r: typeof rows[number]) => number) => rows.reduce((a, r) => a + f(r), 0)
-  const file = (name: string) => `${name.toLowerCase()}-${day.replace(/\//g, '-')}`
+  const file = (name: string) => `${name.toLowerCase()}-${label.replace(/[\s/]/g, '-')}`
 
   // Bibliothèque de rapports : exports des données réelles des sites sélectionnés.
   const reports: [string, string, () => Section][] = [
-    ['Production', 'Lots, EPS, rendement, rebuts', () => ({ title: `Production — ${day}`, head: ['Site', 'Lot', 'Type', 'Quantité', 'Rendement', 'Auteur'], rows: [
-      ...state.lots.filter(l => scope.includes(l.site) && dayOf(l.ts) === day).map(l => { const f = figures(l); return [siteShort(l.site), l.id, 'Boulangerie', `${f.patons} pâtons`, `${num(f.perBag)} EPS/sac`, l.trace.author] }),
-      ...state.patLots.filter(l => scope.includes(l.site) && l.fab === day).map(l => { const f = patFigures(l); return [siteShort(l.site), l.id, prodLine(l.line).label, String(f.produced), `${f.yieldReal.toFixed(1)} %`, l.trace.author] }),
+    ['Production', 'Lots, EPS, rendement, rebuts', () => ({ title: `Production — ${label}`, head: ['Site', 'Lot', 'Type', 'Quantité', 'Rendement', 'Auteur'], rows: [
+      ...state.lots.filter(l => scope.includes(l.site) && inP(dayOf(l.ts))).map(l => { const f = figures(l); return [siteShort(l.site), l.id, 'Boulangerie', `${f.patons} pâtons`, `${num(f.perBag)} EPS/sac`, l.trace.author] }),
+      ...state.patLots.filter(l => scope.includes(l.site) && inP(l.fab)).map(l => { const f = patFigures(l); return [siteShort(l.site), l.id, prodLine(l.line).label, String(f.produced), `${f.yieldReal.toFixed(1)} %`, l.trace.author] }),
     ] })],
-    ['Ventes', 'Ventes boutiques et encaissements des tournées', () => ({ title: `Ventes — ${day}`, head: ['Site', 'Ventes boutique (FCFA)', 'Articles vendus', 'Tournées espèces', 'Tournées Mobile Money', 'Ventes à crédit'],
+    ['Ventes', 'Ventes boutiques et encaissements des tournées', () => ({ title: `Ventes — ${label}`, head: ['Site', 'Ventes boutique (FCFA)', 'Articles vendus', 'Tournées espèces', 'Tournées Mobile Money', 'Ventes à crédit'],
       rows: rows.map(r => [siteShort(r.site), r.sales.ca, r.sales.qty, r.tours.reduce((a, x) => a + x.f.cash, 0), r.tours.reduce((a, x) => a + x.f.momo, 0), r.tours.reduce((a, x) => a + x.f.credit, 0)]) })],
     ['Stocks', 'Magasins de site, valorisation CMP', () => ({ title: `Stocks des magasins de site au ${today()}`, head: ['Site', 'Matière', 'Stock', 'Minimum', 'Valeur (FCFA)'],
       rows: scope.flatMap(x => { const st = siteStock(state.movements, x); return SITE_MATS.map(m => [siteShort(x), m.name, fmtQty(m.mp, st[m.mp] || 0), fmtQty(m.mp, m.min), Math.round((st[m.mp] || 0) * m.cmp)]) }) })],
     ['BDL', 'Émis, réceptionnés, écarts', () => ({ title: 'Bordereaux de livraison', head: ['Site', 'BDL', 'Destination', 'Statut', 'Expédié', 'Compté'],
-      rows: state.bdls.filter(b => b.toSite && scope.includes(b.toSite)).map(b => [siteShort(b.toSite!), b.id, b.to, b.status, b.lines.reduce((a, l) => a + l.sent, 0), b.lines.reduce((a, l) => a + (l.counted ?? 0), 0)]) })],
+      rows: state.bdls.filter(b => b.toSite && scope.includes(b.toSite) && (!b.ts || inP(dayOf(b.ts)))).map(b => [siteShort(b.toSite!), b.id, b.to, b.status, b.lines.reduce((a, l) => a + l.sent, 0), b.lines.reduce((a, l) => a + (l.counted ?? 0), 0)]) })],
     ['Caisse', 'Sessions, Z de caisse, écarts', () => ({ title: 'Sessions de caisse', head: ['Site', 'Session', 'Ouverte par', 'Statut', 'Tickets', 'Compté'],
-      rows: state.sessions.filter(x => scope.includes(x.site)).map(x => [siteShort(x.site), x.id, x.openedBy, x.status, x.tickets.length, x.counted ?? '']) })],
+      rows: state.sessions.filter(x => scope.includes(x.site) && inP(x.openedAt.slice(0, 10))).map(x => [siteShort(x.site), x.id, x.openedBy, x.status, x.tickets.length, x.counted ?? '']) })],
     ['Tournées', 'Chargements, livraisons, équilibrage, versements', () => ({ title: 'Tournées des livreurs', head: ['Site', 'Tournée', 'Livreur', 'Statut', 'Espèces', 'Mobile Money', 'Versement'],
-      rows: scope.flatMap(x => toursOf(state, x).map(({ t, f }) => [siteShort(x), t.id, t.driver, t.status, f.cash, f.momo, t.remit ? t.remit.cash + t.remit.momo : ''])) })],
+      rows: scope.flatMap(x => toursOf(state, x, inP).map(({ t, f }) => [siteShort(x), t.id, t.driver, t.status, f.cash, f.momo, t.remit ? t.remit.cash + t.remit.momo : ''])) })],
   ]
 
   return (
     <Screen title="Rapports" sub="Rapport quotidien des 3 sites et bibliothèque de rapports">
       {bar}
-      <Card title={`Rapport quotidien — ${day}`} sub="Envoyé le soir par email / WhatsApp à la Direction">
+      <Card title={`Rapport — ${label}`} sub="Envoyé le soir par email / WhatsApp à la Direction">
         <div className="kpi-row">
           <Kpi label="Ventes boutiques consolidées" value={money(sum(r => r.sales.ca))} note={rows.map(r => `${siteShort(r.site)} ${num(r.sales.ca)}`).join(' · ')} />
           <Kpi label="Pains conformes / rebuts" value={`${num(sum(r => r.bake.good))} / ${num(sum(r => r.bake.rejects))}`} />
@@ -62,22 +62,22 @@ export function Reports() {
 
 export function Treasury() {
   const { state } = useApp()
-  const { scope, day, bar } = useSiteFilter()
-  const split = (site: string, cash: boolean) => state.sessions.filter(x => x.site === site && x.openedAt.startsWith(day)).reduce((a, x) => a + (x.summary
+  const { scope, inP, label, bar } = useSiteFilter()
+  const split = (site: string, cash: boolean) => state.sessions.filter(x => x.site === site && inP(x.openedAt.slice(0, 10))).reduce((a, x) => a + (x.summary
     ? (cash ? x.summary.cash : x.summary.momo)
     : x.tickets.filter(t => !t.cancelled).reduce((b, t) => b + t.payments.filter(p => (p.mode === 'Espèces') === cash).reduce((c, p) => c + p.amount, 0), 0)), 0)
   const rows = scope.map(site => {
-    const tours = toursOf(state, site, day)
-    return { site, ca: shopSales(state, site, day).ca, cash: split(site, true), momo: split(site, false), tourCash: tours.reduce((a, x) => a + x.f.cash, 0), tourMomo: tours.reduce((a, x) => a + x.f.momo, 0),
+    const tours = toursOf(state, site, inP)
+    return { site, ca: shopSales(state, site, inP).ca, cash: split(site, true), momo: split(site, false), tourCash: tours.reduce((a, x) => a + x.f.cash, 0), tourMomo: tours.reduce((a, x) => a + x.f.momo, 0),
       versed: state.versements.filter(v => v.site === site).reduce((a, v) => a + v.amount, 0) }
   })
   const ca = rows.reduce((a, r) => a + r.ca + r.tourCash + r.tourMomo, 0)
   const dep = state.expenses.filter(e => e.status !== 'Demandée' && e.status !== 'Refusée').reduce((x, e) => x + e.amount, 0)
   return (
-    <Screen title="Trésorerie et résultat simplifiés" sub={`Vue consolidée ventes / encaissements / dépenses — ${day}`}>
+    <Screen title="Trésorerie et résultat simplifiés" sub={`Vue consolidée ventes / encaissements / dépenses — ${label}`}>
       {bar}
       <div className="kpi-row">
-        <Kpi label="Ventes du jour (boutiques + tournées)" value={money(ca)} /><Kpi label="Dépenses validées" value={money(dep)} />
+        <Kpi label="Ventes de la période (boutiques + tournées)" value={money(ca)} /><Kpi label="Dépenses validées" value={money(dep)} />
         <Kpi label="Dépenses en attente" value={money(state.expenses.filter(e => e.status === 'Demandée').reduce((x, e) => x + e.amount, 0))} tone="warn" />
         <Kpi label="Résultat simplifié" value={money(ca - dep)} tone={ca - dep >= 0 ? 'ok' : 'danger'} />
       </div>
@@ -91,8 +91,8 @@ export function Treasury() {
 // Tournées des livreurs des 3 sites : chargement, livraisons, équilibrage et versements (vue Direction).
 export function Tour() {
   const { state } = useApp()
-  const { scope, bar } = useSiteFilter(false)
-  const list = scope.flatMap(x => toursOf(state, x))
+  const { scope, inP, bar } = useSiteFilter({ all: true, days: state.tours.map(t => dayOf(t.ts)) })
+  const list = scope.flatMap(x => toursOf(state, x, inP))
   const [sel, setSel] = useState<string | null>(null)
   const cur = list.find(x => `${x.t.id}` === sel) || list[0]
   return (

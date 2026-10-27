@@ -1,21 +1,22 @@
 import { useState } from 'react'
 import { useApp } from '../../store/context'
 import { Big, Card, Kpi, Notice, Screen, Table } from '../../components/ui'
-import { figures, LOT_FLOW, lotDay, matLabel, matQty, mpOf, yieldTone, type Correction, type LotStatus, type MatKey } from '../../data/boulanger'
+import { figures, LOT_STATUSES, lotDay, matLabel, matQty, mpOf, yieldTone, type Correction, type LotStatus, type MatKey } from '../../data/boulanger'
 import { workshopKey } from '../../data/stock'
 import { dec, nowStamp, num } from '../../lib/format'
 import { LotFrise, StatusBadge, TraceInfo, useBaker } from './shared'
+import { usePeriod } from '../../components/PeriodFilter'
 
 export function BLots() {
   const { update, audit, say } = useApp()
   const { user, site, mine, stock } = useBaker()
-  const [day, setDay] = useState('')
   const [status, setStatus] = useState<LotStatus | ''>('')
   const [sel, setSel] = useState(mine[0]?.id)
   const [fix, setFix] = useState({ target: '', delta: '', motif: '' })
+  const [reply, setReply] = useState<Record<number, string>>({})
 
-  const days = Array.from(new Set(mine.map(lotDay)))
-  const list = mine.filter(l => (!day || lotDay(l) === day) && (!status || l.status === status))
+  const period = usePeriod(mine.map(lotDay))
+  const list = mine.filter(l => period.match(lotDay(l)) && (!status || l.status === status))
   const lot = list.find(l => l.id === sel) || list[0]
   const f = lot && figures(lot)
 
@@ -43,13 +44,20 @@ export function BLots() {
     say('Contre-écriture tracée'); setFix({ target: '', delta: '', motif: '' })
   }
 
+  const answer = (i: number) => {
+    const text = reply[i]?.trim()
+    if (!lot || !text) return say('Saisissez votre réponse.')
+    update(s => ({ ...s, lots: s.lots.map(l => l.id === lot.id && l.site === lot.site
+      ? { ...l, anomalies: (l.anomalies || []).map((a, k) => k === i ? { ...a, answer: { at: nowStamp(), by: user.name, text } } : a) } : l) }))
+    audit('Réponse à une anomalie de lot', `${lot.id} : ${text}`)
+    say('Réponse transmise à l’enfourneur'); setReply({ ...reply, [i]: '' })
+  }
+
   return (
     <Screen title="Mes lots de production" sub="Lots issus de mes pétrissées — données non modifiables, corrections par contre-écriture tracée">
       <div className="filter-row">
-        <select className="ref-input" value={day} onChange={e => setDay(e.target.value)}>
-          <option value="">Toutes les dates</option>{days.map(d => <option key={d} value={d}>{d}</option>)}
-        </select>
-        {(['', ...LOT_FLOW] as (LotStatus | '')[]).map(s => <button key={s || 'all'} className={status === s ? 'chip on' : 'chip'} onClick={() => setStatus(s)}>{s || 'Tous les statuts'}</button>)}
+        {period.bar}
+        {(['', ...LOT_STATUSES] as (LotStatus | '')[]).map(s => <button key={s || 'all'} className={status === s ? 'chip on' : 'chip'} onClick={() => setStatus(s)}>{s || 'Tous les statuts'}</button>)}
       </div>
       {!lot ? <Notice>Aucun lot pour ces filtres.</Notice> : <div className="split">
         <div className="list-col scroll-list">
@@ -71,6 +79,14 @@ export function BLots() {
             <Table head={['Format', 'Pâtons']} rows={f!.lines.map(l => [l.label, <b>{num(l.qty)}</b>])} />
           </div>
           <TraceInfo t={lot.trace} />
+          {(lot.anomalies || []).map((a, i) => <div key={i} className="close-box">
+            <b>Anomalie signalée par l’enfourneur — {a.by}, {a.at}</b>
+            <p>{a.text}</p>
+            {a.answer ? <Notice tone="ok">Votre réponse ({a.answer.at}) : {a.answer.text}</Notice> : <>
+              <input className="ref-input wide" value={reply[i] || ''} onChange={e => setReply({ ...reply, [i]: e.target.value })} placeholder="Votre réponse (tracée)" />
+              <Big tone="ghost" onClick={() => answer(i)}>Répondre</Big>
+            </>}
+          </div>)}
           <h4>Historique du lot</h4>
           <ul className="timeline">{lot.history.map((h, i) => <li key={i}><small>{h.at} · {h.by}</small><span>{h.status}</span></li>)}</ul>
 

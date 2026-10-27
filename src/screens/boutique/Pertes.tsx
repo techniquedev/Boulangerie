@@ -10,6 +10,7 @@ import {
 import { dayOf, nowStamp, num } from '../../lib/format'
 import { readPhoto } from '../../lib/photo'
 import { useShop } from './shared'
+import { usePeriod } from '../../components/PeriodFilter'
 
 type Row = { code: string; lot: string; qty: string; motif: LossMotif | ''; dest: LossDest | ''; photo?: DeclPhoto }
 const blank = (): Row => ({ code: '', lot: '', qty: '', motif: '', dest: '' })
@@ -21,6 +22,8 @@ export function SPertes() {
   const [rows, setRows] = useState<Row[]>([blank()])
   const [sel, setSel] = useState<string | null>(null)
   const [fix, setFix] = useState({ line: '', delta: '', motif: '' })
+  const per = usePeriod(decls.map(x => dayOf(x.ts)))
+  const shown = decls.filter(x => per.match(dayOf(x.ts)))
 
   const setRow = (i: number, v: Partial<Row>) => setRows(rows.map((r, k) => k === i ? { ...r, ...v } : r))
   const lotsOf = (code: string) => code ? stock[code].lots : []
@@ -117,8 +120,9 @@ export function SPertes() {
       </Card>
 
       <Card title="Historique des déclarations" sub="Déclarations validées : non supprimables, corrections par contre-écriture">
+        {per.bar}
         <div className="split">
-          <div className="list-col scroll-list">{decls.map(x => <button key={x.id} className={`list-item ${x.id === d?.id ? 'on' : ''}`} onClick={() => { setSel(x.id); setFix({ line: '', delta: '', motif: '' }) }}>
+          <div className="list-col scroll-list">{shown.map(x => <button key={x.id} className={`list-item ${x.id === d?.id ? 'on' : ''}`} onClick={() => { setSel(x.id); setFix({ line: '', delta: '', motif: '' }) }}>
             <b>{x.id}</b><small>{x.trace.localAt} · {num(x.lines.reduce((s, l) => s + l.qty, 0))} unité(s)</small><Badge tone="ok">{x.status}</Badge>
           </button>)}</div>
           {d ? <div className="detail">

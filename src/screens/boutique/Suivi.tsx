@@ -3,9 +3,10 @@ import { MessageSquareReply } from 'lucide-react'
 import { useApp } from '../../store/context'
 import { Big, Card, Notice, Screen, Table } from '../../components/ui'
 import { BDL_ST, product } from '../../data/shop'
-import { nowStamp, num, stampAt } from '../../lib/format'
+import { dayOf, nowStamp, num, stampAt } from '../../lib/format'
 import { TraceInfo } from '../boulanger/shared'
 import { BdlBadge, countedTotal, useShop } from './shared'
+import { usePeriod } from '../../components/PeriodFilter'
 
 const FILTERS = ['Tous', BDL_ST.transit, BDL_ST.partial, BDL_ST.ok, BDL_ST.gap, BDL_ST.clos]
 
@@ -13,7 +14,9 @@ export function SSuivi() {
   const { update, audit, say } = useApp()
   const { user, site, shop, bdls } = useShop()
   const [f, setF] = useState('Tous')
-  const list = bdls.filter(b => f === 'Tous' || b.status === f)
+  const per = usePeriod(bdls.filter(b => b.ts).map(b => dayOf(b.ts!)))
+  const inP = bdls.filter(b => !b.ts || per.match(dayOf(b.ts)))
+  const list = inP.filter(b => f === 'Tous' || b.status === f)
   const [sel, setSel] = useState((bdls.find(b => b.requests?.some(r => !r.answer)) || bdls[0])?.id)
   const b = list.find(x => x.id === sel) || list[0]
   const [answer, setAnswer] = useState<Record<number, string>>({})
@@ -30,7 +33,8 @@ export function SSuivi() {
 
   return (
     <Screen title="Suivi de mes réceptions et des écarts" sub={`${shop} — historique des bordereaux et des comptages validés`}>
-      <div className="filter-row">{FILTERS.map(x => <button key={x} className={f === x ? 'chip on' : 'chip'} onClick={() => setF(x)}>{x} ({bdls.filter(y => x === 'Tous' || y.status === x).length})</button>)}</div>
+      {per.bar}
+      <div className="filter-row">{FILTERS.map(x => <button key={x} className={f === x ? 'chip on' : 'chip'} onClick={() => setF(x)}>{x} ({inP.filter(y => x === 'Tous' || y.status === x).length})</button>)}</div>
       {!b ? <Notice>Aucun bordereau pour ce filtre.</Notice> : <div className="split">
         <div className="list-col scroll-list">{list.map(x => <button key={x.id} className={`list-item ${x.id === b.id ? 'on' : ''}`} onClick={() => setSel(x.id)}>
           <b>{x.id}</b><small>{x.ts ? stampAt(new Date(x.ts)) : '—'}{x.requests?.some(r => !r.answer) ? ' · explication demandée' : ''}</small><BdlBadge b={x} />

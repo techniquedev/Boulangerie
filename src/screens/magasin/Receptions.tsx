@@ -14,6 +14,7 @@ import { exportExcel, exportPdf } from '../../lib/export'
 import { readPhoto } from '../../lib/photo'
 import { cleanNum, toNum, TraceInfo } from '../boulanger/shared'
 import { useStore } from './shared'
+import { usePeriod } from '../../components/PeriodFilter'
 
 type Row = { mp: string; unit: string; ordered: string; received: string; remark: string }
 const blankRow = (): Row => ({ mp: '', unit: '', ordered: '', received: '', remark: '' })
@@ -31,7 +32,8 @@ export function MReceptions() {
   const [rows, setRows] = useState<Row[]>([blankRow()])
   const [photos, setPhotos] = useState<Photo[]>([])
   const [done, setDone] = useState<Reception | null>(null)
-  const [filter, setFilter] = useState({ day: '', supplier: '', mp: '' })
+  const [filter, setFilter] = useState({ supplier: '', mp: '' })
+  const per = usePeriod(receptions.map(r => dayOf(r.ts)))
   const [sel, setSel] = useState(receptions[0]?.id)
   const [fix, setFix] = useState({ mp: '', delta: '', motif: '' })
 
@@ -87,8 +89,7 @@ export function MReceptions() {
   }
 
   // Liste filtrée et fiche détaillée.
-  const days = Array.from(new Set(receptions.map(r => dayOf(r.ts))))
-  const list = receptions.filter(r => (!filter.day || dayOf(r.ts) === filter.day) && (!filter.supplier || r.supplier === filter.supplier) && (!filter.mp || r.lines.some(l => l.mp === filter.mp)))
+  const list = receptions.filter(r => per.match(dayOf(r.ts)) && (!filter.supplier || r.supplier === filter.supplier) && (!filter.mp || r.lines.some(l => l.mp === filter.mp)))
   const r = receptions.find(x => x.id === sel)
   const fixes = r ? movements.filter(m => m.kind === 'Contre-écriture' && m.ref === r.id) : []
 
@@ -165,7 +166,7 @@ export function MReceptions() {
           <Big tone="ghost" onClick={() => exportPdf(fileBase, `Réceptions fournisseurs — ${siteName}`, `Édité le ${today()} par ${user.name}`, [section])}><FileText size={18} /> PDF</Big>
         </div>}>
         <div className="filter-row">
-          <select className="ref-input" value={filter.day} onChange={e => setFilter({ ...filter, day: e.target.value })}><option value="">Toutes les dates</option>{days.map(d => <option key={d}>{d}</option>)}</select>
+          {per.bar}
           <select className="ref-input" value={filter.supplier} onChange={e => setFilter({ ...filter, supplier: e.target.value })}><option value="">Tous les fournisseurs</option>{suppliers.map(s => <option key={s.code} value={s.code}>{s.name}</option>)}</select>
           <select className="ref-input" value={filter.mp} onChange={e => setFilter({ ...filter, mp: e.target.value })}><option value="">Toutes les matières</option>{SITE_MATS.map(m => <option key={m.mp} value={m.mp}>{m.name}</option>)}</select>
         </div>

@@ -67,7 +67,17 @@ export function syncPending(s: DemoState): DemoState {
   const stamp = <T extends { trace: Trace }>(x: T): T => (x.trace.at ? x : { ...x, trace: { ...x.trace, at } })
   return {
     ...s, offline: false, queue: [],
-    lots: s.lots.map(stamp),
+    lots: s.lots.map(l => {
+      const x = stamp(l)
+      const st = (t?: Trace) => (t && !t.at ? { ...t, at } : t)
+      return {
+        ...x,
+        oven: x.oven && { ...x.oven, trace: st(x.oven.trace)! },
+        cuisson: x.cuisson && { ...x.cuisson, trace: st(x.cuisson.trace) },
+        ovenFixes: x.ovenFixes?.map(f => ({ ...f, trace: st(f.trace)! })),
+        anomalies: x.anomalies?.map(a => ({ ...a, trace: st(a.trace)! })),
+      }
+    }),
     deliveries: s.deliveries.map(stamp),
     tourDeposits: s.tourDeposits.map(stamp),
     tourFixes: s.tourFixes.map(stamp),

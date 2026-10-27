@@ -9,12 +9,12 @@ import { money, num } from '../lib/format'
 export function Dashboard() {
   const { user, state } = useApp()
   const go = useNav()
-  const { scope, day, bar } = useSiteFilter()
+  const { scope, inP, label, bar } = useSiteFilter()
   const full = user!.role === 'direction' || user!.role === 'controleur'
 
   const rows = scope.map(site => ({
-    site, sales: shopSales(state, site, day), bake: bakeryDay(state, site, day), pat: pastryDay(state, site, day),
-    store: storeStatus(state, site), shop: shopStatus(state, site, day), tours: toursOf(state, site, day),
+    site, sales: shopSales(state, site, inP), bake: bakeryDay(state, site, inP), pat: pastryDay(state, site, inP),
+    store: storeStatus(state, site), shop: shopStatus(state, site, inP), tours: toursOf(state, site, inP),
   }))
   const sum = (f: (r: typeof rows[number]) => number) => rows.reduce((a, r) => a + f(r), 0)
   const bags = sum(r => r.bake.bags), eps = sum(r => r.bake.eps)
@@ -24,7 +24,7 @@ export function Dashboard() {
   const pending = state.expenses.filter(e => e.status === 'Demandée').reduce((a, e) => a + e.amount, 0)
 
   return (
-    <Screen title="Tableau de bord" sub={`Journée du ${day} — vue consolidée des 3 sites ou par site`}>
+    <Screen title="Tableau de bord" sub={`Période : ${label} — vue consolidée des 3 sites ou par site`}>
       {bar}
       <div className="kpi-row">
         <Kpi label="Ventes boutiques" value={money(sum(r => r.sales.ca))} note={rows.map(r => `${siteShort(r.site)} ${num(r.sales.ca)}`).join(' · ')} />
@@ -52,7 +52,7 @@ export function Dashboard() {
         {rows.some(r => r.tours.length) ? <Table head={['Site', 'Tournée', 'Livreur', 'Statut', 'Livré', 'Encaissé', 'Équilibrage']} rows={rows.flatMap(r => r.tours.map(({ t, f }) => [
           siteShort(r.site), t.id, t.driver, <Badge tone={t.status === 'Soldée' ? 'ok' : t.status === 'Soldée avec écart' ? 'danger' : 'warn'}>{t.status}</Badge>,
           f.rows.map(x => `${x.delivered}/${x.loaded}`).join(' · '), `${money(f.cash)} + ${money(f.momo)} MM`,
-          t.status.startsWith('Soldée') ? (f.qtyOk && f.cashOk ? 'Équilibrée' : 'Écart') : '—']))} /> : <Notice>Aucune tournée ce jour.</Notice>}
+          t.status.startsWith('Soldée') ? (f.qtyOk && f.cashOk ? 'Équilibrée' : 'Écart') : '—']))} /> : <Notice>Aucune tournée sur la période.</Notice>}
       </Card>
 
       {full ? <Card title="Alertes ouvertes" sub="Jamais visibles par les opérateurs concernés" actions={<button className="link-btn" onClick={() => go('alerts')}>Traiter</button>}>

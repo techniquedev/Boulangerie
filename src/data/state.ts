@@ -52,6 +52,8 @@ export type DemoState = {
   queue: { id: string; text: string; at: string }[]
   // Magasins de site et ateliers (données isolées par site)
   epsThreshold: number                              // seuil EPS/sac paramétré par la direction
+  rejectThreshold: number                           // taux de rebut acceptable en cuisson (%)
+  rejectPhotoQty: number                            // nombre de rebuts d'une ligne au-delà duquel la photo est exigée
   movements: Movement[]                             // mouvements de stock des magasins de site (seule source du stock)
   receptions: Reception[]                           // réceptions fournisseurs des magasins de site
   bonsSortie: BonSortie[]                           // bons de sortie magasin de site → ateliers

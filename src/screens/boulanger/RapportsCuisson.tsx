@@ -4,14 +4,14 @@ import { Badge, Card, Kpi, Notice, Screen, Table } from '../../components/ui'
 import { figures, lotDay } from '../../data/boulanger'
 import { num } from '../../lib/format'
 import { StatusBadge, useBaker } from './shared'
+import { usePeriod } from '../../components/PeriodFilter'
 
 export function BCuisson() {
   const { mine } = useBaker()
   const sent = mine.filter(l => l.status !== 'Créé')
-  const [day, setDay] = useState('')
   const [sel, setSel] = useState(sent[0]?.id)
-  const days = Array.from(new Set(sent.map(lotDay)))
-  const list = sent.filter(l => !day || lotDay(l) === day)
+  const period = usePeriod(sent.map(lotDay))
+  const list = sent.filter(l => period.match(lotDay(l)))
   const lot = list.find(l => l.id === sel) || list[0]
   const r = lot?.cuisson
   const rejects = r ? r.rejects.reduce((s, x) => s + x.qty, 0) : 0
@@ -21,9 +21,7 @@ export function BCuisson() {
     <Screen title="Rapports de cuisson" sub="Établis par l’enfourneur — consultation uniquement · règle : pâtons reçus = pains conformes + rebuts">
       <Notice><Lock size={14} /> Lecture seule : ces données sont saisies par l’enfourneur et ne peuvent pas être modifiées depuis votre poste.</Notice>
       <div className="filter-row">
-        <select className="ref-input" value={day} onChange={e => setDay(e.target.value)}>
-          <option value="">Toutes les dates</option>{days.map(d => <option key={d} value={d}>{d}</option>)}
-        </select>
+        {period.bar}
       </div>
       {!lot ? <Notice>Aucun lot remis au four.</Notice> : <div className="split">
         <div className="list-col scroll-list">

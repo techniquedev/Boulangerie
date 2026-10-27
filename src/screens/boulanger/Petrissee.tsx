@@ -55,7 +55,7 @@ export function BPetrissee() {
     if (matError || lineError || motifError) return say(matError || lineError || motifError)
     const ts = Date.now()
     const lot: ProdLot = {
-      id: nextLotId(state.lots, site, ts), site, ts, trace: traceFor(user.name, site, state.offline),
+      id: nextLotId(state.lots, state.patLots, site, ts), site, ts, trace: traceFor(user.name, site, state.offline),
       mats: used, lines, threshold, motif: below ? motif.trim() : undefined,
       status: 'Remis au four', history: [{ status: 'Créé', at: nowStamp(), by: user.name }, { status: 'Remis au four', at: nowStamp(), by: user.name }],
       corrections: [],

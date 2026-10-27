@@ -1,7 +1,7 @@
 import { AlertTriangle, CheckCircle2, CloudOff } from 'lucide-react'
 import { useApp } from '../../store/context'
 import { Badge, Steps } from '../../components/ui'
-import { bakerStock, LOT_FLOW, yieldTone, type LotStatus, type ProdLot, type Trace } from '../../data/boulanger'
+import { bakerStock, flowIndex, LOT_FLOW, yieldTone, type LotStatus, type ProdLot, type Trace } from '../../data/boulanger'
 import type { AtelierCode } from '../../data/stock'
 import { num } from '../../lib/format'
 import { siteShort } from '../../data/org'
@@ -57,7 +57,7 @@ export const statusTone = (s: LotStatus) => (s === 'Créé' || s === 'Remis au f
 export const StatusBadge = ({ s }: { s: LotStatus }) => <Badge tone={statusTone(s)}>{s}</Badge>
 
 export const LotFrise = ({ lot }: { lot: ProdLot }) => {
-  const i = LOT_FLOW.indexOf(lot.status)
+  const i = flowIndex(lot.status)
   return <Steps steps={LOT_FLOW} current={i === LOT_FLOW.length - 1 ? LOT_FLOW.length : i} />
 }
 

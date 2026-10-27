@@ -1,7 +1,7 @@
 import { ClipboardCheck, PackageCheck, Plus } from 'lucide-react'
 import { useNav } from '../../store/nav'
 import { Badge, Card, Kpi, Screen, Table } from '../../components/ui'
-import { emptyStock, figures, FORMATS, isToday, LOT_FLOW, MATS, matQty } from '../../data/boulanger'
+import { emptyStock, figures, FORMATS, isToday, LOT_STATUSES, MATS, matQty } from '../../data/boulanger'
 import { BS } from '../../data/stock'
 import { dec, num, today } from '../../lib/format'
 import { StatusBadge, useBaker, YieldGauge } from './shared'
@@ -51,7 +51,7 @@ export function BHome() {
       </Card>
 
       <Card title="Lots remis à l’enfourneur" sub={`${num(sentToOven.length)} lot(s) aujourd’hui`}
-        actions={<div className="btn-row">{LOT_FLOW.slice(1).map(s => <Badge key={s} tone="neutral">{s} : {lots.filter(l => l.status === s).length}</Badge>)}</div>}>
+        actions={<div className="btn-row">{LOT_STATUSES.slice(1).map(s => <Badge key={s} tone="neutral">{s} : {lots.filter(l => l.status === s).length}</Badge>)}</div>}>
         {lots.length ? <Table head={['Lot', 'Heure', 'Pâtons', 'Statut']} rows={lots.map(l => [<b>{l.id}</b>, l.trace.localAt.slice(11), num(figures(l).patons), <StatusBadge s={l.status} />])} />
           : <p className="muted">Aucun lot aujourd’hui.</p>}
       </Card>

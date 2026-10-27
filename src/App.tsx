@@ -55,6 +55,12 @@ import { LDeliver } from './screens/livreur/Livraisons'
 import { LCash } from './screens/livreur/Encaissements'
 import { LClose } from './screens/livreur/FinTournee'
 import { LHistory } from './screens/livreur/Historique'
+import { EHome } from './screens/enfourneur/Accueil'
+import { ELots } from './screens/enfourneur/Lots'
+import { ECuisson } from './screens/enfourneur/Cuisson'
+import { EMine } from './screens/enfourneur/MesCuissons'
+import { ERejects } from './screens/enfourneur/Rebuts'
+import { EHistory } from './screens/enfourneur/Historique'
 
 const screens: Record<ScreenId, () => React.ReactElement> = {
   dashboard: Dashboard, alerts: Alerts, production: Production, cuisson: Cuisson, magasin: Magasin, bdl: BdlScreen, pos: Pos,
@@ -66,6 +72,7 @@ const screens: Record<ScreenId, () => React.ReactElement> = {
   sHome: SHome, sReception: SReception, sSuivi: SSuivi, sStock: SStock, sPertes: SPertes, sHistory: SHistory,
   pHome: PHome, pProduction: PProduction, pLots: PLots, pStocks: PStocks, pHistory: PHistory,
   lHome: LHome, lLoad: LLoad, lDeliver: LDeliver, lCash: LCash, lClose: LClose, lHistory: LHistory,
+  eHome: EHome, eLots: ELots, eCuisson: ECuisson, eMine: EMine, eRejects: ERejects, eHistory: EHistory,
 }
 
 function Shell() {
@@ -162,6 +169,7 @@ const NAV_ICONS: Partial<Record<ScreenId, LucideIcon>> = {
   sHome: House, sReception: PackageOpen, sSuivi: ListChecks, sStock: Store, sPertes: ClipboardList, sHistory: History,
   pHome: House, pProduction: CakeSlice, pLots: Snowflake, pStocks: Warehouse, pHistory: BookOpen,
   lHome: House, lLoad: Package, lDeliver: Truck, lCash: Banknote, lClose: Flag, lHistory: History,
+  eHome: House, eLots: Package, eCuisson: Flame, eMine: ListChecks, eRejects: TriangleAlert, eHistory: History,
 }
 
 export default function App() {

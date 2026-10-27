@@ -5,6 +5,7 @@ import { money, nowStamp } from '../lib/format'
 import { can } from '../data/rbac'
 import type { AlertStatus } from '../data/types'
 import { BDL_ST } from '../data/shop'
+import { usePeriod } from '../components/PeriodFilter'
 
 const FLOW: AlertStatus[] = ['Nouvelle', 'En investigation', 'Justifiée', 'Clôturée']
 const stepIndex = (s: AlertStatus) => (s === 'Imputée' ? 2 : FLOW.indexOf(s))
@@ -14,8 +15,11 @@ export function Alerts() {
   const [sel, setSel] = useState(state.alerts[0]?.id)
   const [comment, setComment] = useState('')
   const [question, setQuestion] = useState('')
+  const per = usePeriod(state.alerts.map(x => x.history[0]?.at || ''))
+  const alerts = state.alerts.filter(x => per.match(x.history[0]?.at || ''))
   if (!can.seeAlerts(user!.role)) return <Notice tone="danger">Accès refusé : alertes réservées au Contrôleur et à la Direction.</Notice>
-  const a = state.alerts.find(x => x.id === sel) || state.alerts[0]
+  const a = alerts.find(x => x.id === sel) || alerts[0]
+  if (!a) return <Screen title="Alertes d’écart et de fraude" sub="Visibles uniquement pour Contrôleur et Direction">{per.bar}<Notice>Aucune alerte sur la période.</Notice></Screen>
 
   const advance = (status: AlertStatus) => {
     if (!comment.trim()) return say('Un commentaire est obligatoire pour faire avancer l’alerte.')
@@ -42,9 +46,10 @@ export function Alerts() {
 
   return (
     <Screen title="Alertes d’écart et de fraude" sub="Visibles uniquement pour Contrôleur et Direction">
-      <div className="split">
-        <div className="list-col">
-          {state.alerts.map(x => <button key={x.id} className={`list-item ${x.id === a.id ? 'on' : ''}`} onClick={() => setSel(x.id)}>
+      {per.bar}
+      {!a ? <Notice>Aucune alerte sur la période.</Notice> : <div className="split">
+        <div className="list-col scroll-list">
+          {alerts.map(x => <button key={x.id} className={`list-item ${x.id === a.id ? 'on' : ''}`} onClick={() => setSel(x.id)}>
             <b>{x.id}</b><span>{x.type}</span>
             <Badge tone={x.severity === 'Haute' ? 'danger' : 'warn'}>{x.severity}</Badge><small>{x.status}</small>
           </button>)}
@@ -66,7 +71,7 @@ export function Alerts() {
             <div className="btn-row">{next.map(n => <Big key={n} onClick={() => advance(n as AlertStatus)}>{n}</Big>)}</div>
           </> : <Notice tone="ok">Alerte clôturée — historique conservé.</Notice>}
         </Card>
-      </div>
+      </div>}
     </Screen>
   )
 }

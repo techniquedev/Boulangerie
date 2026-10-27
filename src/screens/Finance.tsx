@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useApp } from '../store/context'
 import { Badge, Big, Card, Notice, Screen, Steps, Table } from '../components/ui'
-import { money } from '../lib/format'
+import { dayOf, money } from '../lib/format'
 import { can } from '../data/rbac'
 import { BAKERY_SITES } from '../data/boulanger'
 import { nextShopMoveId, productName, SHOP_PRODUCTS, shopName } from '../data/shop'
 import { siteShort } from '../data/org'
 import { traceFor } from '../data/trace'
+import { usePeriod } from '../components/PeriodFilter'
 
 export function Expenses() {
   const { user, state, update, audit, say } = useApp()
@@ -80,8 +81,10 @@ export function Versements() {
 export function Invendus() {
   const { state, user, update, audit, say } = useApp()
   const sites = BAKERY_SITES.filter(x => user!.sites.includes(x))
-  const received = (site: string, code: string) => state.shopMoves.filter(m => m.site === site && m.code === code && m.kind === 'Réception BDL').reduce((a, m) => a + m.qty, 0)
-  const lost = (site: string, code: string) => -state.shopMoves.filter(m => m.site === site && m.code === code && m.kind === 'Invendu / perte').reduce((a, m) => a + m.qty, 0)
+  const per = usePeriod(state.shopMoves.filter(m => m.kind === 'Invendu / perte' || m.kind === 'Réception BDL').map(m => dayOf(m.ts)))
+  const moves = state.shopMoves.filter(m => per.match(dayOf(m.ts)))
+  const received = (site: string, code: string) => moves.filter(m => m.site === site && m.code === code && m.kind === 'Réception BDL').reduce((a, m) => a + m.qty, 0)
+  const lost = (site: string, code: string) => -moves.filter(m => m.site === site && m.code === code && m.kind === 'Invendu / perte').reduce((a, m) => a + m.qty, 0)
   const rate = (r: number, l: number) => (r ? `${((l / r) * 100).toFixed(1).replace('.', ',')} %` : '—')
   const pending = state.shopFixes.filter(f => f.status === 'En attente de validation' && sites.includes(f.site))
 
@@ -97,6 +100,7 @@ export function Invendus() {
 
   return (
     <Screen title="Invendus, pertes et retours" sub="Taux de perte par produit et par boutique — pertes déclarées / quantités reçues">
+      {per.bar}
       <Card title="Taux de perte par produit et par boutique">
         <Table head={['Produit', ...sites.map(siteShort), 'Toutes boutiques']} rows={SHOP_PRODUCTS.map(p => {
           const r = sites.map(x => received(x, p.code)), l = sites.map(x => lost(x, p.code))
@@ -110,7 +114,7 @@ export function Invendus() {
           : <Notice tone="ok">Aucune contre-écriture en attente.</Notice>}
       </Card>
       <Card title="Dernières déclarations">
-        <Table head={['N°', 'Boutique', 'Date', 'Lignes', 'Photos']} rows={state.declarations.filter(d => sites.includes(d.site)).sort((a, b) => b.ts - a.ts).slice(0, 15).map(d => [d.id, shopName(d.site), d.trace.localAt,
+        <Table head={['N°', 'Boutique', 'Date', 'Lignes', 'Photos']} rows={state.declarations.filter(d => sites.includes(d.site) && per.match(dayOf(d.ts))).sort((a, b) => b.ts - a.ts).slice(0, 15).map(d => [d.id, shopName(d.site), d.trace.localAt,
           d.lines.map(l => `${l.qty} ${productName(l.code)} (${l.motif} → ${l.dest})`).join(' · '), d.lines.some(l => l.photo) ? <Badge tone="ok">Jointe(s)</Badge> : '—'])} />
       </Card>
     </Screen>
