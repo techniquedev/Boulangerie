@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { AlertTriangle, ChevronRight, Eye, EyeOff, Wheat } from 'lucide-react'
-import { users, roleLabels, COMPANY, DEMO_PASSWORD, GROUPS, findUser, deactivated } from '../data/org'
+import { AlertTriangle, ChevronRight, Eye, EyeOff } from 'lucide-react'
+import { users, roleLabels, DEMO_PASSWORD, GROUPS, findUser, deactivated } from '../data/org'
 import type { User } from '../data/types'
 import { useApp } from '../store/context'
 import fournil from '../assets/fournil.jpg'
@@ -33,12 +33,10 @@ export function Login() {
   return (
     <div className="login2">
       <div className="login2-brand" style={{ backgroundImage: `url(${fournil})` }}>
-        <div className="login2-logo"><span className="logo-mark"><Wheat size={24} /></span><div><b>DÉLICE PLUS</b><small>{COMPANY}</small></div></div>
         <div className="login2-hero">
           <h1>La boulangerie,<br /><span>pilotée simplement.</span></h1>
           <p>Une vue claire de vos ventes, stocks et opérations, du fournil jusqu’à chaque boutique.</p>
         </div>
-        <small className="login2-foot">SITE 1 · SITE 2 · SITE 3 — Bénin · FCFA · Africa/Porto-Novo</small>
       </div>
       <div className="login2-panel">
         <div>
