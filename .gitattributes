@@ -144,3 +144,23 @@
 *.stl                filter=lfs diff=lfs merge=lfs -text
 *.nc                 filter=lfs diff=lfs merge=lfs -text
 *.mat                filter=lfs diff=lfs merge=lfs -text
+
+# ---------------------------------------------------------------------------
+# Exceptions : images de l'application (src/ et public/) hors Git LFS
+# Elles doivent arriver avec un simple `git pull`, même sans Git LFS installé.
+# Ces règles, placées après les règles LFS ci-dessus, les annulent pour ces chemins.
+# ---------------------------------------------------------------------------
+src/**/*.jpg         !filter !diff !merge -text
+src/**/*.jpeg        !filter !diff !merge -text
+src/**/*.png         !filter !diff !merge -text
+src/**/*.gif         !filter !diff !merge -text
+src/**/*.webp        !filter !diff !merge -text
+src/**/*.ico         !filter !diff !merge -text
+src/**/*.svg         !filter !diff !merge
+public/**            !filter !diff !merge
+public/**/*.jpg      -text
+public/**/*.jpeg     -text
+public/**/*.png      -text
+public/**/*.gif      -text
+public/**/*.webp     -text
+public/**/*.ico      -text
