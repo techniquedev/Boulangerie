@@ -6,7 +6,7 @@ export const Badge = ({ tone = 'neutral', children }: { tone?: 'ok' | 'warn' | '
 export const Card = ({ title, sub, actions, children }: { title?: string; sub?: string; actions?: ReactNode; children: ReactNode }) => (
   <div className="card block-card">
     {(title || actions) && <div className="block-head"><div>{title && <h3>{title}</h3>}{sub && <p>{sub}</p>}</div>{actions}</div>}
-    {children}
+    <div className="block-body">{children}</div>
   </div>
 )
 

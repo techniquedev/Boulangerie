@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Banknote, CheckCircle2, Flag, History, House, LogOut, Package, RefreshCw, RotateCcw, Truck, Wheat, WifiOff, Wifi } from 'lucide-react'
+import {
+  BadgePercent, Banknote, Bell, BookOpen, Building2, CakeSlice, ChartColumn, CheckCircle2, ClipboardCheck, ClipboardList, Coins, CreditCard,
+  Fingerprint, Flag, Flame, History, House, Landmark, LayoutDashboard, ListChecks, LogOut, Package, PackageOpen, Receipt, RefreshCw, RotateCcw,
+  ScrollText, ShieldCheck, ShoppingBag, ShoppingCart, Smartphone, Snowflake, Store, Thermometer, TriangleAlert, Truck, Warehouse, Wheat,
+  WifiOff, Wifi, type LucideIcon,
+} from 'lucide-react'
 import { Provider, useApp } from './store/context'
 import { Login } from './screens/Login'
 import { Dashboard } from './screens/Dashboard'
@@ -112,7 +117,10 @@ function Shell() {
       <aside className="side2">
         <div className="logo2"><span className="logo-mark"><Wheat size={20} /></span><div><b>DÉLICE PLUS</b><small>Gestion boulangerie</small></div></div>
         <nav>{groups.map(g => <div key={g}><h5>{g}</h5>{menu.filter(m => m.group === g).map(m =>
-          <button key={m.id} className={m.id === current ? 'active' : ''} onClick={() => go(m.id)}>{m.label}</button>)}</div>)}</nav>
+          {
+            const Icon = NAV_ICONS[m.id] || LayoutDashboard
+            return <button key={m.id} className={m.id === current ? 'active' : ''} onClick={() => go(m.id)}><Icon size={18} /><span>{m.label}</span></button>
+          })}</div>)}</nav>
         <button className="reset" onClick={reset}><RotateCcw size={16} /> Réinitialiser la démo</button>
       </aside>
       <main className="main2">
@@ -134,7 +142,7 @@ function Shell() {
       </main>
       {/* Livreur sur smartphone : onglets en bas de l'écran, à portée de pouce. */}
       {user.role === 'livreur' && <nav className="bottom-nav">{menu.map(m => {
-        const Icon = DRIVER_ICONS[m.id] || House
+        const Icon = NAV_ICONS[m.id] || House
         return <button key={m.id} className={m.id === current ? 'on' : ''} onClick={() => go(m.id)}><Icon size={22} /><span>{m.label.split(' ')[0]}</span></button>
       })}</nav>}
       {toast && <div className="toast">{toast}</div>}
@@ -142,7 +150,19 @@ function Shell() {
   )
 }
 
-const DRIVER_ICONS: Partial<Record<ScreenId, typeof House>> = { lHome: House, lLoad: Package, lDeliver: Truck, lCash: Banknote, lClose: Flag, lHistory: History }
+// Pictogramme de chaque entrée de menu.
+const NAV_ICONS: Partial<Record<ScreenId, LucideIcon>> = {
+  dashboard: LayoutDashboard, alerts: TriangleAlert, reports: ChartColumn, treasury: Landmark, notifications: Bell,
+  production: Wheat, cuisson: Flame, plan: ListChecks, magasin: Warehouse, bdl: ScrollText, inventory: ClipboardCheck,
+  invendus: PackageOpen, quality: Thermometer, pos: ShoppingCart, caisse: Coins, versements: Banknote, orders: ClipboardList,
+  credit: CreditCard, tour: Truck, expenses: Receipt, purchases: ShoppingBag, catalog: BadgePercent, org: Building2,
+  rbac: ShieldCheck, devices: Smartphone, audit: Fingerprint,
+  bHome: House, bReception: ClipboardCheck, bPetrissee: Wheat, bLots: Package, bCuisson: Flame, bHistory: History,
+  mHome: House, mReceptions: PackageOpen, mSorties: Truck, mStocks: Warehouse, mSuivi: ListChecks, mHistory: History,
+  sHome: House, sReception: PackageOpen, sSuivi: ListChecks, sStock: Store, sPertes: ClipboardList, sHistory: History,
+  pHome: House, pProduction: CakeSlice, pLots: Snowflake, pStocks: Warehouse, pHistory: BookOpen,
+  lHome: House, lLoad: Package, lDeliver: Truck, lCash: Banknote, lClose: Flag, lHistory: History,
+}
 
 export default function App() {
   return <Provider><Shell /></Provider>
