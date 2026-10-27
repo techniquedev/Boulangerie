@@ -124,7 +124,7 @@ export function Notifications() {
   const { user, state } = useApp()
   const mine = state.notifications.filter(n => n.roles.includes(user!.role))
   return (
-    <Screen title="Centre de notifications" sub="In-app (SMS / WhatsApp en V2)">
+    <Screen title="Centre de notifications">
       {mine.length === 0 ? <Notice>Aucune notification.</Notice> : <Card>{mine.map(n => <div key={n.id} className="note-line"><b>{n.text}</b><small>{n.at}</small></div>)}</Card>}
     </Screen>
   )

@@ -42,7 +42,7 @@ export function Org() {
   const rows = params.map(p => p.label === 'Rendement minimum boulangerie' ? { ...p, value: `${state.epsThreshold} EPS/sac` }
     : p.label.startsWith('Tolérance écart BDL') ? { ...p, override: Object.entries(state.bdlTolerance).map(([c, v]) => `${productName(c)} : ${v}`).join(' · ') || '—' } : p)
   return (
-    <Screen title="Sites, tiers et seuils" sub="Boulangerie-Pâtisserie DÉLICE PLUS Sarl">
+    <Screen title="Sites, tiers et seuils">
       <Card title="Sites et emplacements"><Table head={['Code', 'Site', 'Statut', 'Emplacements de stock']} rows={sites.map(s => [
         s.code, s.name, <Badge tone={s.status === 'Actif' ? 'ok' : 'neutral'}>{s.status}</Badge>,
         s.locations.length ? s.locations.map(l => `${l} (${locationLabels[l]})`).join(' · ') : s.note || '—'])} /></Card>

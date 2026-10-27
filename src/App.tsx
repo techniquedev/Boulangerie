@@ -115,7 +115,7 @@ function Shell() {
   return (
     <div className={`shell2 ${user.role === 'livreur' ? 'phone-app' : ''}`}>
       <aside className="side2">
-        <div className="logo2"><span className="logo-mark"><Wheat size={20} /></span><div><b>DÉLICE PLUS</b><small>Gestion boulangerie</small></div></div>
+        <div className="logo2"><span className="logo-mark"><Wheat size={20} /></span><div><b>Gestion boulangerie</b></div></div>
         <nav>{groups.map(g => <div key={g}><h5>{g}</h5>{menu.filter(m => m.group === g).map(m =>
           {
             const Icon = NAV_ICONS[m.id] || LayoutDashboard

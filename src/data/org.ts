@@ -1,6 +1,5 @@
 import type { Role, Site, SiteCode, User } from './types'
 
-export const COMPANY = 'Boulangerie-Pâtisserie DÉLICE PLUS Sarl'
 export const COMPANY_ACTIVITIES = 'boulangerie, pâtisserie, yaourts, crèmes glacées'
 export const DEMO_PASSWORD = 'Demo@2026'
 
