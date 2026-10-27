@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react'
 import {
   BadgePercent, Banknote, Bell, BookOpen, Building2, CakeSlice, ChartColumn, CheckCircle2, ClipboardCheck, ClipboardList, Coins, CreditCard,
   Fingerprint, Flag, Flame, History, House, Landmark, LayoutDashboard, ListChecks, LogOut, Package, PackageOpen, Receipt, RefreshCw, RotateCcw,
-  ScrollText, ShieldCheck, ShoppingBag, ShoppingCart, Smartphone, Snowflake, Store, Thermometer, TriangleAlert, Truck, Warehouse, Wheat,
+  ScrollText, ShieldCheck, ShoppingBag, ShoppingCart, Smartphone, Snowflake, Store, Thermometer, TrendingUp, TriangleAlert, Truck, Warehouse, Wheat,
   WifiOff, Wifi, type LucideIcon,
 } from 'lucide-react'
 import { Provider, useApp } from './store/context'
 import { Login } from './screens/Login'
 import { Dashboard } from './screens/Dashboard'
+import { Performance } from './screens/Performance'
 import { Alerts } from './screens/Alerts'
 import { Production } from './screens/Production'
 import { Cuisson } from './screens/Cuisson'
@@ -63,7 +64,7 @@ import { ERejects } from './screens/enfourneur/Rebuts'
 import { EHistory } from './screens/enfourneur/Historique'
 
 const screens: Record<ScreenId, () => React.ReactElement> = {
-  dashboard: Dashboard, alerts: Alerts, production: Production, cuisson: Cuisson, magasin: Magasin, bdl: BdlScreen, pos: Pos,
+  dashboard: Dashboard, perf: Performance, alerts: Alerts, production: Production, cuisson: Cuisson, magasin: Magasin, bdl: BdlScreen, pos: Pos,
   caisse: Caisse, invendus: Invendus, expenses: Expenses, versements: Versements, orders: Orders, credit: Credit, plan: Plan,
   inventory: InventoryScreen, quality: QualityScreen, purchases: PurchasesScreen, tour: Tour, catalog: Catalog, org: Org,
   reports: Reports, treasury: Treasury, audit: Audit, devices: Devices, notifications: Notifications, rbac: Rbac,
@@ -159,7 +160,7 @@ function Shell() {
 
 // Pictogramme de chaque entrée de menu.
 const NAV_ICONS: Partial<Record<ScreenId, LucideIcon>> = {
-  dashboard: LayoutDashboard, alerts: TriangleAlert, reports: ChartColumn, treasury: Landmark, notifications: Bell,
+  dashboard: LayoutDashboard, perf: TrendingUp, alerts: TriangleAlert, reports: ChartColumn, treasury: Landmark, notifications: Bell,
   production: Wheat, cuisson: Flame, plan: ListChecks, magasin: Warehouse, bdl: ScrollText, inventory: ClipboardCheck,
   invendus: PackageOpen, quality: Thermometer, pos: ShoppingCart, caisse: Coins, versements: Banknote, orders: ClipboardList,
   credit: CreditCard, tour: Truck, expenses: Receipt, purchases: ShoppingBag, catalog: BadgePercent, org: Building2,

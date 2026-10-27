@@ -1,7 +1,7 @@
 import type { Role, SiteCode, User } from './types'
 
 export type ScreenId =
-  | 'dashboard' | 'alerts' | 'production' | 'cuisson' | 'magasin' | 'bdl' | 'pos' | 'caisse' | 'invendus'
+  | 'dashboard' | 'perf' | 'alerts' | 'production' | 'cuisson' | 'magasin' | 'bdl' | 'pos' | 'caisse' | 'invendus'
   | 'expenses' | 'versements' | 'orders' | 'credit' | 'plan' | 'inventory' | 'quality' | 'purchases' | 'tour'
   | 'catalog' | 'org' | 'reports' | 'treasury' | 'audit' | 'devices' | 'notifications' | 'rbac'
   | 'bHome' | 'bReception' | 'bPetrissee' | 'bLots' | 'bCuisson' | 'bHistory'
@@ -17,6 +17,7 @@ const M = (id: ScreenId, label: string, group: string): MenuItem => ({ id, label
 
 const all = {
   dashboard: M('dashboard', 'Tableau de bord', 'Pilotage'),
+  perf: M('perf', 'Performance & Rentabilité', 'Pilotage'),
   alerts: M('alerts', 'Alertes', 'Pilotage'),
   reports: M('reports', 'Rapports', 'Pilotage'),
   treasury: M('treasury', 'Trésorerie', 'Pilotage'),
@@ -98,7 +99,7 @@ const pick = (...ids: ScreenId[]) => ids.map(i => all[i])
 export const menuByRole: Record<Role, MenuItem[]> = {
   direction: Object.values(all).filter(m => m.id !== 'pos' && m.id !== 'devices' && !bakerTabs.includes(m.id) && !storeTabs.includes(m.id) && !shopTabs.includes(m.id) && !patTabs.includes(m.id) && !driverTabs.includes(m.id) && !ovenTabs.includes(m.id)),
   magasinierCentral: pick('magasin', 'bdl', 'purchases', 'inventory', 'notifications'),
-  controleur: pick('dashboard', 'alerts', 'inventory', 'quality', 'production', 'bdl', 'reports', 'audit', 'notifications'),
+  controleur: pick('dashboard', 'perf', 'alerts', 'inventory', 'quality', 'production', 'bdl', 'reports', 'audit', 'notifications'),
   achats: pick('expenses', 'purchases', 'magasin', 'notifications'),
   boulanger: pick(...bakerTabs),   // saisie production, lecture des rapports de cuisson ; ni alertes ni écrans financiers
   enfourneur: pick(...ovenTabs),   // saisie des cuissons et rebuts ; lecture des lots ; ni caisse, ni dépenses, ni prix, ni alertes
