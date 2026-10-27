@@ -8,6 +8,7 @@ export type ScreenId =
   | 'mHome' | 'mReceptions' | 'mSorties' | 'mStocks' | 'mSuivi' | 'mHistory'
   | 'sHome' | 'sReception' | 'sSuivi' | 'sStock' | 'sPertes' | 'sHistory'
   | 'pHome' | 'pProduction' | 'pLots' | 'pStocks' | 'pHistory'
+  | 'lHome' | 'lLoad' | 'lDeliver' | 'lCash' | 'lClose' | 'lHistory'
 
 export type MenuItem = { id: ScreenId; label: string; group: string }
 
@@ -68,18 +69,26 @@ const all = {
   pLots: M('pLots', 'Mes lots et péremptions', 'Mon atelier'),
   pStocks: M('pStocks', 'Stocks d’atelier et produits finis', 'Mon atelier'),
   pHistory: M('pHistory', 'Historique, rendements et audit', 'Mon atelier'),
+  // Tableau de bord Livreur (modèle unique, identique sur les 3 sites, pensé pour smartphone)
+  lHome: M('lHome', 'Accueil', 'Ma tournée'),
+  lLoad: M('lLoad', 'Mon chargement', 'Ma tournée'),
+  lDeliver: M('lDeliver', 'Livraisons et ventes', 'Ma tournée'),
+  lCash: M('lCash', 'Encaissements et carburant', 'Ma tournée'),
+  lClose: M('lClose', 'Fin de tournée', 'Ma tournée'),
+  lHistory: M('lHistory', 'Historique et audit', 'Ma tournée'),
 }
 
 const bakerTabs: ScreenId[] = ['bHome', 'bReception', 'bPetrissee', 'bLots', 'bCuisson', 'bHistory']
 const storeTabs: ScreenId[] = ['mHome', 'mReceptions', 'mSorties', 'mStocks', 'mSuivi', 'mHistory']
 const shopTabs: ScreenId[] = ['sHome', 'sReception', 'sSuivi', 'sStock', 'sPertes', 'sHistory']
 const patTabs: ScreenId[] = ['pHome', 'bReception', 'pProduction', 'pLots', 'pStocks', 'pHistory']
+export const driverTabs: ScreenId[] = ['lHome', 'lLoad', 'lDeliver', 'lCash', 'lClose', 'lHistory']
 
 const pick = (...ids: ScreenId[]) => ids.map(i => all[i])
 
 // Matrice RBAC : menus visibles par rôle (ENF-05 : à doubler côté serveur en production).
 export const menuByRole: Record<Role, MenuItem[]> = {
-  direction: Object.values(all).filter(m => m.id !== 'pos' && !bakerTabs.includes(m.id) && !storeTabs.includes(m.id) && !shopTabs.includes(m.id) && !patTabs.includes(m.id)),
+  direction: Object.values(all).filter(m => m.id !== 'pos' && !bakerTabs.includes(m.id) && !storeTabs.includes(m.id) && !shopTabs.includes(m.id) && !patTabs.includes(m.id) && !driverTabs.includes(m.id)),
   magasinierCentral: pick('magasin', 'bdl', 'purchases', 'inventory', 'notifications'),
   controleur: pick('dashboard', 'alerts', 'inventory', 'quality', 'production', 'bdl', 'reports', 'audit', 'notifications'),
   achats: pick('expenses', 'purchases', 'magasin', 'notifications'),
@@ -89,13 +98,13 @@ export const menuByRole: Record<Role, MenuItem[]> = {
   boutiquier: pick(...shopTabs),   // réceptions à l'aveugle et déclarations ; ni caisse, ni dépenses, ni prix, ni alertes
   caissiere: pick('pos', 'caisse', 'versements', 'notifications'),
   patissier: pick(...patTabs),   // réceptions et productions ; ni caisse, ni dépenses, ni prix, ni alertes
-  livreur: pick('tour', 'expenses', 'notifications'),
+  livreur: pick(...driverTabs),   // tournée, encaissements, demande de carburant ; ni caisse, ni dépenses, ni prix, ni stocks, ni alertes
 }
 
 export const homeByRole: Record<Role, ScreenId> = {
   direction: 'dashboard', magasinierCentral: 'magasin', controleur: 'dashboard', achats: 'expenses',
   boulanger: 'bHome', enfourneur: 'cuisson', magasinier: 'mHome', boutiquier: 'sHome',
-  caissiere: 'pos', patissier: 'pHome', livreur: 'tour',
+  caissiere: 'pos', patissier: 'pHome', livreur: 'lHome',
 }
 
 // Écrans dont les données appartiennent au SITE 1 (unité de production et magasin central) :
@@ -118,6 +127,7 @@ export const can = {
   editPrices: (r: Role) => r === 'direction',                                    // US-15
   saisieProduction: (r: Role) => r === 'boulanger' || r === 'patissier' || r === 'direction',
   saisieCuisson: (r: Role) => r === 'enfourneur',                              // boulanger : lecture seule (US-04)
+  exportTour: (r: Role) => r === 'livreur' || r === 'direction' || r === 'controleur',
   exportPat: (r: Role) => r === 'patissier' || r === 'direction' || r === 'controleur',
   exportShop: (r: Role) => r === 'boutiquier' || r === 'direction' || r === 'controleur',
   validateShopFix: (r: Role) => r === 'direction',

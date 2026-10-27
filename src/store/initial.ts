@@ -6,16 +6,18 @@ import { auditBase, devicesBase, notificationsBase } from '../data/seed4'
 import { rawMaterials } from '../data/catalog'
 import { seedSites } from '../data/seedSites'
 import { seedShop } from '../data/seedShop'
+import { seedTours } from '../data/seedTours'
 
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v))
 
-export const STORAGE_KEY = 'delice-plus-demo-v5'
+export const STORAGE_KEY = 'delice-plus-demo-v6'
 
 export function initialState(): DemoState {
   const shop = seedShop()
+  const tours = seedTours()
   return {
-    alerts: [...shop.shopAlerts, ...clone(alertBase)].sort((a, b) => b.id.localeCompare(a.id)),
-    bdls: [...shop.shopBdls, ...clone(bdlBase)],
+    alerts: [...shop.shopAlerts, ...tours.tourAlerts, ...clone(alertBase)].sort((a, b) => b.id.localeCompare(a.id)),
+    bdls: [...shop.shopBdls, ...tours.tourBdls, ...clone(bdlBase)],
     sessions: clone([sessionA, sessionB]),
     expenses: clone(expensesBase),
     versements: clone(versementsBase),
@@ -35,6 +37,10 @@ export function initialState(): DemoState {
     shopMoves: shop.shopMoves,
     declarations: shop.declarations,
     shopFixes: [],
+    tours: tours.tours,
+    deliveries: tours.deliveries,
+    tourDeposits: [],
+    tourFixes: [],
     bdlTolerance: { 'PF-11': 2, 'PF-12': 2, 'PF-13': 2 },
     lossPhotoThreshold: 500,
   }

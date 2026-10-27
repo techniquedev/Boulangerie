@@ -24,6 +24,10 @@ export function Expenses() {
     }) }))
     audit('Validation de dépense', `${id} : étape suivante`); say('Dépense mise à jour')
   }
+  const refuse = (id: string) => {
+    update(s => ({ ...s, expenses: s.expenses.map(e => e.id === id ? { ...e, status: 'Refusée' } : e) }))
+    audit('Validation de dépense', `${id} refusée`); say('Dépense refusée')
+  }
   const submit = () => {
     if (!label.trim() || !Number(amount)) return say('Libellé et montant obligatoires.')
     if (role === 'livreur' && !photo) return say('Photo du reçu obligatoire pour une demande de carburant.')
@@ -42,9 +46,14 @@ export function Expenses() {
         </div>
         <Big onClick={submit}>Soumettre la demande</Big>
       </Card>}
-      {list.map(e => <Card key={e.id} title={`${e.id} — ${e.label}`} sub={`${money(e.amount)} · demandée par ${e.by}${e.photo ? ' · photo du reçu jointe' : ''}`} actions={<Badge tone={e.status === 'Demandée' ? 'warn' : 'ok'}>{e.status}</Badge>}>
-        <Steps steps={e.flow} current={e.flow.indexOf(e.status)} />
-        {can.validateExpense(role) && e.status !== e.flow[e.flow.length - 1] && <Big onClick={() => advance(e.id)}>{e.status === 'Demandée' ? 'Valider la dépense' : `Passer à « ${e.flow[e.flow.indexOf(e.status) + 1]} »`}</Big>}
+      {list.map(e => <Card key={e.id} title={`${e.id} — ${e.label}`} sub={`${money(e.amount)} · demandée par ${e.by}${e.photo ? ' · photo du reçu jointe' : ''}`} actions={<Badge tone={e.status === 'Demandée' ? 'warn' : e.status === 'Refusée' ? 'danger' : 'ok'}>{e.status}</Badge>}>
+        {e.status !== 'Refusée' && <Steps steps={e.flow} current={e.flow.indexOf(e.status)} />}
+        {e.motif && <p>Motif : {e.motif}</p>}
+        {e.photoThumb && <img className="thumb big" src={e.photoThumb} alt="Reçu" />}
+        {can.validateExpense(role) && e.status !== 'Refusée' && e.status !== e.flow[e.flow.length - 1] && <div className="btn-row">
+          <Big onClick={() => advance(e.id)}>{e.status === 'Demandée' ? 'Valider la dépense' : `Passer à « ${e.flow[e.flow.indexOf(e.status) + 1]} »`}</Big>
+          {e.status === 'Demandée' && <Big tone="danger" onClick={() => refuse(e.id)}>Refuser</Big>}
+        </div>}
       </Card>)}
     </Screen>
   )
@@ -58,7 +67,7 @@ export function Versements() {
   }
   return (
     <Screen title="Remise des recettes" sub="Versement au bureau central et dépôt en banque (US-30)">
-      {state.versements.map(v => <Card key={v.id} title={`${v.id} — ${v.site === 'SIT-02' ? 'Boutique A' : 'Boutique B'}`} sub={`${money(v.amount)} versés par ${v.by}${v.bank ? ` · dépôt ${v.bank} réf. ${v.ref}` : ''}`}
+      {state.versements.map(v => <Card key={`${v.id}-${v.site}`} title={`${v.id} — ${v.tourId ? `tournée ${v.tourId}` : v.site === 'SIT-02' ? 'Boutique A' : 'Boutique B'}`} sub={`${money(v.amount)} versés par ${v.by}${v.tourId ? ` (espèces ${money(v.cash || 0)} · Mobile Money ${money(v.momo || 0)})` : ''}${v.bank ? ` · dépôt ${v.bank} réf. ${v.ref}` : ''}`}
         actions={<Badge tone="ok">{v.status}</Badge>}>
         <Steps steps={v.flow} current={v.flow.indexOf(v.status)} />
         {can.confirmVersement(user!.role) && v.status !== v.flow[v.flow.length - 1] && <Big onClick={() => confirm(v.id)}>Confirmer l’étape suivante</Big>}

@@ -10,7 +10,7 @@ export function useShop() {
   const site = u.sites[0]
   return {
     user: u, site, shop: shopName(site),
-    bdls: state.bdls.filter(b => b.toSite === site).sort((a, b) => (b.ts || 0) - (a.ts || 0)),
+    bdls: state.bdls.filter(b => b.toSite === site && b.kind !== 'tournee').sort((a, b) => (b.ts || 0) - (a.ts || 0)),
     moves: state.shopMoves.filter(m => m.site === site).sort((a, b) => b.ts - a.ts),
     stock: shopStock(state.shopMoves, site),
     decls: state.declarations.filter(d => d.site === site).sort((a, b) => b.ts - a.ts),

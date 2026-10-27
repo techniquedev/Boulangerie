@@ -1,10 +1,7 @@
 import type { AlertItem, Bdl } from './types'
 
-// BDL des boutiques : voir seedShop.ts (même principe sur les 3 sites). Seul le chargement de tournée reste ici.
+// BDL des boutiques : voir seedShop.ts ; BDL de tournée des livreurs : voir seedTours.ts (même principe sur les 3 sites).
 export const bdlBase: Bdl[] = [
-  { id: 'BDL-2026-0263', to: 'Livreur Sani DAOUDA — tournée (US-26)', toSite: null, status: 'Émis → En transit',
-    lines: [{ label: 'Pain standard 150 g', sent: 200 }, { label: 'Yaourt (vanille/nature)', sent: 50 }],
-    note: 'Chargement de tournée' },
 ]
 
 // AL-2026-0086 à 0088 (écarts BDL des boutiques) : voir seedShop.ts.

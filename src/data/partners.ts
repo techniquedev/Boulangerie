@@ -11,6 +11,7 @@ export const clients: WholesaleClient[] = [
   { code: 'CL-G01', name: 'Revendeuse Maman Alice — marché Dantokpa', ceiling: 500000, outstanding: 320000, statement: '1 facture échue de 85 000 FCFA (J-5)' },
   { code: 'CL-G02', name: 'Restaurant Le Ruisseau', ceiling: 300000, outstanding: 90000, statement: 'À jour' },
   { code: 'CL-G03', name: 'Hôtel Laguna Beach', ceiling: 1000000, outstanding: 0, statement: 'À jour' },
+  { code: 'CL-G04', name: 'Kiosque Mama Bénédicte — Cotonou', ceiling: 50000, outstanding: 46500, statement: 'Proche du plafond' },
 ]
 
 export const drivers = [

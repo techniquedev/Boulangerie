@@ -68,6 +68,9 @@ export function syncPending(s: DemoState): DemoState {
   return {
     ...s, offline: false, queue: [],
     lots: s.lots.map(stamp),
+    deliveries: s.deliveries.map(stamp),
+    tourDeposits: s.tourDeposits.map(stamp),
+    tourFixes: s.tourFixes.map(stamp),
     patLots: s.patLots.map(stamp),
     shopMoves: s.shopMoves.map(stamp),
     declarations: s.declarations.map(stamp),

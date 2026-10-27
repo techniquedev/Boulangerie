@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CheckCircle2, LogOut, RefreshCw, RotateCcw, Wheat, WifiOff, Wifi } from 'lucide-react'
+import { Banknote, CheckCircle2, Flag, History, House, LogOut, Package, RefreshCw, RotateCcw, Truck, Wheat, WifiOff, Wifi } from 'lucide-react'
 import { Provider, useApp } from './store/context'
 import { Login } from './screens/Login'
 import { Dashboard } from './screens/Dashboard'
@@ -44,6 +44,12 @@ import { PProduction } from './screens/patisserie/Production'
 import { PLots } from './screens/patisserie/Lots'
 import { PStocks } from './screens/patisserie/Stocks'
 import { PHistory } from './screens/patisserie/Historique'
+import { LHome } from './screens/livreur/Accueil'
+import { LLoad } from './screens/livreur/Chargement'
+import { LDeliver } from './screens/livreur/Livraisons'
+import { LCash } from './screens/livreur/Encaissements'
+import { LClose } from './screens/livreur/FinTournee'
+import { LHistory } from './screens/livreur/Historique'
 
 const screens: Record<ScreenId, () => React.ReactElement> = {
   dashboard: Dashboard, alerts: Alerts, production: Production, cuisson: Cuisson, magasin: Magasin, bdl: BdlScreen, pos: Pos,
@@ -54,6 +60,7 @@ const screens: Record<ScreenId, () => React.ReactElement> = {
   mHome: MHome, mReceptions: MReceptions, mSorties: MSorties, mStocks: MStocks, mSuivi: MSuivi, mHistory: MHistory,
   sHome: SHome, sReception: SReception, sSuivi: SSuivi, sStock: SStock, sPertes: SPertes, sHistory: SHistory,
   pHome: PHome, pProduction: PProduction, pLots: PLots, pStocks: PStocks, pHistory: PHistory,
+  lHome: LHome, lLoad: LLoad, lDeliver: LDeliver, lCash: LCash, lClose: LClose, lHistory: LHistory,
 }
 
 function Shell() {
@@ -101,7 +108,7 @@ function Shell() {
   }
 
   return (
-    <div className="shell2">
+    <div className={`shell2 ${user.role === 'livreur' ? 'phone-app' : ''}`}>
       <aside className="side2">
         <div className="logo2"><span className="logo-mark"><Wheat size={20} /></span><div><b>DÉLICE PLUS</b><small>Gestion boulangerie</small></div></div>
         <nav>{groups.map(g => <div key={g}><h5>{g}</h5>{menu.filter(m => m.group === g).map(m =>
@@ -125,10 +132,17 @@ function Shell() {
           ? <div className="notice warn">Aucune donnée de démonstration pour votre site ({user.siteLabel}) sur cet écran : les données de ce module appartiennent à SITE 1. Chaque compte reste limité à son propre site.</div>
           : <NavContext.Provider value={go}><NavArgContext.Provider value={navArg}><View key={`${current}-${navArg || ''}`} /></NavArgContext.Provider></NavContext.Provider>}</section>
       </main>
+      {/* Livreur sur smartphone : onglets en bas de l'écran, à portée de pouce. */}
+      {user.role === 'livreur' && <nav className="bottom-nav">{menu.map(m => {
+        const Icon = DRIVER_ICONS[m.id] || House
+        return <button key={m.id} className={m.id === current ? 'on' : ''} onClick={() => go(m.id)}><Icon size={22} /><span>{m.label.split(' ')[0]}</span></button>
+      })}</nav>}
       {toast && <div className="toast">{toast}</div>}
     </div>
   )
 }
+
+const DRIVER_ICONS: Partial<Record<ScreenId, typeof House>> = { lHome: House, lLoad: Package, lDeliver: Truck, lCash: Banknote, lClose: Flag, lHistory: History }
 
 export default function App() {
   return <Provider><Shell /></Provider>

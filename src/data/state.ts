@@ -3,6 +3,7 @@ import type { ProdLot } from './boulanger'
 import type { PatLot } from './patisserie'
 import type { BonSortie, Movement, Reception } from './stock'
 import type { Declaration, ShopFix, ShopMove } from './shop'
+import type { Delivery, Deposit, Tour, TourFix } from './tour'
 
 export type SaleLine = { code: string; label: string; qty: number; unit: number }
 export type SaleTicket = {
@@ -19,6 +20,7 @@ export type CashSession = {
 export type Versement = {
   id: string; site: SiteCode; amount: number; by: string; status: string
   flow: string[]; bank?: string; ref?: string
+  cash?: number; momo?: number; tourId?: string   // versement de fin de tournée d'un livreur
 }
 export type InventoryLine = { code: string; label: string; theoretical: number; counted?: number; unit: number }
 export type Inventory = {
@@ -63,4 +65,9 @@ export type DemoState = {
   shopFixes: ShopFix[]                              // contre-écritures du stock vendant
   bdlTolerance: Record<string, number>              // tolérance d'écart BDL par produit (0 par défaut)
   lossPhotoThreshold: number                        // valeur (FCFA) au-delà de laquelle la photo d'une perte est obligatoire
+  // Tournées des livreurs
+  tours: Tour[]
+  deliveries: Delivery[]
+  tourDeposits: Deposit[]                           // acomptes sur commande encaissés en tournée
+  tourFixes: TourFix[]                              // contre-écritures de livraisons
 }

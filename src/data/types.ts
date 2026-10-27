@@ -47,13 +47,14 @@ export type BdlRequest = { at: string; by: string; text: string; answer?: { at: 
 export type Bdl = {
   id: string; to: string; toSite: SiteCode | null; status: string; lines: BdlLine[]; note?: string
   ts?: number; by?: string; counts?: BdlCount[]; requests?: BdlRequest[]
+  kind?: 'boutique' | 'tournee'; driver?: string   // « tournee » : chargement affecté nommément à un livreur
 }
 
 export type Payment = { mode: 'Espèces' | 'MTN MoMo' | 'Moov Money' | 'Celtiis Cash'; amount: number; ref?: string }
 
 export type Expense = {
   id: string; label: string; amount: number; by: string; status: string
-  flow: string[]; photo?: boolean
+  flow: string[]; photo?: boolean; photoThumb?: string; motif?: string; at?: string; history?: { at: string; by: string; status: string }[]
 }
 
 export type AuditEntry = { at: string; localAt: string; author: string; device: string; site: string; action: string; detail: string }

@@ -18,11 +18,13 @@ export const devicesBase: Device[] = [
   { id: 'DEV-02', label: 'Tablette Android — Boutique A', site: 'SIT-02', status: 'Actif' },
   { id: 'DEV-03', label: 'Tablette Android — Boutique B', site: 'SIT-03', status: 'Actif' },
   { id: 'DEV-04', label: 'Smartphone livreur — Sani DAOUDA', site: 'Mobile (SIT-01)', status: 'Actif' },
+  { id: 'DEV-06', label: 'Smartphone livreur — Bako MOUSSA', site: 'Mobile (SIT-02)', status: 'Actif' },
+  { id: 'DEV-07', label: 'Smartphone livreur — Issiaka KORA', site: 'Mobile (SIT-03)', status: 'Actif' },
   { id: 'DEV-05', label: 'Tablette Android volée — ancien site', site: 'SIT-04', status: 'Révoqué', note: 'Déclarée volée, accès révoqué' },
 ]
 
 export const notificationsBase: Notification[] = [
-  { id: 'N1', text: 'BDL-2026-0263 en transit : à réceptionner', roles: ['boutiquier', 'caissiere', 'livreur'], at: '26/10/2026 08:30' },
+  { id: 'N1', text: 'BDL-2026-0263 affecté à votre tournée : confirmez la prise en charge du chargement', roles: ['livreur'], at: '26/10/2026 05:50' },
   { id: 'N2', text: 'Dépense DÉP-2026-0032 (65 000 FCFA) à valider', roles: ['direction'], at: '26/10/2026 11:00' },
   { id: 'N3', text: 'Levure MP-02 sous le stock minimum : bon de commande proposé', roles: ['magasinierCentral', 'achats', 'direction'], at: '26/10/2026 07:00' },
   { id: 'N4', text: 'Inventaire INV-2026-006 en attente de validation direction', roles: ['direction', 'controleur'], at: '26/10/2026 14:20' },

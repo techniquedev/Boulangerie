@@ -3,6 +3,10 @@ import type { Inventory, Nc, Order, PurchaseRow, Reading, Versement } from './st
 
 export const expensesBase: Expense[] = [
   { id: 'DÉP-2026-0031', label: 'Demande de carburant livreur', amount: 15000, by: 'Sani DAOUDA', status: 'Rapprochée', photo: true,
+    flow: ['Demandée', 'Validée (direction)', 'Payée', 'Rapprochée'], motif: 'Plein de la moto de tournée', at: '22/10/2026 17:10' },
+  { id: 'DÉP-2026-0033', label: 'Demande de carburant livreur', amount: 15000, by: 'Bako MOUSSA', status: 'Payée', photo: true, motif: 'Plein de la moto de tournée', at: '22/10/2026 17:20',
+    flow: ['Demandée', 'Validée (direction)', 'Payée', 'Rapprochée'] },
+  { id: 'DÉP-2026-0034', label: 'Demande de carburant livreur', amount: 15000, by: 'Issiaka KORA', status: 'Payée', photo: true, motif: 'Plein de la moto de tournée', at: '22/10/2026 17:30',
     flow: ['Demandée', 'Validée (direction)', 'Payée', 'Rapprochée'] },
   { id: 'DÉP-2026-0032', label: 'Facture d’électricité SBEE', amount: 65000, by: 'Rachel EZIN', status: 'Demandée',
     flow: ['Demandée', 'Validée (direction)', 'Payée', 'Rapprochée'] },
