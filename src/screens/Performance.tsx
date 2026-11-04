@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArrowDownRight, ArrowRight, ArrowUpRight, FileSpreadsheet, FileText, Mail, X } from 'lucide-react'
+import { ArrowDownRight, ArrowRight, ArrowUpRight, ChevronDown, FileSpreadsheet, FileText, Mail, X } from 'lucide-react'
 import { useApp } from '../store/context'
 import { useNav } from '../store/nav'
 import { Badge, Big, Card, Notice, Screen, Table } from '../components/ui'
@@ -147,6 +147,7 @@ export function Performance() {
   const [cmpRole, setCmpRole] = useState<Role>('boulanger')
   const [sort, setSort] = useState<'score' | 'risk' | 'name' | 'role'>('score')
   const [open, setOpen] = useState<Employee | null>(null)
+  const [openSites, setOpenSites] = useState<SiteCode[]>([])
 
   // Journalisation de chaque consultation.
   useEffect(() => { audit('Consultation', 'Onglet Performance & Rentabilité') }, [])
@@ -269,14 +270,24 @@ export function Performance() {
       {/* SECTION 2 — Employés */}
       <section id="perf-employes" className="perf-section">
         <Card title="Performance individuelle des employés" sub="Score de performance et score de risque sur 100 — visibles uniquement dans cet onglet">
-          {sites.map(s => <div key={s} className="emp-site">
-            <h4>{siteShort(s)}</h4>
-            <div className="emp-grid">{sorted.filter(x => x.e.site === s).map(x => <button key={x.e.email} className="emp-card" onClick={() => setOpen(x.e)}>
+          {sites.map(s => {
+            const staff = sorted.filter(x => x.e.site === s)
+            const cards = <div className="emp-grid">{staff.map(x => <button key={x.e.email} className="emp-card" onClick={() => setOpen(x.e)}>
               <span className="emp-top"><span className="avatar-s">{x.e.name.split(' ').map(w => w[0]).slice(0, 2).join('')}</span><span><b>{x.e.name}</b><small>{roleLabels[x.e.role]}</small></span><Pill tone={scoreTone(x.score)}>{x.score}/100</Pill></span>
               <span className="emp-kpis">{ROLE_METRICS[x.e.role]!.slice(0, 4).map(m => <span key={m.key}><small>{m.label}</small><b className={metricTone(m, x.vals[m.key]) === 'danger' ? 'neg' : ''}>{fmtMetric(m, x.vals[m.key])}</b></span>)}</span>
               <span className="emp-risk">Risque <Pill tone={riskTone(x.risk)}>{x.risk}/100</Pill>{x.risk >= PERF_PARAMS.riskRed && <em className="neg">Écarts répétés / comportement atypique</em>}</span>
             </button>)}</div>
-          </div>)}
+            // Directeur général : chaque site est un menu déroulant (replié par défaut, ouverture indépendante).
+            if (user!.role !== 'direction') return <div key={s} className="emp-site"><h4>{siteShort(s)}</h4>{cards}</div>
+            const isOpen = openSites.includes(s)
+            return <div key={s} className={`emp-site emp-acc ${isOpen ? 'open' : ''}`}>
+              <button className="emp-acc-head" aria-expanded={isOpen} aria-controls={`emp-acc-${s}`} onClick={() => setOpenSites(o => isOpen ? o.filter(x => x !== s) : [...o, s])}>
+                <span><b>{siteShort(s)}</b><small>{staff.length} {staff.length > 1 ? 'employés' : 'employé'}</small></span>
+                <ChevronDown size={18} aria-hidden />
+              </button>
+              {isOpen && <div id={`emp-acc-${s}`} className="emp-acc-body">{cards}</div>}
+            </div>
+          })}
         </Card>
 
         <div className="recap">

@@ -610,3 +610,16 @@ a.big-btn{text-decoration:none}
 .dg-role .chart polyline[stroke="#d64545"]{stroke:#344054}
 .dg-role .chart-key i[style*="rgb(214, 69, 69)"],.dg-role .chart-key i[style*="#d64545"]{background:#344054 !important}
 
+
+/* Performance individuelle (DG) : un menu déroulant par site */
+.dg-role .emp-acc{border:1px solid var(--border);border-radius:14px;background:#fff;overflow:hidden}
+.dg-role .emp-acc+.emp-acc{margin-top:12px}
+.dg-role .emp-acc-head{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:56px;padding:12px 20px;border:0;background:#fff;color:var(--ink);text-align:left;transition:background .15s}
+.dg-role .emp-acc-head:hover{background:var(--soft)}
+.dg-role .emp-acc-head>span{display:flex;align-items:baseline;gap:12px}
+.dg-role .emp-acc-head b{font-size:16px;font-weight:600}
+.dg-role .emp-acc-head small{font-size:13px;color:var(--muted)}
+.dg-role .emp-acc-head svg{flex:none;color:var(--muted);transition:transform .2s}
+.dg-role .emp-acc.open .emp-acc-head{border-bottom:1px solid var(--border);background:var(--soft)}
+.dg-role .emp-acc.open .emp-acc-head svg{transform:rotate(180deg)}
+.dg-role .emp-acc-body{padding:20px}
