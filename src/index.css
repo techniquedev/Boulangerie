@@ -596,3 +596,17 @@ a.big-btn{text-decoration:none}
 .dg-role .chart-key i[style*="rgb(107, 68, 35)"]{background:#0877e8 !important}
 .dg-role .chart polyline[stroke="#9c8b7c"]{stroke:#98a2b3}
 .dg-role .chart-key i[style*="#9c8b7c"]{border-top-color:#98a2b3 !important}
+
+/* Profil Directeur général : plus aucune couleur rouge indicative (le texte, l'icône et le libellé portent l'état) */
+.dg-role{--danger:#344054}
+.dg-role .neg,.dg-role .mat-tile small.neg,.dg-role .stock-tile.low b{color:var(--danger);font-weight:700}
+.dg-role .badge.danger,.dg-role .pill.danger{background:#eef2f6;color:#344054}
+.dg-role .notice.danger{background:#f8fafc;color:#344054;border-color:#d8dee8}
+.dg-role .big-btn.danger{background:#344054}
+.dg-role .big-btn.danger:hover:not(:disabled){background:#1d2939}
+.dg-role .file-btn.required{border-color:#d8dee8;color:inherit}
+.dg-role .chart rect[fill="#d64545"]{fill:#344054}
+.dg-role .chart circle[fill="#d64545"]{fill:#344054}
+.dg-role .chart polyline[stroke="#d64545"]{stroke:#344054}
+.dg-role .chart-key i[style*="rgb(214, 69, 69)"],.dg-role .chart-key i[style*="#d64545"]{background:#344054 !important}
+
