@@ -121,7 +121,7 @@ function Shell() {
   }
 
   return (
-    <div className={`shell2 ${user.role === 'livreur' ? 'phone-app' : ''}`}>
+    <div className={`shell2 ${user.role === 'livreur' ? 'phone-app' : ''} ${user.role === 'direction' ? 'dg-role' : ''}`}>
       <aside className="side2">
         <div className="logo2"><span className="logo-mark"><Wheat size={20} /></span><div><b>Gestion boulangerie</b></div></div>
         <nav>{groups.map(g => <div key={g}><h5>{g}</h5>{menu.filter(m => m.group === g).map(m =>

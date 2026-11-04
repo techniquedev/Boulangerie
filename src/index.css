@@ -432,3 +432,30 @@
 .sheet{width:min(560px,100%);height:100%;overflow:auto;background:#fff;box-shadow:-12px 0 40px #0003}
 a.big-btn{text-decoration:none}
 @media (max-width:900px){.anchor-nav{top:0}.hero-card b{font-size:22px}}
+
+/* Profil Directeur général : couleurs indicatives retirées (badges, encadrés, textes, graphiques) et fond de page blanc.
+   Les cartes (bandes et valeurs des .kpi-tile, bordures des .site-card, bandeau des .hero-card) et la barre latérale gardent leurs couleurs. */
+.dg-role .main2,.dg-role .content2{background:#fff}
+.dg-role .neg,.dg-role .mat-tile small.neg,.dg-role .stock-tile.low b{color:inherit;font-weight:700}
+.dg-role .ok-text,.dg-role .warn-text{color:inherit;font-weight:700}
+.dg-role .badge.ok,.dg-role .badge.warn,.dg-role .badge.danger,.dg-role .pill.ok,.dg-role .pill.warn,.dg-role .pill.danger{background:#f1ebe3;color:#5a4a3e}
+.dg-role .notice,.dg-role .notice.ok,.dg-role .notice.warn,.dg-role .notice.danger{background:var(--soft);color:var(--ink);border-color:var(--border)}
+.dg-role .steps .done{background:var(--soft);border-color:var(--border);color:var(--ink)}
+.dg-role .steps .done i{background:var(--primary);color:#fff}
+.dg-role .chip.sync,.dg-role .chip.sync.pending{color:var(--ink);background:#fff;border-color:var(--border)}
+.dg-role .offline-bar,.dg-role .sync-banner,.dg-role .sync-banner.pending,.dg-role .pedago{background:var(--soft);color:var(--ink)}
+.dg-role .trace .pending{color:var(--muted)}
+.dg-role .pill-btn b,.dg-role .count-pill{background:var(--dark);color:#fff}
+.dg-role .gauge,.dg-role .gauge.warn,.dg-role .gauge.danger{--tone:var(--dark)}
+.dg-role .progress i,.dg-role .level i,.dg-role .stock-tile.low .level i{background:var(--dark)}
+.dg-role .stock-tile.low,.dg-role .equality,.dg-role .equality.danger{border-color:var(--border)}
+.dg-role .equality b,.dg-role .equality.danger b{color:var(--ink)}
+.dg-role .num-input.empty,.dg-role .file-btn.required{border-color:var(--border);background:#fff;color:inherit}
+.dg-role .donut-val,.dg-role .donut-val.warn,.dg-role .donut-val.danger{stroke:var(--dark)}
+.dg-role .chart .bar,.dg-role .chart .bar.warn,.dg-role .chart .bar.danger{fill:var(--dark)}
+.dg-role .chart rect[fill="#2f9e5b"],.dg-role .chart-key i[style*="rgb(47, 158, 91)"]{fill:#78716c;background:#78716c!important}
+.dg-role .chart rect[fill="#d64545"],.dg-role .chart-key i[style*="rgb(214, 69, 69)"]{fill:#1c1917;background:#1c1917!important}
+.dg-role .chart polyline[stroke="#2f9e5b"]{stroke:#78716c}
+.dg-role .chart circle[fill="#2f9e5b"]{fill:#78716c}
+.dg-role .chart-key i.warn,.dg-role .chart-key i.danger{background:var(--dark)}
+
