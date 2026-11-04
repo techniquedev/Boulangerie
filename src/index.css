@@ -623,3 +623,33 @@ a.big-btn{text-decoration:none}
 .dg-role .emp-acc.open .emp-acc-head{border-bottom:1px solid var(--border);background:var(--soft)}
 .dg-role .emp-acc.open .emp-acc-head svg{transform:rotate(180deg)}
 .dg-role .emp-acc-body{padding:20px}
+
+/* DG : colonne de gauche marron (rail + panneau), fond de droite blanc, survols en marron — couleurs uniquement, la mise en page ne change pas */
+.dg-role{--dg-rail:#3b2a1f;--dg-brown:#6b4423;--dg-hover:#f3e8da}
+.dg-rail{background:#3b2a1f}
+.rail-logo{background:var(--accent)}
+.rail-btn{color:#e3d6ca}
+.rail-btn:hover{background:#ffffff1f;color:#fff}
+.rail-btn.on{background:var(--bright);color:#fff}
+.rail-avatar{background:#6b4423}
+.dg-sub{background:#3b2a1f;border-right:0;border-left:1px solid #ffffff1a}
+.dg-sub-head{border-bottom:1px solid #ffffff1a}
+.dg-sub-head b{color:#fff}
+.dg-sub-head small{color:#dcc8b4}
+.dg-sub h5{color:#ab9d92}
+.dg-sub nav button{color:#e3d6ca}
+.dg-sub nav button:hover{background:#ffffff1f;color:#fff}
+.dg-sub nav button.active{background:var(--bright);color:#fff;font-weight:600}
+.dg-sub .reset{border-top:1px solid #ffffff1a;color:#e3d6ca}
+.dg-sub .reset:hover{color:#fff}
+.dg-role .main2,.dg-role .content2,.dg-role .top2{background:#fff}
+.dg-role .chip:hover{border-color:var(--dg-brown);background:var(--dg-hover)}
+.dg-role .big-btn:hover:not(:disabled){background:var(--dg-brown)}
+.dg-role .big-btn.ghost:hover:not(:disabled){background:var(--dg-hover);border-color:var(--dg-brown);color:var(--dg-brown)}
+.dg-role .link-btn:hover{background:var(--dg-hover);color:var(--dg-brown)}
+.dg-role .icon-btn:hover{background:var(--dg-hover)}
+.dg-role .anchor-nav button:hover{background:var(--dg-hover);color:var(--dg-brown)}
+.dg-role .period-filter .seg button:not(.on):hover{background:var(--dg-hover);color:var(--dg-brown)}
+.dg-role .list-item:hover,.dg-role .emp-card:hover{border-color:var(--dg-brown)}
+.dg-role .dtable tbody tr:hover{background:var(--dg-hover)}
+.dg-role .emp-acc-head:hover{background:var(--dg-hover)}
