@@ -3,7 +3,7 @@ import {
   BadgePercent, Banknote, Bell, BookOpen, Building2, CakeSlice, ChartColumn, CheckCircle2, ClipboardCheck, ClipboardList, Coins, CreditCard,
   Fingerprint, Flag, Flame, History, House, Landmark, LayoutDashboard, ListChecks, LogOut, Package, PackageOpen, Receipt, RefreshCw, RotateCcw,
   ScrollText, ShieldCheck, ShoppingBag, ShoppingCart, Smartphone, Snowflake, Store, Thermometer, TrendingUp, TriangleAlert, Truck, Warehouse, Wheat,
-  WifiOff, Wifi, type LucideIcon,
+  WifiOff, Wifi, Menu, type LucideIcon,
 } from 'lucide-react'
 import { Provider, useApp } from './store/context'
 import { Login } from './screens/Login'
@@ -81,6 +81,10 @@ function Shell() {
   const [view, setView] = useState<ScreenId>('dashboard')
   const [navArg, setNavArg] = useState<string | undefined>()
   const go = (id: ScreenId, arg?: string) => { setNavArg(arg); setView(id) }
+  // Directeur général : navigation à deux niveaux (rail d'icônes par famille + panneau des pages de la famille choisie).
+  const [railSel, setRailSel] = useState<string | null>(null)
+  const [subOpen, setSubOpen] = useState(false)
+  useEffect(() => { setRailSel(null); setSubOpen(false) }, [view])
 
   useEffect(() => { if (user) setView(homeByRole[user.role]) }, [user])
 
@@ -110,6 +114,9 @@ function Shell() {
   const outOfSite = !!bound && !user.sites.includes(bound)
   const View = screens[current]
   const groups = Array.from(new Set(menu.map(m => m.group)))
+  const isDg = user.role === 'direction'
+  const activeGroup = railSel ?? menu.find(m => m.id === current)?.group ?? groups[0]
+  const initials = user.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
   const logout = () => { audit('Déconnexion', `Déconnexion de ${user.name}`); setUser(null) }
   const toggleOffline = () => {
     if (state.offline) {
@@ -122,7 +129,24 @@ function Shell() {
 
   return (
     <div className={`shell2 ${user.role === 'livreur' ? 'phone-app' : ''} ${user.role === 'direction' ? 'dg-role' : ''}`}>
-      <aside className="side2">
+      {isDg ? <>
+        <aside className="dg-rail" aria-label="Familles de pages">
+          <span className="rail-logo" title="Gestion boulangerie"><Wheat size={18} /></span>
+          <div className="rail-groups">{groups.map(g => {
+            const GIcon = GROUP_ICONS[g] || LayoutDashboard
+            return <button key={g} className={`rail-btn ${g === activeGroup ? 'on' : ''}`} title={g} aria-label={g} aria-pressed={g === activeGroup} onClick={() => { setRailSel(g); setSubOpen(true) }}><GIcon size={20} /></button>
+          })}</div>
+          <span className="rail-avatar" title={`${user.name} · ${roleLabels[user.role]}`}>{initials}</span>
+        </aside>
+        <aside className={`dg-sub ${subOpen ? 'open' : ''}`}>
+          <div className="dg-sub-head"><b>Direction générale</b><small>Vue consolidée</small></div>
+          <nav><h5>{activeGroup}</h5>{menu.filter(m => m.group === activeGroup).map(m => {
+            const Icon = NAV_ICONS[m.id] || LayoutDashboard
+            return <button key={m.id} className={m.id === current ? 'active' : ''} onClick={() => go(m.id)}><Icon size={18} /><span>{m.label}</span></button>
+          })}</nav>
+          <button className="reset" onClick={reset}><RotateCcw size={16} /> Réinitialiser la démo</button>
+        </aside>
+      </> : <aside className="side2">
         <div className="logo2"><span className="logo-mark"><Wheat size={20} /></span><div><b>Gestion boulangerie</b></div></div>
         <nav>{groups.map(g => <div key={g}><h5>{g}</h5>{menu.filter(m => m.group === g).map(m =>
           {
@@ -130,10 +154,13 @@ function Shell() {
             return <button key={m.id} className={m.id === current ? 'active' : ''} onClick={() => go(m.id)}><Icon size={18} /><span>{m.label}</span></button>
           })}</div>)}</nav>
         <button className="reset" onClick={reset}><RotateCcw size={16} /> Réinitialiser la démo</button>
-      </aside>
+      </aside>}
       <main className="main2">
         <header className="top2">
-          <div><small>{roleLabels[user.role]} · {user.siteLabel}</small><h1>{user.name}</h1></div>
+          <div className="top-left">
+            {isDg && <button className="chip dg-menu-btn" onClick={() => setSubOpen(o => !o)} title="Afficher le menu" aria-label="Afficher le menu"><Menu size={16} /></button>}
+            <div><small>{roleLabels[user.role]} · {user.siteLabel}</small><h1>{user.name}</h1></div>
+          </div>
           <div className="top-actions">
             <span className="stamp">{nowStamp()} · Africa/Porto-Novo</span>
             <span className={`chip sync ${state.queue.length ? 'pending' : ''}`}>{state.queue.length
@@ -156,6 +183,11 @@ function Shell() {
       {toast && <div className="toast">{toast}</div>}
     </div>
   )
+}
+
+// Pictogramme de chaque famille de pages (rail de navigation du Directeur général).
+const GROUP_ICONS: Record<string, LucideIcon> = {
+  Pilotage: LayoutDashboard, Production: Wheat, Stocks: Warehouse, Boutique: Store, Commercial: Truck, 'Achats & dépenses': Receipt, Administration: ShieldCheck,
 }
 
 // Pictogramme de chaque entrée de menu.

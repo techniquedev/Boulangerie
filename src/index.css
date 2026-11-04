@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 
 :root{--bg:#ffffff;--surface:#ffffff;--card:#ffffff;--soft:#faf7f3;--border:#ece5da;--primary:#6b4423;--dark:#3b2a1f;--accent:#b9804a;--bright:#e08a2e;--title:#9a4f1c;--ink:#1d1d1f;--success:#2f9e5b;--warning:#e08a2e;--danger:#d64545;--info:#3b82c4;--plum:#8e5ba8;--muted:#7c7066;--radius:12px;--shadow:0 1px 2px #3b2a1f0f,0 1px 3px #3b2a1f0a;--shadow-md:0 6px 18px #3b2a1f14}
@@ -433,29 +434,165 @@
 a.big-btn{text-decoration:none}
 @media (max-width:900px){.anchor-nav{top:0}.hero-card b{font-size:22px}}
 
-/* Profil Directeur général : couleurs indicatives retirées (badges, encadrés, textes, graphiques) et fond de page blanc.
-   Les cartes (bandes et valeurs des .kpi-tile, bordures des .site-card, bandeau des .hero-card) et la barre latérale gardent leurs couleurs. */
-.dg-role .main2,.dg-role .content2{background:#fff}
-.dg-role .neg,.dg-role .mat-tile small.neg,.dg-role .stock-tile.low b{color:inherit;font-weight:700}
-.dg-role .ok-text,.dg-role .warn-text{color:inherit;font-weight:700}
-.dg-role .badge.ok,.dg-role .badge.warn,.dg-role .badge.danger,.dg-role .pill.ok,.dg-role .pill.warn,.dg-role .pill.danger{background:#f1ebe3;color:#5a4a3e}
-.dg-role .notice,.dg-role .notice.ok,.dg-role .notice.warn,.dg-role .notice.danger{background:var(--soft);color:var(--ink);border-color:var(--border)}
-.dg-role .steps .done{background:var(--soft);border-color:var(--border);color:var(--ink)}
-.dg-role .steps .done i{background:var(--primary);color:#fff}
-.dg-role .chip.sync,.dg-role .chip.sync.pending{color:var(--ink);background:#fff;border-color:var(--border)}
-.dg-role .offline-bar,.dg-role .sync-banner,.dg-role .sync-banner.pending,.dg-role .pedago{background:var(--soft);color:var(--ink)}
-.dg-role .trace .pending{color:var(--muted)}
-.dg-role .pill-btn b,.dg-role .count-pill{background:var(--dark);color:#fff}
-.dg-role .gauge,.dg-role .gauge.warn,.dg-role .gauge.danger{--tone:var(--dark)}
-.dg-role .progress i,.dg-role .level i,.dg-role .stock-tile.low .level i{background:var(--dark)}
-.dg-role .stock-tile.low,.dg-role .equality,.dg-role .equality.danger{border-color:var(--border)}
-.dg-role .equality b,.dg-role .equality.danger b{color:var(--ink)}
-.dg-role .num-input.empty,.dg-role .file-btn.required{border-color:var(--border);background:#fff;color:inherit}
-.dg-role .donut-val,.dg-role .donut-val.warn,.dg-role .donut-val.danger{stroke:var(--dark)}
-.dg-role .chart .bar,.dg-role .chart .bar.warn,.dg-role .chart .bar.danger{fill:var(--dark)}
-.dg-role .chart rect[fill="#2f9e5b"],.dg-role .chart-key i[style*="rgb(47, 158, 91)"]{fill:#78716c;background:#78716c!important}
-.dg-role .chart rect[fill="#d64545"],.dg-role .chart-key i[style*="rgb(214, 69, 69)"]{fill:#1c1917;background:#1c1917!important}
-.dg-role .chart polyline[stroke="#2f9e5b"]{stroke:#78716c}
-.dg-role .chart circle[fill="#2f9e5b"]{fill:#78716c}
-.dg-role .chart-key i.warn,.dg-role .chart-key i.danger{background:var(--dark)}
+/* ═══ Espace Directeur général — direction visuelle « SaaS clair » (design uniquement) ═══
+   Tout est préfixé .dg-role : les autres rôles gardent leur apparence actuelle. */
+.dg-role{--bg:#fff;--soft:#f8fafc;--border:#e6eaf0;--primary:#0877e8;--dark:#171b25;--accent:#0877e8;--bright:#0877e8;--title:#122238;--ink:#122238;--muted:#667085;
+  --success:#1f9d68;--warning:#d98a18;--danger:#d64545;--info:#0877e8;--plum:#8b4cf6;--radius:14px;--shadow:none;--shadow-md:none;
+  --dg-blue:#0877e8;--dg-blue-d:#075fba;--dg-pale:#edf5ff;--dg-line2:#d8dee8;--dg-rail:#171b25;
+  grid-template-columns:64px 248px 1fr;font-family:'Inter','DM Sans',sans-serif;font-variant-numeric:tabular-nums;color:var(--ink)}
+.dg-role *:focus-visible{outline:2px solid var(--dg-blue);outline-offset:2px}
 
+/* Premier niveau : rail sombre d'icônes */
+.dg-rail{position:fixed;inset:0 auto 0 0;width:64px;background:var(--dg-rail);display:flex;flex-direction:column;align-items:center;gap:16px;padding:14px 0;z-index:30}
+.rail-logo{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;color:#fff;background:linear-gradient(135deg,#0877e8,#8b4cf6)}
+.rail-groups{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:8px}
+.rail-btn{display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:10px;background:none;color:#aeb6c5;transition:background .15s,color .15s}
+.rail-btn:hover{background:#ffffff14;color:#fff}
+.rail-btn.on{background:var(--dg-blue);color:#fff}
+.rail-avatar{margin-top:auto;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#2a3142;color:#fff;font-size:12px;font-weight:600}
+
+/* Second niveau : panneau contextuel clair */
+.dg-sub{position:fixed;inset:0 auto 0 64px;width:248px;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:8px;padding:20px 12px;overflow:auto;z-index:25}
+.dg-sub-head{display:flex;flex-direction:column;gap:2px;padding:0 10px 16px;border-bottom:1px solid var(--border)}
+.dg-sub-head b{font-size:15px;font-weight:600;color:var(--ink)}
+.dg-sub-head small{font-size:12px;color:var(--muted)}
+.dg-sub nav{display:flex;flex-direction:column;gap:2px;margin-top:8px}
+.dg-sub h5{font-size:12px;font-weight:600;color:#98a2b3;margin:8px 10px 6px}
+.dg-sub nav button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;background:none;color:var(--ink);padding:10px 12px;border-radius:10px;font-size:14px;font-weight:500;min-height:44px;transition:background .15s,color .15s}
+.dg-sub nav button:hover{background:var(--soft)}
+.dg-sub nav button.active{background:var(--dg-pale);color:var(--dg-blue-d);font-weight:600}
+.dg-sub .reset{margin-top:auto;border-top:1px solid var(--border);color:#98a2b3;font-size:12px;padding:14px 10px 0}
+.dg-sub .reset:hover{color:var(--muted)}
+.dg-menu-btn{display:none;padding:0;width:40px;justify-content:center}
+
+/* Zone principale */
+.dg-role .main2{grid-column:3;background:#fff}
+.dg-role .content2{padding:32px;background:#fff}
+.dg-role .screen{gap:24px}
+.dg-role .top2{box-shadow:none;border-bottom:1px solid var(--border);padding:12px 32px}
+.dg-role .top-left{display:flex;align-items:center;gap:12px}
+.dg-role .top2 small{text-transform:none;letter-spacing:0;font-size:12px;font-weight:400;color:var(--muted)}
+.dg-role .top2 h1{font-size:15px;font-weight:600;color:var(--ink)}
+.dg-role .stamp{color:var(--muted)}
+.dg-role .screen-head h2{font-size:30px;line-height:38px;font-weight:700;color:var(--ink);letter-spacing:-.4px}
+.dg-role .screen-head p{font-size:15px;color:var(--muted);margin-top:6px}
+.dg-role .offline-bar{background:#fff5e0;color:#8a5a0c;padding:10px 32px}
+
+
+
+/* Cartes et panneaux : fond blanc, bordure fine, aucune ombre */
+.dg-role .card,.dg-role .card:hover,.dg-role .kpi-tile,.dg-role .kpi-tile:hover,.dg-role .hero-card,.dg-role .site-card,.dg-role .emp-card,.dg-role .emp-card:hover,
+.dg-role .list-item,.dg-role .gauge-box,.dg-role .format-tile,.dg-role .mat-tile,.dg-role .demo-box{box-shadow:none;border:1px solid var(--border);border-radius:14px;background:#fff}
+.dg-role .block-head{padding:20px 24px;border-bottom:1px solid var(--border)}
+.dg-role .block-head h3{font-size:16px;font-weight:600;color:var(--ink)}
+.dg-role .block-head p{font-size:13px;color:var(--muted);margin-top:4px}
+.dg-role .block-body{padding:24px;gap:20px}
+.dg-role .emp-card:hover{border-color:var(--dg-line2)}
+.dg-role .site-card{border-top:1px solid var(--border)}
+.dg-role .site-card-head b{color:var(--ink)}
+.dg-role .hero-card::before{display:none}
+.dg-role .emp-kpis span{background:var(--soft);border-radius:10px}
+.dg-role .pnl summary,.dg-role .emp-site h4{color:var(--ink)}
+
+/* Cartes de chiffres clés : simples, sans bande ni couleur décorative ; la couleur reste sur la valeur quand elle exprime un état */
+.dg-role .kpi-row{gap:16px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.dg-role .kpi-tile{padding:20px 24px;gap:8px;overflow:visible}
+.dg-role .kpi-tile::before{display:none}
+.dg-role .kpi-tile p{font-size:13px;font-weight:500;color:var(--muted)}
+.dg-role .kpi-tile b{font-size:30px;line-height:36px;font-weight:700;color:var(--ink);letter-spacing:-.4px}
+.dg-role .kpi-tile small{font-size:12px;color:var(--muted)}
+.dg-role .kpi-tile.ok b{color:var(--success)}
+.dg-role .kpi-tile.warn b{color:var(--warning)}
+.dg-role .kpi-tile.danger b{color:var(--danger)}
+.dg-role .hero-cards{gap:16px}
+.dg-role .hero-card{padding:20px 24px}
+
+/* Boutons : primaire bleu, secondaire blanc bordé */
+.dg-role .big-btn{background:var(--dg-blue);color:#fff;border-radius:10px;min-height:42px;padding:10px 18px;font-size:14px;font-weight:600;box-shadow:none}
+.dg-role .big-btn:hover:not(:disabled){filter:none;background:var(--dg-blue-d)}
+.dg-role .big-btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--dg-line2)}
+.dg-role .big-btn.ghost:hover:not(:disabled){background:var(--dg-pale);border-color:var(--dg-blue);color:var(--dg-blue-d)}
+.dg-role .big-btn.danger{background:var(--danger)}
+.dg-role .link-btn{color:var(--dg-blue);font-weight:600;text-decoration:none;padding:6px 10px;border-radius:8px}
+.dg-role .link-btn:hover{background:var(--dg-pale);color:var(--dg-blue-d)}
+.dg-role .icon-btn{border-color:var(--dg-line2);color:var(--muted);border-radius:10px}
+.dg-role .icon-btn:hover{background:var(--soft)}
+
+/* Champs et filtres */
+.dg-role .num-input,.dg-role .ref-input,.dg-role .area{border:1px solid var(--dg-line2);border-radius:10px;min-height:42px;font-size:14px;color:var(--ink)}
+.dg-role .num-input{font-size:16px}
+.dg-role .num-input:focus,.dg-role .ref-input:focus,.dg-role .area:focus{border-color:var(--dg-blue);box-shadow:0 0 0 3px #0877e826}
+.dg-role .filter-row{gap:12px;align-items:center}
+.dg-role .chip{border:1px solid var(--dg-line2);border-radius:10px;color:var(--ink);font-weight:500;background:#fff;min-height:40px}
+.dg-role .chip:hover{border-color:var(--dg-blue);background:var(--dg-pale)}
+.dg-role .chip.on{background:var(--dg-pale);border-color:var(--dg-blue);color:var(--dg-blue-d);font-weight:600}
+.dg-role .chip.sync{color:var(--success)}
+.dg-role .chip.sync.pending{color:#8a5a0c;background:#fff5e0;border-color:#f0d9a8}
+.dg-role .period-filter{color:var(--muted)}
+.dg-role .period-filter .seg{background:var(--soft);border:1px solid var(--border);border-radius:10px;padding:3px}
+.dg-role .period-filter .seg button{border-radius:8px;font-weight:500;color:var(--muted)}
+.dg-role .period-filter .seg button.on{background:#fff;color:var(--dg-blue-d);font-weight:600;box-shadow:0 0 0 1px var(--dg-line2)}
+.dg-role .anchor-nav{border-radius:12px;box-shadow:none;border:1px solid var(--border);background:#fff}
+.dg-role .anchor-nav button{color:var(--muted);font-weight:500;border-radius:8px}
+.dg-role .anchor-nav button:hover{background:var(--dg-pale);color:var(--dg-blue-d)}
+.dg-role .list-item.on{border-color:var(--dg-blue);background:var(--dg-pale);box-shadow:none}
+.dg-role .list-item:hover{border-color:var(--dg-line2)}
+.dg-role .atelier-btn.on,.dg-role .stop-btn.on{border-color:var(--dg-blue);background:var(--dg-pale);color:var(--dg-blue-d)}
+.dg-role .steps .now{background:var(--dg-blue)}
+.dg-role .steps .now i{color:var(--dg-blue)}
+.dg-role .timeline li{border-left-color:var(--dg-blue);background:var(--soft)}
+
+/* Tableaux : carte blanche, en-tête clair, lignes aérées, séparateurs légers */
+.dg-role .dtable-wrap{border:1px solid var(--border);border-radius:12px;background:#fff}
+.dg-role .dtable{font-size:14px}
+.dg-role .dtable th{position:sticky;top:0;z-index:1;font-size:12px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--ink);background:var(--soft);padding:12px 16px;border-bottom:1px solid var(--border);white-space:nowrap}
+.dg-role .dtable td{padding:14px 16px;vertical-align:middle;border-bottom:1px solid var(--border)}
+.dg-role .dtable tbody tr:hover{background:var(--dg-pale)}
+
+/* Badges et pastilles : compacts, fond très clair, texte plus soutenu */
+.dg-role .badge,.dg-role .pill{border-radius:999px;font-size:12px;font-weight:600;padding:4px 10px;line-height:16px}
+.dg-role .badge.ok,.dg-role .pill.ok{background:#e8f6ef;color:#17784f}
+.dg-role .badge.warn,.dg-role .pill.warn{background:#fff3df;color:#9a6208}
+.dg-role .badge.danger,.dg-role .pill.danger{background:#fdecec;color:#b23a3a}
+.dg-role .badge.neutral{background:#eef2f6;color:#475467}
+.dg-role .pill-btn{border-color:var(--dg-line2)}
+.dg-role .pill-btn b,.dg-role .count-pill{background:var(--dg-blue)}
+
+/* Encarts : information en bleu très pâle, compacts */
+.dg-role .notice{background:var(--dg-pale);color:#0b4f9c;border:1px solid #cfe3fb;border-radius:12px;padding:12px 16px}
+.dg-role .notice.ok{background:#e8f6ef;color:#17784f;border-color:#c3e8d6}
+.dg-role .notice.warn{background:#fff3df;color:#8a5a0c;border-color:#f0d9a8}
+.dg-role .notice.danger{background:#fdecec;color:#a42c2c;border-color:#f3c9c9}
+.dg-role .pedago,.dg-role .sync-banner.pending{background:#fff3df;color:#8a5a0c;border-radius:12px}
+.dg-role .confirm-box{background:#fff;border:1px solid var(--dg-line2)}
+
+/* Graphiques : fond blanc, grille légère, infobulle blanche bordée */
+.dg-role .chart .grid{stroke:#eef1f5}
+.dg-role .chart .tick.strong{fill:var(--ink)}
+.dg-role .chart .threshold{stroke:var(--muted)}
+.dg-role .chart-tip{background:#fff;color:var(--ink);border:1px solid var(--dg-line2)}
+.dg-role .donut-track{stroke:#eef1f5}
+.dg-role .gauge-track,.dg-role .level,.dg-role .progress{background:#eef1f5}
+
+/* Tiroir de détail */
+.dg-role .sheet{box-shadow:-8px 0 24px #12223814;background:#fff}
+.dg-role .sheet-backdrop{background:#12223859}
+
+/* Tablette : panneau secondaire derrière un bouton, rail conservé, cartes sur 2 colonnes */
+@media (max-width:1100px){
+  .dg-role{grid-template-columns:64px 1fr}
+  .dg-role .main2{grid-column:2}
+  .dg-role .dg-menu-btn{display:inline-flex}
+  .dg-sub{transform:translateX(-110%);transition:transform .2s;box-shadow:8px 0 24px #12223814}
+  .dg-sub.open{transform:none}
+  .dg-role .content2{padding:24px 20px 48px}
+  .dg-role .top2{padding:12px 20px}
+  .dg-role .kpi-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+.dg-role .chart rect[fill="#6b4423"]{fill:#0877e8}
+.dg-role .chart polyline[stroke="#6b4423"]{stroke:#0877e8}
+.dg-role .chart circle[fill="#6b4423"]{fill:#0877e8}
+.dg-role .chart-key i[style*="rgb(107, 68, 35)"]{background:#0877e8 !important}
+.dg-role .chart polyline[stroke="#9c8b7c"]{stroke:#98a2b3}
+.dg-role .chart-key i[style*="#9c8b7c"]{border-top-color:#98a2b3 !important}
