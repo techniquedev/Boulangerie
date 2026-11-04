@@ -456,10 +456,7 @@ a.big-btn{text-decoration:none}
 .dg-kpi .dg-badge{margin-top:8px;align-self:flex-start}
 .dg-badge{display:inline-flex;align-items:center;gap:6px;padding:3px 8px;border-radius:6px;font-size:12px;line-height:16px;font-weight:500;white-space:nowrap;color:#57534e;background:#f5f5f4}
 .dg-badge svg{flex:none}
-.dg-badge.ok{color:#26734d;background:#eaf5ee}
-.dg-badge.warn{color:#9a650e;background:#fff5dd}
-.dg-badge.danger{color:#b23a3a;background:#fcebeb}
-.dg-badge.info{color:#356a84;background:#eaf3f7}
+.dg .neg,.dg .ok-text{color:inherit;font-weight:600}
 .dg-grid{display:grid;grid-template-columns:minmax(0,8fr) minmax(0,4fr);gap:16px}
 .dg-panel{background:#fff;border:1px solid var(--dg-line);border-radius:12px;min-width:0;display:flex;flex-direction:column}
 .dg-panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--dg-line);flex-wrap:wrap}
@@ -501,3 +498,4 @@ a.big-btn{text-decoration:none}
 @media (max-width:1280px){.dg-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:1100px){.dg-grid{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:1024px){.dg-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dg-sheet{width:100%}}
+.dg .notice{background:#fafaf9;color:#57534e;border-color:#e7e5e4}
