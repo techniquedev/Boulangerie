@@ -250,7 +250,7 @@ export function Performance() {
         <select className="ref-input" value={role} onChange={e => setRole(e.target.value as Role | '')}><option value="">Tous les postes</option>{PERF_ROLES.map(x => <option key={x} value={x}>{roleLabels[x]}</option>)}</select>
       </div>
       <nav className="anchor-nav">{[['perf-synthese', 'Synthèse'], ['perf-employes', 'Employés'], ['perf-sites', 'Sites'], ['perf-croissance', 'Croissance'], ['perf-decision', 'Décision']].map(([id, l]) => <button key={id} onClick={() => scroll(id)}>{l}</button>)}</nav>
-      <div className="legend-row"><Pill tone="ok">Vert : bon / niveau atteint</Pill><Pill tone="warn">Orange : vigilance</Pill><Pill tone="danger">Rouge : risque / déficit</Pill></div>
+      {user!.role !== 'direction' && <div className="legend-row"><Pill tone="ok">Vert : bon / niveau atteint</Pill><Pill tone="warn">Orange : vigilance</Pill><Pill tone="danger">Rouge : risque / déficit</Pill></div>}
 
       {/* SECTION 1 — Synthèse */}
       <section id="perf-synthese" className="perf-section">

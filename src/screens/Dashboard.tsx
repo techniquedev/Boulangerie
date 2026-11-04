@@ -43,7 +43,7 @@ export function Dashboard() {
 
       <Card title="Magasins de site et boutiques" actions={<div className="btn-row"><button className="link-btn" onClick={() => go('magasin')}>Magasins</button><button className="link-btn" onClick={() => go('bdl')}>Bordereaux</button></div>}>
         <Table head={['Site', 'Matières sous le minimum', 'Valeur stock magasin', 'Bons en attente / écarts', 'BDL en transit / avec écart', 'Références en rupture', 'Pertes boutique']} rows={rows.map(r => [
-          <b>{siteShort(r.site)}</b>, r.store.low.length ? <Badge tone="warn">{r.store.low.map(m => m.name).join(', ')}</Badge> : <Badge tone="ok">Aucune</Badge>,
+          <b>{siteShort(r.site)}</b>, r.store.low.length ? (user!.role === 'direction' ? <span>{r.store.low.map(m => m.name).join(', ')}</span> : <Badge tone="warn">{r.store.low.map(m => m.name).join(', ')}</Badge>) : <Badge tone="ok">Aucune</Badge>,
           money(r.store.value), `${r.store.pending} / ${r.store.toTreat}`, `${r.shop.transit} / ${r.shop.gaps}`, num(r.shop.rupture),
           r.shop.lossQty ? `${num(r.shop.lossQty)} u. (${money(r.shop.lossValue)})` : '—'])} />
       </Card>
