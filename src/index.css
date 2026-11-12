@@ -436,15 +436,15 @@ a.big-btn{text-decoration:none}
 
 /* ═══ Espace Directeur général — direction visuelle « SaaS clair » (design uniquement) ═══
    Tout est préfixé .dg-role : les autres rôles gardent leur apparence actuelle. */
-.dg-role{--bg:#fff;--soft:#f8fafc;--border:#e6eaf0;--primary:#0877e8;--dark:#171b25;--accent:#0877e8;--bright:#0877e8;--title:#122238;--ink:#122238;--muted:#667085;
-  --success:#1f9d68;--warning:#d98a18;--danger:#d64545;--info:#0877e8;--plum:#8b4cf6;--radius:14px;--shadow:none;--shadow-md:none;
-  --dg-blue:#0877e8;--dg-blue-d:#075fba;--dg-pale:#edf5ff;--dg-line2:#d8dee8;--dg-rail:#171b25;
+.dg-role{--bg:#fff;--soft:#f8fafc;--border:#e6eaf0;--primary:#f28a2e;--dark:#171b25;--accent:#f28a2e;--bright:#f28a2e;--title:#122238;--ink:#122238;--muted:#667085;
+  --success:#1f9d68;--warning:#d98a18;--danger:#d64545;--info:#f28a2e;--plum:#8b4cf6;--radius:14px;--shadow:none;--shadow-md:none;
+  --dg-blue:#f28a2e;--dg-blue-d:#c96a12;--dg-pale:#fff3e6;--dg-line2:#d8dee8;--dg-rail:#171b25;
   grid-template-columns:64px 248px 1fr;font-family:'Inter','DM Sans',sans-serif;font-variant-numeric:tabular-nums;color:var(--ink)}
 .dg-role *:focus-visible{outline:2px solid var(--dg-blue);outline-offset:2px}
 
 /* Premier niveau : rail sombre d'icônes */
 .dg-rail{position:fixed;inset:0 auto 0 0;width:64px;background:var(--dg-rail);display:flex;flex-direction:column;align-items:center;gap:16px;padding:14px 0;z-index:30}
-.rail-logo{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;color:#fff;background:linear-gradient(135deg,#0877e8,#8b4cf6)}
+.rail-logo{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;color:#fff;background:linear-gradient(135deg,#f6a54f,#f28a2e)}
 .rail-groups{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:8px}
 .rail-btn{display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:10px;background:none;color:#aeb6c5;transition:background .15s,color .15s}
 .rail-btn:hover{background:#ffffff14;color:#fff}
@@ -521,7 +521,7 @@ a.big-btn{text-decoration:none}
 /* Champs et filtres */
 .dg-role .num-input,.dg-role .ref-input,.dg-role .area{border:1px solid var(--dg-line2);border-radius:10px;min-height:42px;font-size:14px;color:var(--ink)}
 .dg-role .num-input{font-size:16px}
-.dg-role .num-input:focus,.dg-role .ref-input:focus,.dg-role .area:focus{border-color:var(--dg-blue);box-shadow:0 0 0 3px #0877e826}
+.dg-role .num-input:focus,.dg-role .ref-input:focus,.dg-role .area:focus{border-color:var(--dg-blue);box-shadow:0 0 0 3px #f28a2e2e}
 .dg-role .filter-row{gap:12px;align-items:center}
 .dg-role .chip{border:1px solid var(--dg-line2);border-radius:10px;color:var(--ink);font-weight:500;background:#fff;min-height:40px}
 .dg-role .chip:hover{border-color:var(--dg-blue);background:var(--dg-pale)}
@@ -559,7 +559,7 @@ a.big-btn{text-decoration:none}
 .dg-role .pill-btn b,.dg-role .count-pill{background:var(--dg-blue)}
 
 /* Encarts : information en bleu très pâle, compacts */
-.dg-role .notice{background:var(--dg-pale);color:#0b4f9c;border:1px solid #cfe3fb;border-radius:12px;padding:12px 16px}
+.dg-role .notice{background:var(--dg-pale);color:#9a4f08;border:1px solid #fbd9b5;border-radius:12px;padding:12px 16px}
 .dg-role .notice.ok{background:#e8f6ef;color:#17784f;border-color:#c3e8d6}
 .dg-role .notice.warn{background:#fff3df;color:#8a5a0c;border-color:#f0d9a8}
 .dg-role .notice.danger{background:#fdecec;color:#a42c2c;border-color:#f3c9c9}
@@ -590,10 +590,10 @@ a.big-btn{text-decoration:none}
   .dg-role .kpi-row{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 
-.dg-role .chart rect[fill="#6b4423"]{fill:#0877e8}
-.dg-role .chart polyline[stroke="#6b4423"]{stroke:#0877e8}
-.dg-role .chart circle[fill="#6b4423"]{fill:#0877e8}
-.dg-role .chart-key i[style*="rgb(107, 68, 35)"]{background:#0877e8 !important}
+.dg-role .chart rect[fill="#6b4423"]{fill:#f28a2e}
+.dg-role .chart polyline[stroke="#6b4423"]{stroke:#f28a2e}
+.dg-role .chart circle[fill="#6b4423"]{fill:#f28a2e}
+.dg-role .chart-key i[style*="rgb(107, 68, 35)"]{background:#f28a2e !important}
 .dg-role .chart polyline[stroke="#9c8b7c"]{stroke:#98a2b3}
 .dg-role .chart-key i[style*="#9c8b7c"]{border-top-color:#98a2b3 !important}
 
@@ -624,24 +624,24 @@ a.big-btn{text-decoration:none}
 .dg-role .emp-acc.open .emp-acc-head svg{transform:rotate(180deg)}
 .dg-role .emp-acc-body{padding:20px}
 
-/* DG : colonne de gauche marron (rail + panneau), fond de droite blanc, survols en marron — couleurs uniquement, la mise en page ne change pas */
-.dg-role{--dg-rail:#3b2a1f;--dg-brown:#6b4423;--dg-hover:#f3e8da}
-.dg-rail{background:#3b2a1f}
-.rail-logo{background:var(--accent)}
-.rail-btn{color:#e3d6ca}
-.rail-btn:hover{background:#ffffff1f;color:#fff}
-.rail-btn.on{background:var(--bright);color:#fff}
-.rail-avatar{background:#6b4423}
-.dg-sub{background:#3b2a1f;border-right:0;border-left:1px solid #ffffff1a}
-.dg-sub-head{border-bottom:1px solid #ffffff1a}
-.dg-sub-head b{color:#fff}
-.dg-sub-head small{color:#dcc8b4}
-.dg-sub h5{color:#ab9d92}
-.dg-sub nav button{color:#e3d6ca}
-.dg-sub nav button:hover{background:#ffffff1f;color:#fff}
-.dg-sub nav button.active{background:var(--bright);color:#fff;font-weight:600}
-.dg-sub .reset{border-top:1px solid #ffffff1a;color:#e3d6ca}
-.dg-sub .reset:hover{color:#fff}
+/* DG : colonne de gauche blanche (rail + panneau), accents orange clair, fond de droite blanc */
+.dg-role{--dg-rail:#fff;--dg-brown:#c96a12;--dg-hover:#fff3e6}
+.dg-rail{background:#fff;border-right:1px solid var(--border)}
+.rail-logo{background:linear-gradient(135deg,#f6a54f,#f28a2e)}
+.rail-btn{color:#667085}
+.rail-btn:hover{background:#fff3e6;color:#c96a12}
+.rail-btn.on{background:#f28a2e;color:#fff}
+.rail-avatar{background:#fde3c8;color:#9a4f08}
+.dg-sub{background:#fff;border-right:1px solid var(--border);border-left:0}
+.dg-sub-head{border-bottom:1px solid var(--border)}
+.dg-sub-head b{color:var(--ink)}
+.dg-sub-head small{color:var(--muted)}
+.dg-sub h5{color:#98a2b3}
+.dg-sub nav button{color:var(--ink)}
+.dg-sub nav button:hover{background:#fff3e6;color:#c96a12}
+.dg-sub nav button.active{background:#f28a2e;color:#fff;font-weight:600}
+.dg-sub .reset{border-top:1px solid var(--border);color:#98a2b3}
+.dg-sub .reset:hover{color:#c96a12}
 .dg-role .main2,.dg-role .content2,.dg-role .top2{background:#fff}
 .dg-role .chip:hover{border-color:var(--dg-brown);background:var(--dg-hover)}
 .dg-role .big-btn:hover:not(:disabled){background:var(--dg-brown)}
